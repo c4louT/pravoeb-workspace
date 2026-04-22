@@ -1,0 +1,16 @@
+# Личные данные — никогда не в гит
+memory/
+state/
+PROJECTS.md
+
+# Временные файлы
+*.pyc
+__pycache__/
+.DS_Store
+*.log
+.venv/
+tools/.venv/
+
+# Данные дашборда (хранятся в браузере, не в файлах)
+*.sqlite
+*.db
