@@ -268,3 +268,19 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
+
+## Git — автосинхронизация
+
+После любых изменений в файлах workspace (обновление шаблона, LEGAL_BASE.md, AGENTS.md и т.д.) — делай автокоммит:
+
+```bash
+cd ~/.openclaw/workspace && git add . && git commit -m "auto: update workspace $(date +%Y-%m-%d)" && git push
+```
+
+Когда делать коммит:
+- Обновил любой .md файл в корне workspace
+- Добавил или изменил шаблон договора
+- Изменил SOUL.md, IDENTITY.md, AGENTS.md
+- Пользователь попросил "сохрани это" или "запомни"
+
+НЕ коммитить: memory/, state/, PROJECTS.md — они в .gitignore.
