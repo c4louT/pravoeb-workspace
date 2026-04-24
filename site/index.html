@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg: #0d0d0c;
@@ -41,11 +42,90 @@
       radial-gradient(ellipse at bottom right, #1a1815 0%, transparent 60%);
   }
 
+  /* AUTH */
+  #auth-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+  }
+
+  .auth-box {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 3rem;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .auth-logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 2rem;
+    font-style: italic;
+    color: var(--accent);
+    margin-bottom: 0.3rem;
+  }
+
+  .auth-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--ink-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 2.5rem;
+  }
+
+  .auth-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .auth-tab {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.6rem 1.2rem;
+    background: transparent;
+    color: var(--ink-muted);
+    border: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+
+  .auth-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .auth-form { display: none; }
+  .auth-form.active { display: block; }
+
+  .auth-error {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--red);
+    margin-bottom: 1rem;
+    display: none;
+  }
+
   /* Шапка */
+  #app-screen { display: none; }
+
   header {
     padding: 2.5rem 3rem 2rem;
     border-bottom: 1px solid var(--border);
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
 
   header::after {
@@ -58,12 +138,7 @@
     background: var(--accent);
   }
 
-  .brand {
-    display: flex;
-    align-items: baseline;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-  }
+  .brand { display: flex; align-items: baseline; gap: 1.5rem; flex-wrap: wrap; }
 
   .brand-name {
     font-family: 'Instrument Serif', serif;
@@ -73,12 +148,7 @@
     font-style: italic;
   }
 
-  .brand-accent {
-    color: var(--accent);
-    font-style: normal;
-    font-family: 'Fraunces', serif;
-    font-weight: 300;
-  }
+  .brand-accent { color: var(--accent); font-style: normal; font-family: 'Fraunces', serif; font-weight: 300; }
 
   .brand-sub {
     font-family: 'JetBrains Mono', monospace;
@@ -91,7 +161,18 @@
     border-radius: 2px;
   }
 
-  /* Навигация */
+  .header-user {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .header-email {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--ink-muted);
+  }
+
   nav {
     display: flex;
     gap: 2rem;
@@ -101,119 +182,35 @@
     position: sticky;
     top: 0;
     z-index: 10;
+    overflow-x: auto;
   }
 
   .nav-tab {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--ink-muted);
+    background: none;
+    border: none;
     cursor: pointer;
-    padding-bottom: 0.3rem;
+    padding: 0.3rem 0;
     border-bottom: 1px solid transparent;
-    transition: all 0.25s;
+    white-space: nowrap;
   }
 
-  .nav-tab:hover { color: var(--ink); }
-  .nav-tab.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-  }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-  /* Основной контейнер */
-  main {
-    padding: 3rem 3rem 5rem;
-    max-width: 1600px;
-    margin: 0 auto;
-  }
+  main { padding: 3rem; max-width: 1400px; margin: 0 auto; }
 
-  .tab-view { display: none; animation: fadeIn 0.3s ease; }
+  .tab-view { display: none; }
   .tab-view.active { display: block; }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Дашборд — сводка */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem;
-    margin-bottom: 3rem;
-  }
-
-  .stat-card {
-    padding: 1.8rem 1.5rem;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 3px;
-    height: 100%;
-    background: var(--accent);
-    transform: scaleY(0.3);
-    transform-origin: top;
-    transition: transform 0.3s;
-  }
-
-  .stat-card:hover::before { transform: scaleY(1); }
-
-  .stat-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-    margin-bottom: 0.8rem;
-  }
-
-  .stat-value {
-    font-family: 'Instrument Serif', serif;
-    font-size: 3rem;
-    font-weight: 400;
-    line-height: 1;
-    letter-spacing: -0.02em;
-  }
-
-  .stat-value.small { font-size: 2rem; }
-
-  .stat-sub {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--ink-dim);
-    margin-top: 0.6rem;
-  }
-
-  .stat-value.accent { color: var(--accent); }
-  .stat-value.green { color: var(--green); }
-  .stat-value.red { color: var(--red); }
-  .stat-value.amber { color: var(--amber); }
-
-  /* Заголовки секций */
   .section-title {
     font-family: 'Instrument Serif', serif;
-    font-size: 1.8rem;
-    font-weight: 400;
-    letter-spacing: -0.01em;
+    font-size: 1.6rem;
     margin-bottom: 1.5rem;
-    display: flex;
-    align-items: baseline;
-    gap: 1rem;
-  }
-
-  .section-title::before {
-    content: '§';
-    color: var(--accent);
-    font-style: italic;
+    font-weight: 400;
   }
 
   .section-title-sub {
@@ -226,6 +223,66 @@
     font-weight: 400;
   }
 
+  /* Статкарточки */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 3rem;
+    border: 1px solid var(--border);
+  }
+
+  .stat-card {
+    background: var(--bg-elevated);
+    padding: 1.8rem;
+  }
+
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin-bottom: 0.8rem;
+  }
+
+  .stat-value {
+    font-family: 'Fraunces', serif;
+    font-size: 2.4rem;
+    font-weight: 300;
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+
+  .stat-value.red { color: var(--red); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.amber { color: var(--amber); }
+
+  .stat-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--ink-dim);
+  }
+
+  .money { font-family: 'JetBrains Mono', monospace; }
+
+  /* Алерты */
+  .alerts-list { margin-bottom: 2.5rem; }
+
+  .alert {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1rem 1.2rem;
+    border-left: 2px solid var(--red);
+    background: rgba(200, 90, 84, 0.05);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .alert-icon { color: var(--red); font-size: 1rem; flex-shrink: 0; }
+
   /* Таблицы */
   .table-wrap {
     background: var(--bg-elevated);
@@ -235,16 +292,9 @@
     margin-bottom: 2.5rem;
   }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95rem;
-  }
+  table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
 
-  thead {
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-  }
+  thead { background: var(--bg); border-bottom: 1px solid var(--border); }
 
   th {
     padding: 1rem 1.2rem;
@@ -266,17 +316,8 @@
   tbody tr:last-child td { border-bottom: none; }
   tbody tr:hover { background: rgba(201, 169, 97, 0.03); }
 
-  .td-primary {
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-size: 1.05rem;
-  }
-
-  .td-mono {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-    color: var(--ink-muted);
-  }
+  .td-primary { font-family: 'Fraunces', serif; font-weight: 500; font-size: 1.05rem; }
+  .td-mono { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--ink-muted); }
 
   /* Статусы */
   .status {
@@ -310,24 +351,11 @@
     border-radius: 2px;
   }
 
-  .btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: var(--bg);
-    border-color: var(--accent);
-  }
-
-  .btn-primary:hover {
-    background: transparent;
-    color: var(--accent);
-  }
-
-  .btn-danger:hover { border-color: var(--red); color: var(--red); }
-
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .btn-primary:hover { background: var(--accent-dim); border-color: var(--accent-dim); color: var(--bg); }
+  .btn-danger { color: var(--red); border-color: var(--border); }
+  .btn-danger:hover { border-color: var(--red); }
   .btn-small { padding: 0.4rem 0.8rem; font-size: 0.65rem; }
 
   .action-bar {
@@ -354,10 +382,7 @@
     padding: 2rem;
   }
 
-  .modal-overlay.active {
-    display: flex;
-    animation: fadeIn 0.2s ease;
-  }
+  .modal-overlay.active { display: flex; }
 
   .modal {
     background: var(--bg-elevated);
@@ -368,15 +393,9 @@
     width: 100%;
     max-height: 90vh;
     overflow-y: auto;
-    position: relative;
   }
 
-  .modal-title {
-    font-family: 'Instrument Serif', serif;
-    font-size: 1.8rem;
-    margin-bottom: 0.3rem;
-    letter-spacing: -0.01em;
-  }
+  .modal-title { font-family: 'Instrument Serif', serif; font-size: 1.8rem; margin-bottom: 0.3rem; }
 
   .modal-sub {
     font-family: 'JetBrains Mono', monospace;
@@ -399,8 +418,7 @@
     margin-bottom: 0.5rem;
   }
 
-  .form-input,
-  .form-select {
+  .form-input, .form-select {
     width: 100%;
     padding: 0.7rem 0.9rem;
     background: var(--bg);
@@ -412,17 +430,9 @@
     transition: border-color 0.2s;
   }
 
-  .form-input:focus,
-  .form-select:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
+  .form-input:focus, .form-select:focus { outline: none; border-color: var(--accent); }
 
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
   .modal-actions {
     display: flex;
@@ -431,71 +441,6 @@
     margin-top: 2rem;
     padding-top: 1.5rem;
     border-top: 1px solid var(--border);
-  }
-
-  /* Таймлайн */
-  .timeline {
-    position: relative;
-    padding-left: 2rem;
-    margin-bottom: 2rem;
-  }
-
-  .timeline::before {
-    content: '';
-    position: absolute;
-    left: 7px;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: var(--border);
-  }
-
-  .timeline-item {
-    position: relative;
-    padding-bottom: 1.8rem;
-  }
-
-  .timeline-item::before {
-    content: '';
-    position: absolute;
-    left: -1.7rem;
-    top: 0.5rem;
-    width: 13px;
-    height: 13px;
-    border-radius: 50%;
-    background: var(--bg);
-    border: 2px solid var(--ink-muted);
-  }
-
-  .timeline-item.signed::before {
-    border-color: var(--green);
-    background: var(--green);
-  }
-
-  .timeline-item.pending::before {
-    border-color: var(--amber);
-  }
-
-  .timeline-item.missing::before {
-    border-color: var(--red);
-  }
-
-  .timeline-date {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--ink-muted);
-    letter-spacing: 0.1em;
-  }
-
-  .timeline-title {
-    font-family: 'Fraunces', serif;
-    font-size: 1.1rem;
-    margin: 0.2rem 0 0.3rem;
-  }
-
-  .timeline-desc {
-    font-size: 0.9rem;
-    color: var(--ink-muted);
   }
 
   /* Прогресс-бары */
@@ -514,24 +459,10 @@
     margin-bottom: 0.8rem;
   }
 
-  .progress-title {
-    font-family: 'Fraunces', serif;
-    font-size: 1.1rem;
-  }
+  .progress-title { font-family: 'Fraunces', serif; font-size: 1.1rem; }
+  .progress-value { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--accent); }
 
-  .progress-value {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.9rem;
-    color: var(--accent);
-  }
-
-  .progress-bar {
-    height: 6px;
-    background: var(--border);
-    border-radius: 1px;
-    overflow: hidden;
-    position: relative;
-  }
+  .progress-bar { height: 6px; background: var(--border); border-radius: 1px; overflow: hidden; }
 
   .progress-fill {
     height: 100%;
@@ -549,211 +480,284 @@
   }
 
   /* Пустое состояние */
-  .empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    color: var(--ink-muted);
-  }
-
-  .empty-state-icon {
-    font-family: 'Instrument Serif', serif;
-    font-size: 4rem;
-    color: var(--ink-dim);
-    margin-bottom: 1rem;
-    font-style: italic;
-  }
+  .empty-state { text-align: center; padding: 4rem 2rem; color: var(--ink-muted); }
+  .empty-state-icon { font-family: 'Instrument Serif', serif; font-size: 4rem; color: var(--ink-dim); margin-bottom: 1rem; font-style: italic; }
 
   /* Фильтры */
-  .filter-bar {
-    display: flex;
-    gap: 0.6rem;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-  }
+  .filter-bar { display: flex; gap: 0.6rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 
   .filter-chip {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 0.4rem 0.9rem;
-    background: var(--bg-elevated);
-    color: var(--ink-muted);
     border: 1px solid var(--border);
     border-radius: 2px;
     cursor: pointer;
-    transition: all 0.2s;
+    color: var(--ink-muted);
+    transition: all 0.15s;
   }
 
-  .filter-chip:hover { color: var(--ink); }
-  .filter-chip.active {
-    background: var(--accent);
-    color: var(--bg);
-    border-color: var(--accent);
+  .filter-chip.active { border-color: var(--accent); color: var(--accent); }
+  .filter-chip:hover { border-color: var(--ink-muted); color: var(--ink); }
+
+  /* Таймлайн */
+  .timeline { position: relative; padding-left: 2rem; margin-bottom: 2rem; }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
   }
 
-  /* Деньги */
-  .money {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 500;
+  .timeline-item { position: relative; padding-bottom: 1.8rem; }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.7rem;
+    top: 0.5rem;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--ink-muted);
   }
 
-  /* Подвал */
-  footer {
-    padding: 2rem 3rem;
-    border-top: 1px solid var(--border);
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--ink-dim);
-    letter-spacing: 0.1em;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+  .timeline-item.signed::before { border-color: var(--green); background: var(--green); }
+  .timeline-item.pending::before { border-color: var(--amber); }
+  .timeline-item.missing::before { border-color: var(--red); }
 
-  /* Круговая диаграмма (SVG) */
-  .donut-wrap {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    padding: 2rem;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: 2px;
-  }
+  .timeline-date { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--ink-muted); letter-spacing: 0.1em; }
+  .timeline-title { font-family: 'Fraunces', serif; font-size: 1.1rem; margin: 0.2rem 0 0.3rem; }
+  .timeline-desc { font-size: 0.9rem; color: var(--ink-muted); }
 
-  .donut-legend {
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-  }
+  /* Доnut */
+  .donut-wrap { display: flex; gap: 3rem; align-items: center; margin-bottom: 3rem; flex-wrap: wrap; }
+  .donut-legend { display: flex; flex-direction: column; gap: 0.6rem; }
 
   .legend-item {
     display: flex;
     align-items: center;
     gap: 0.7rem;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.8rem;
+    font-size: 0.72rem;
+    color: var(--ink-muted);
   }
 
-  .legend-dot {
-    width: 10px;
-    height: 10px;
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Лоадер */
+  .loader {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
     border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .loading-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    letter-spacing: 0.1em;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--ink-dim);
+    flex-wrap: wrap;
+    gap: 1rem;
   }
 
   @media (max-width: 768px) {
     header, nav, main, footer { padding-left: 1.5rem; padding-right: 1.5rem; }
-    nav { gap: 1rem; overflow-x: auto; }
     .form-row { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="brand">
-    <h1 class="brand-name">Правоеб <span class="brand-accent">·</span> <span class="brand-accent">Контрольная панель</span></h1>
-    <span class="brand-sub">Кино · ТВ · Продюсирование</span>
+<!-- ЛОАДЕР -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loader"></div>
+  <div class="loading-text">загрузка...</div>
+</div>
+
+<!-- ЭКРАН АВТОРИЗАЦИИ -->
+<div id="auth-screen" style="display:none;">
+  <div class="auth-box">
+    <div class="auth-logo">Правоеб <span style="color:var(--ink-muted);font-size:1.2rem;">⚖️</span></div>
+    <div class="auth-sub">Кино · ТВ · Продюсирование</div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Войти</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Регистрация</button>
+    </div>
+
+    <div class="auth-error" id="auth-error"></div>
+
+    <!-- Логин -->
+    <div class="auth-form active" id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="login-email" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Пароль</label>
+        <input class="form-input" type="password" id="login-password">
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:0.5rem;" onclick="doLogin()">Войти</button>
+    </div>
+
+    <!-- Регистрация -->
+    <div class="auth-form" id="register-form">
+      <div class="form-group">
+        <label class="form-label">Имя</label>
+        <input class="form-input" type="text" id="reg-name" placeholder="Артемий">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="reg-email" placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Пароль</label>
+        <input class="form-input" type="password" id="reg-password" placeholder="минимум 6 символов">
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:0.5rem;" onclick="doRegister()">Создать аккаунт</button>
+    </div>
   </div>
-</header>
+</div>
 
-<nav>
-  <span class="nav-tab active" data-tab="dashboard">Сводка</span>
-  <span class="nav-tab" data-tab="projects">Проекты</span>
-  <span class="nav-tab" data-tab="contracts">Договоры</span>
-  <span class="nav-tab" data-tab="payments">Выплаты</span>
-  <span class="nav-tab" data-tab="timeline">Таймлайн</span>
-</nav>
+<!-- ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+<div id="app-screen" style="display:none;">
+  <header>
+    <div class="brand">
+      <div class="brand-name">Право<span class="brand-accent">еб</span> <span style="font-size:1.4rem;">⚖️</span></div>
+      <div class="brand-sub">Кино · ТВ · Продюсирование</div>
+    </div>
+    <div class="header-user">
+      <span class="header-email" id="user-email-display"></span>
+      <button class="btn btn-small btn-danger" onclick="doLogout()">Выйти</button>
+    </div>
+  </header>
 
-<main>
+  <nav>
+    <button class="nav-tab active" data-tab="dashboard">Сводка</button>
+    <button class="nav-tab" data-tab="projects">Проекты</button>
+    <button class="nav-tab" data-tab="contracts">Договоры</button>
+    <button class="nav-tab" data-tab="payments">Выплаты</button>
+    <button class="nav-tab" data-tab="timeline">Таймлайн</button>
+  </nav>
 
-  <!-- СВОДКА -->
-  <section class="tab-view active" id="dashboard">
-    <div class="stats-grid" id="stats-grid"></div>
+  <main>
 
-    <h2 class="section-title">Критические уведомления <span class="section-title-sub">требуют внимания</span></h2>
-    <div id="alerts"></div>
+    <!-- СВОДКА -->
+    <section class="tab-view active" id="dashboard">
+      <div class="stats-grid" id="stats-grid"></div>
 
-    <h2 class="section-title">Статус договоров по проектам <span class="section-title-sub">прогресс</span></h2>
-    <div id="project-progress"></div>
+      <h2 class="section-title">Требуют внимания <span class="section-title-sub">уведомления</span></h2>
+      <div class="alerts-list" id="alerts-list"></div>
 
-    <h2 class="section-title">Распределение по статусам <span class="section-title-sub">договоры</span></h2>
-    <div class="donut-wrap" id="donut-chart"></div>
-  </section>
+      <h2 class="section-title">Прогресс по проектам <span class="section-title-sub">договоры и выплаты</span></h2>
+      <div id="project-progress"></div>
 
-  <!-- ПРОЕКТЫ -->
-  <section class="tab-view" id="projects">
-    <div class="action-bar">
-      <h2 class="section-title" style="margin-bottom: 0;">Проекты <span class="section-title-sub">реестр</span></h2>
-      <div class="action-group">
+      <h2 class="section-title">Распределение по статусам <span class="section-title-sub">договоры</span></h2>
+      <div class="donut-wrap" id="donut-chart"></div>
+    </section>
+
+    <!-- ПРОЕКТЫ -->
+    <section class="tab-view" id="projects">
+      <div class="action-bar">
+        <h2 class="section-title" style="margin-bottom:0;">Проекты <span class="section-title-sub">реестр</span></h2>
         <button class="btn btn-primary" onclick="openProjectModal()">+ Новый проект</button>
       </div>
-    </div>
-    <div id="projects-list"></div>
-  </section>
+      <div id="projects-list"></div>
+    </section>
 
-  <!-- ДОГОВОРЫ -->
-  <section class="tab-view" id="contracts">
-    <div class="action-bar">
-      <h2 class="section-title" style="margin-bottom: 0;">Договоры <span class="section-title-sub">реестр</span></h2>
-      <div class="action-group">
+    <!-- ДОГОВОРЫ -->
+    <section class="tab-view" id="contracts">
+      <div class="action-bar">
+        <h2 class="section-title" style="margin-bottom:0;">Договоры <span class="section-title-sub">реестр</span></h2>
         <button class="btn btn-primary" onclick="openContractModal()">+ Новый договор</button>
       </div>
-    </div>
-    <div class="filter-bar" id="contract-filters">
-      <span class="filter-chip active" data-filter="all">Все</span>
-      <span class="filter-chip" data-filter="signed">Подписаны</span>
-      <span class="filter-chip" data-filter="pending">В работе</span>
-      <span class="filter-chip" data-filter="missing">Не подписаны</span>
-      <span class="filter-chip" data-filter="draft">Черновик</span>
-    </div>
-    <div id="contracts-table"></div>
-  </section>
+      <div class="filter-bar" id="contract-filters">
+        <span class="filter-chip active" data-filter="all">Все</span>
+        <span class="filter-chip" data-filter="signed">Подписаны</span>
+        <span class="filter-chip" data-filter="pending">В работе</span>
+        <span class="filter-chip" data-filter="missing">Не подписаны</span>
+        <span class="filter-chip" data-filter="draft">Черновик</span>
+      </div>
+      <div id="contracts-table"></div>
+    </section>
 
-  <!-- ВЫПЛАТЫ -->
-  <section class="tab-view" id="payments">
-    <div class="action-bar">
-      <h2 class="section-title" style="margin-bottom: 0;">Выплаты <span class="section-title-sub">по договорам</span></h2>
-    </div>
-    <div id="payments-summary"></div>
-    <div id="payments-table"></div>
-  </section>
+    <!-- ВЫПЛАТЫ -->
+    <section class="tab-view" id="payments">
+      <div class="action-bar">
+        <h2 class="section-title" style="margin-bottom:0;">Выплаты <span class="section-title-sub">по договорам</span></h2>
+      </div>
+      <div id="payments-summary"></div>
+      <div id="payments-table"></div>
+    </section>
 
-  <!-- ТАЙМЛАЙН -->
-  <section class="tab-view" id="timeline">
-    <h2 class="section-title">Таймлайн событий <span class="section-title-sub">хронология</span></h2>
-    <div class="filter-bar" id="timeline-filters">
-      <span class="filter-chip active" data-filter="all">Все</span>
-      <span class="filter-chip" data-filter="signed">Подписано</span>
-      <span class="filter-chip" data-filter="pending">Ожидается</span>
-      <span class="filter-chip" data-filter="overdue">Просрочено</span>
-    </div>
-    <div id="timeline-view"></div>
-  </section>
+    <!-- ТАЙМЛАЙН -->
+    <section class="tab-view" id="timeline">
+      <h2 class="section-title">Таймлайн событий <span class="section-title-sub">хронология</span></h2>
+      <div class="filter-bar" id="timeline-filters">
+        <span class="filter-chip active" data-filter="all">Все</span>
+        <span class="filter-chip" data-filter="signed">Подписано</span>
+        <span class="filter-chip" data-filter="pending">Ожидается</span>
+        <span class="filter-chip" data-filter="overdue">Просрочено</span>
+      </div>
+      <div id="timeline-view"></div>
+    </section>
 
-</main>
+  </main>
 
-<footer>
-  <span>данные хранятся локально в вашем браузере</span>
-  <span>
-    <button class="btn btn-small" onclick="exportData()">Экспорт JSON</button>
-    <button class="btn btn-small" onclick="importData()">Импорт</button>
-    <button class="btn btn-small btn-danger" onclick="clearData()">Сброс</button>
-  </span>
-</footer>
+  <footer>
+    <span>данные защищены supabase · личный кабинет · pravoeb</span>
+    <span>
+      <button class="btn btn-small" onclick="exportData()">Экспорт JSON</button>
+    </span>
+  </footer>
+</div>
 
 <!-- МОДАЛКА: ПРОЕКТ -->
 <div class="modal-overlay" id="project-modal">
   <div class="modal">
     <h3 class="modal-title" id="project-modal-title">Новый проект</h3>
-    <p class="modal-sub">Создание записи о проекте</p>
-
+    <p class="modal-sub">Создание записи</p>
     <div class="form-group">
-      <label class="form-label">Название проекта</label>
-      <input class="form-input" type="text" id="p-name" placeholder="Например: Элионор Ригби">
+      <label class="form-label">Название</label>
+      <input class="form-input" type="text" id="p-name" placeholder="Элионор Ригби">
     </div>
-
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Жанр</label>
@@ -761,37 +765,33 @@
       </div>
       <div class="form-group">
         <label class="form-label">Хронометраж (мин)</label>
-        <input class="form-input" type="number" id="p-duration" placeholder="120">
+        <input class="form-input" type="number" id="p-duration" placeholder="90">
       </div>
     </div>
-
     <div class="form-group">
       <label class="form-label">Статус</label>
       <select class="form-select" id="p-status">
         <option value="development">Разработка</option>
-        <option value="pre-production">Подготовительный период</option>
+        <option value="pre-production">Подготовка</option>
         <option value="production">Съёмки</option>
-        <option value="post-production">МТП (пост-продакшн)</option>
+        <option value="post-production">МТП</option>
         <option value="completed">Завершён</option>
       </select>
     </div>
-
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Начало съёмок</label>
+        <label class="form-label">Начало</label>
         <input class="form-input" type="date" id="p-start">
       </div>
       <div class="form-group">
-        <label class="form-label">Окончание съёмок</label>
+        <label class="form-label">Окончание</label>
         <input class="form-input" type="date" id="p-end">
       </div>
     </div>
-
     <div class="form-group">
       <label class="form-label">Бюджет (₽)</label>
       <input class="form-input" type="number" id="p-budget" placeholder="5000000">
     </div>
-
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('project-modal')">Отмена</button>
       <button class="btn btn-primary" onclick="saveProject()">Сохранить</button>
@@ -803,72 +803,65 @@
 <div class="modal-overlay" id="contract-modal">
   <div class="modal">
     <h3 class="modal-title" id="contract-modal-title">Новый договор</h3>
-    <p class="modal-sub">Создание записи о договоре</p>
-
+    <p class="modal-sub">Создание записи</p>
     <div class="form-group">
       <label class="form-label">Проект</label>
       <select class="form-select" id="c-project"></select>
     </div>
-
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Тип договора</label>
+        <label class="form-label">Тип</label>
         <select class="form-select" id="c-type">
-          <option value="actor">Договор с актёром</option>
-          <option value="actor-minor">Актёр (несовершеннолетний)</option>
-          <option value="director">Договор с режиссёром</option>
-          <option value="operator">Договор с оператором</option>
-          <option value="author-order">Авторский заказ + отчуждение</option>
+          <option value="actor">Актёр</option>
+          <option value="actor-minor">Актёр (несов.)</option>
+          <option value="director">Режиссёр</option>
+          <option value="operator">Оператор</option>
+          <option value="author-order">Авт. заказ</option>
           <option value="alienation">Отчуждение</option>
           <option value="license">Лицензия</option>
-          <option value="consent">Согласие на съёмку</option>
+          <option value="consent">Согласие</option>
           <option value="nda">НДА</option>
           <option value="other">Другое</option>
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Роль / должность</label>
-        <input class="form-input" type="text" id="c-role" placeholder="Главная роль / Сценарист">
+        <label class="form-label">Роль</label>
+        <input class="form-input" type="text" id="c-role" placeholder="Главная роль">
       </div>
     </div>
-
     <div class="form-group">
       <label class="form-label">ФИО контрагента</label>
       <input class="form-input" type="text" id="c-person" placeholder="Иванов Иван Иванович">
     </div>
-
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Номер договора</label>
+        <label class="form-label">Номер</label>
         <input class="form-input" type="text" id="c-number" placeholder="01/2025">
       </div>
       <div class="form-group">
-        <label class="form-label">Дата договора</label>
+        <label class="form-label">Дата</label>
         <input class="form-input" type="date" id="c-date">
       </div>
     </div>
-
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Сумма (₽)</label>
-        <input class="form-input" type="number" id="c-amount" placeholder="100000" step="1000">
+        <input class="form-input" type="number" id="c-amount" placeholder="0">
       </div>
       <div class="form-group">
         <label class="form-label">Статус</label>
         <select class="form-select" id="c-status">
           <option value="draft">Черновик</option>
-          <option value="pending">В работе / ожидает подписи</option>
+          <option value="pending">В работе</option>
           <option value="signed">Подписан</option>
           <option value="missing">Не подписан (критично)</option>
         </select>
       </div>
     </div>
-
     <div class="form-group">
       <label class="form-label">Заметки</label>
-      <input class="form-input" type="text" id="c-notes" placeholder="Напр.: акт приёма-передачи не подписан">
+      <input class="form-input" type="text" id="c-notes" placeholder="акт приёма-передачи не подписан">
     </div>
-
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('contract-modal')">Отмена</button>
       <button class="btn btn-primary" onclick="saveContract()">Сохранить</button>
@@ -881,7 +874,6 @@
   <div class="modal">
     <h3 class="modal-title">Платёж по договору</h3>
     <p class="modal-sub" id="payment-modal-sub">Фиксация выплаты</p>
-
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Сумма (₽)</label>
@@ -892,12 +884,10 @@
         <input class="form-input" type="date" id="pay-date">
       </div>
     </div>
-
     <div class="form-group">
       <label class="form-label">Комментарий</label>
       <input class="form-input" type="text" id="pay-note" placeholder="Аванс / финальный платёж / ...">
     </div>
-
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('payment-modal')">Отмена</button>
       <button class="btn btn-primary" onclick="savePayment()">Добавить платёж</button>
@@ -906,100 +896,82 @@
 </div>
 
 <script>
+// ============ SUPABASE ============
+const SUPABASE_URL = 'https://vcjwzkbsivgiivgvibjo.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjand6a2JzaXZnaWl2Z3ZpYmpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5OTY5NTEsImV4cCI6MjA5MjU3Mjk1MX0.LWGImSHtHz9CBuluC1hgTw8g8CayuoTRcQnV5qF6DSc';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // ============ STATE ============
-const STORAGE_KEY = 'pravoeb-dashboard-v1';
-
-const TYPE_LABELS = {
-  'actor': 'Актёр',
-  'actor-minor': 'Актёр (несов.)',
-  'director': 'Режиссёр',
-  'operator': 'Оператор',
-  'author-order': 'Авт. заказ',
-  'alienation': 'Отчуждение',
-  'license': 'Лицензия',
-  'consent': 'Согласие',
-  'nda': 'НДА',
-  'other': 'Другое'
-};
-
-const STATUS_LABELS = {
-  'signed': 'Подписан',
-  'pending': 'В работе',
-  'missing': 'Не подписан',
-  'draft': 'Черновик'
-};
-
-const PROJECT_STATUS_LABELS = {
-  'development': 'Разработка',
-  'pre-production': 'Подготовка',
-  'production': 'Съёмки',
-  'post-production': 'МТП',
-  'completed': 'Завершён'
-};
-
-let state = {
-  projects: [],
-  contracts: [],
-  payments: []
-};
-
+let currentUser = null;
+let state = { projects: [], contracts: [], payments: [] };
 let editingProject = null;
 let editingContract = null;
 let activePaymentContract = null;
 let contractFilter = 'all';
 let timelineFilter = 'all';
 
-// ============ STORAGE ============
-function loadState() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    try { state = JSON.parse(saved); } catch(e) { console.error(e); }
-  } else {
-    seedDemoData();
-  }
+const TYPE_LABELS = {
+  'actor': 'Актёр', 'actor-minor': 'Актёр (несов.)', 'director': 'Режиссёр',
+  'operator': 'Оператор', 'author-order': 'Авт. заказ', 'alienation': 'Отчуждение',
+  'license': 'Лицензия', 'consent': 'Согласие', 'nda': 'НДА', 'other': 'Другое'
+};
+
+const STATUS_LABELS = { 'signed': 'Подписан', 'pending': 'В работе', 'missing': 'Не подписан', 'draft': 'Черновик' };
+
+const PROJECT_STATUS_LABELS = {
+  'development': 'Разработка', 'pre-production': 'Подготовка',
+  'production': 'Съёмки', 'post-production': 'МТП', 'completed': 'Завершён'
+};
+
+// ============ AUTH ============
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+  document.querySelector(`.auth-tab[onclick*="${tab}"]`).classList.add('active');
+  document.getElementById(`${tab}-form`).classList.add('active');
+  document.getElementById('auth-error').style.display = 'none';
 }
 
-function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) return showAuthError('Заполните все поля');
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) showAuthError(error.message);
+}
+
+async function doRegister() {
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  if (!email || !password) return showAuthError('Заполните все поля');
+  const { error } = await sb.auth.signUp({ email, password });
+  if (error) showAuthError(error.message);
+  else showAuthError('Проверьте email для подтверждения регистрации');
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+}
+
+// ============ DATA LOADING ============
+async function loadData() {
+  const uid = currentUser.id;
+  const [{ data: projects }, { data: contracts }, { data: payments }] = await Promise.all([
+    sb.from('projects').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
+    sb.from('contracts').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
+    sb.from('payments').select('*').eq('user_id', uid).order('date', { ascending: false })
+  ]);
+  state.projects = projects || [];
+  state.contracts = contracts || [];
+  state.payments = payments || [];
   render();
 }
-
-function seedDemoData() {
-  state.projects = [
-    {
-      id: 'p1',
-      name: 'Элионор Ригби',
-      genre: 'короткометражный',
-      duration: 25,
-      status: 'production',
-      startDate: '2025-11-01',
-      endDate: '2025-11-30',
-      budget: 2500000
-    },
-    {
-      id: 'p2',
-      name: 'Герой',
-      genre: 'драма',
-      duration: 95,
-      status: 'completed',
-      startDate: '2023-10-29',
-      endDate: '2024-06-01',
-      budget: 8000000
-    }
-  ];
-  state.contracts = [
-    { id: 'c1', projectId: 'p2', type: 'actor', role: 'Главная роль', person: 'Матвейчук Денис Анатольевич', number: '01/2023', date: '2023-10-29', amount: 500000, status: 'signed', notes: '' },
-    { id: 'c2', projectId: 'p1', type: 'consent', role: 'Массовка', person: 'Участник №1', number: '—', date: '2025-11-05', amount: 0, status: 'signed', notes: '' },
-    { id: 'c3', projectId: 'p1', type: 'director', role: 'Режиссёр-постановщик', person: 'Устинова Ирина Евгеньевна', number: '02/2025', date: '2025-10-20', amount: 800000, status: 'pending', notes: 'Ждём подписанный экземпляр' },
-    { id: 'c4', projectId: 'p1', type: 'author-order', role: 'Сценарист', person: '', number: '', date: '', amount: 0, status: 'missing', notes: 'Срочно! Сценарий используется, договор не оформлен' }
-  ];
-  state.payments = [
-    { id: 'pay1', contractId: 'c1', amount: 250000, date: '2023-10-29', note: 'Аванс 50%' },
-    { id: 'pay2', contractId: 'c1', amount: 250000, date: '2024-06-01', note: 'Финал' }
-  ];
-}
-
-function uid() { return Math.random().toString(36).slice(2, 10); }
 
 // ============ NAV ============
 document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -1011,7 +983,7 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
   });
 });
 
-// ============ MODAL ============
+// ============ PROJECTS ============
 function openProjectModal(id = null) {
   editingProject = id;
   const p = id ? state.projects.find(x => x.id === id) : null;
@@ -1020,56 +992,55 @@ function openProjectModal(id = null) {
   document.getElementById('p-genre').value = p?.genre || '';
   document.getElementById('p-duration').value = p?.duration || '';
   document.getElementById('p-status').value = p?.status || 'development';
-  document.getElementById('p-start').value = p?.startDate || '';
-  document.getElementById('p-end').value = p?.endDate || '';
+  document.getElementById('p-start').value = p?.start_date || '';
+  document.getElementById('p-end').value = p?.end_date || '';
   document.getElementById('p-budget').value = p?.budget || '';
   document.getElementById('project-modal').classList.add('active');
 }
 
-function saveProject() {
+async function saveProject() {
   const data = {
     name: document.getElementById('p-name').value.trim(),
     genre: document.getElementById('p-genre').value.trim(),
-    duration: Number(document.getElementById('p-duration').value) || 0,
+    duration: Number(document.getElementById('p-duration').value) || null,
     status: document.getElementById('p-status').value,
-    startDate: document.getElementById('p-start').value,
-    endDate: document.getElementById('p-end').value,
-    budget: Number(document.getElementById('p-budget').value) || 0
+    start_date: document.getElementById('p-start').value || null,
+    end_date: document.getElementById('p-end').value || null,
+    budget: Number(document.getElementById('p-budget').value) || null,
+    user_id: currentUser.id
   };
-  if (!data.name) { alert('Укажите название проекта'); return; }
+  if (!data.name) return alert('Укажите название проекта');
 
   if (editingProject) {
-    const p = state.projects.find(x => x.id === editingProject);
-    Object.assign(p, data);
+    await sb.from('projects').update(data).eq('id', editingProject);
   } else {
-    state.projects.push({ id: uid(), ...data });
+    await sb.from('projects').insert(data);
   }
   closeModal('project-modal');
-  saveState();
+  await loadData();
 }
 
-function deleteProject(id) {
+async function deleteProject(id) {
   if (!confirm('Удалить проект? Все связанные договоры и выплаты тоже удалятся.')) return;
-  state.projects = state.projects.filter(p => p.id !== id);
-  const contractIds = state.contracts.filter(c => c.projectId === id).map(c => c.id);
-  state.contracts = state.contracts.filter(c => c.projectId !== id);
-  state.payments = state.payments.filter(p => !contractIds.includes(p.contractId));
-  saveState();
+  // Cascade: удаляем выплаты → договоры → проект
+  const contractIds = state.contracts.filter(c => c.project_id === id).map(c => c.id);
+  if (contractIds.length) await sb.from('payments').delete().in('contract_id', contractIds);
+  await sb.from('contracts').delete().eq('project_id', id);
+  await sb.from('projects').delete().eq('id', id);
+  await loadData();
 }
 
+// ============ CONTRACTS ============
 function openContractModal(id = null) {
+  if (state.projects.length === 0) return alert('Сначала создайте проект');
   editingContract = id;
   const c = id ? state.contracts.find(x => x.id === id) : null;
   document.getElementById('contract-modal-title').textContent = c ? 'Редактировать договор' : 'Новый договор';
 
-  const projectSelect = document.getElementById('c-project');
-  projectSelect.innerHTML = state.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
-  if (state.projects.length === 0) {
-    alert('Сначала создайте проект');
-    return;
-  }
+  const sel = document.getElementById('c-project');
+  sel.innerHTML = state.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+  sel.value = c?.project_id || state.projects[0].id;
 
-  document.getElementById('c-project').value = c?.projectId || state.projects[0].id;
   document.getElementById('c-type').value = c?.type || 'actor';
   document.getElementById('c-role').value = c?.role || '';
   document.getElementById('c-person').value = c?.person || '';
@@ -1081,64 +1052,79 @@ function openContractModal(id = null) {
   document.getElementById('contract-modal').classList.add('active');
 }
 
-function saveContract() {
+async function saveContract() {
   const data = {
-    projectId: document.getElementById('c-project').value,
+    project_id: document.getElementById('c-project').value,
     type: document.getElementById('c-type').value,
     role: document.getElementById('c-role').value.trim(),
     person: document.getElementById('c-person').value.trim(),
     number: document.getElementById('c-number').value.trim(),
-    date: document.getElementById('c-date').value,
+    date: document.getElementById('c-date').value || null,
     amount: Number(document.getElementById('c-amount').value) || 0,
     status: document.getElementById('c-status').value,
-    notes: document.getElementById('c-notes').value.trim()
+    notes: document.getElementById('c-notes').value.trim(),
+    user_id: currentUser.id
   };
 
   if (editingContract) {
-    const c = state.contracts.find(x => x.id === editingContract);
-    Object.assign(c, data);
+    await sb.from('contracts').update(data).eq('id', editingContract);
   } else {
-    state.contracts.push({ id: uid(), ...data });
+    await sb.from('contracts').insert(data);
   }
   closeModal('contract-modal');
-  saveState();
+  await loadData();
 }
 
-function deleteContract(id) {
+async function deleteContract(id) {
   if (!confirm('Удалить договор?')) return;
-  state.contracts = state.contracts.filter(c => c.id !== id);
-  state.payments = state.payments.filter(p => p.contractId !== id);
-  saveState();
+  await sb.from('payments').delete().eq('contract_id', id);
+  await sb.from('contracts').delete().eq('id', id);
+  await loadData();
 }
 
+// ============ PAYMENTS ============
 function openPaymentModal(contractId) {
   activePaymentContract = contractId;
   const c = state.contracts.find(x => x.id === contractId);
-  document.getElementById('payment-modal-sub').textContent = `${c.person} · ${TYPE_LABELS[c.type]}`;
+  document.getElementById('payment-modal-sub').textContent = `${c.person || '—'} · ${TYPE_LABELS[c.type]}`;
   document.getElementById('pay-amount').value = '';
   document.getElementById('pay-date').value = new Date().toISOString().slice(0, 10);
   document.getElementById('pay-note').value = '';
   document.getElementById('payment-modal').classList.add('active');
 }
 
-function savePayment() {
+async function savePayment() {
   const amount = Number(document.getElementById('pay-amount').value);
   const date = document.getElementById('pay-date').value;
   const note = document.getElementById('pay-note').value.trim();
-  if (!amount || !date) { alert('Укажите сумму и дату'); return; }
-  state.payments.push({ id: uid(), contractId: activePaymentContract, amount, date, note });
+  if (!amount || !date) return alert('Укажите сумму и дату');
+  await sb.from('payments').insert({ contract_id: activePaymentContract, amount, date, note, user_id: currentUser.id });
   closeModal('payment-modal');
-  saveState();
+  await loadData();
 }
 
-function deletePayment(id) {
+async function deletePayment(id) {
   if (!confirm('Удалить платёж?')) return;
-  state.payments = state.payments.filter(p => p.id !== id);
-  saveState();
+  await sb.from('payments').delete().eq('id', id);
+  await loadData();
 }
 
 function closeModal(id) {
   document.getElementById(id).classList.remove('active');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('active'); });
+});
+
+// ============ EXPORT ============
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `pravoeb-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
 }
 
 // ============ RENDER ============
@@ -1153,134 +1139,79 @@ function render() {
   renderTimeline();
 }
 
+function fmt(n) { return (n || 0).toLocaleString('ru-RU'); }
+
 function renderStats() {
-  const totalProjects = state.projects.length;
-  const activeProjects = state.projects.filter(p => ['production', 'pre-production', 'post-production'].includes(p.status)).length;
-  const totalContracts = state.contracts.length;
+  const total = state.contracts.length;
+  const signed = state.contracts.filter(c => c.status === 'signed').length;
   const missing = state.contracts.filter(c => c.status === 'missing').length;
   const pending = state.contracts.filter(c => c.status === 'pending').length;
-  const signed = state.contracts.filter(c => c.status === 'signed').length;
-
   const totalBudget = state.contracts.reduce((s, c) => s + (c.amount || 0), 0);
   const totalPaid = state.payments.reduce((s, p) => s + p.amount, 0);
-  const unpaid = totalBudget - totalPaid;
 
   document.getElementById('stats-grid').innerHTML = `
     <div class="stat-card">
       <div class="stat-label">Проектов всего</div>
-      <div class="stat-value">${totalProjects}</div>
-      <div class="stat-sub">активных: ${activeProjects}</div>
+      <div class="stat-value">${state.projects.length}</div>
+      <div class="stat-sub">активных: ${state.projects.filter(p => ['production','pre-production','post-production'].includes(p.status)).length}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Договоров всего</div>
-      <div class="stat-value">${totalContracts}</div>
+      <div class="stat-value">${total}</div>
       <div class="stat-sub">подписано: ${signed} · в работе: ${pending}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Критично не подписано</div>
       <div class="stat-value ${missing > 0 ? 'red' : 'green'}">${missing}</div>
-      <div class="stat-sub">${missing > 0 ? 'требует внимания' : 'всё в порядке'}</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Объём обязательств</div>
-      <div class="stat-value small accent">${fmt(totalBudget)} ₽</div>
-      <div class="stat-sub">выплачено: ${fmt(totalPaid)} ₽</div>
+      <div class="stat-sub">${missing > 0 ? 'требует срочного внимания' : 'всё в порядке'}</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">К выплате</div>
-      <div class="stat-value small ${unpaid > 0 ? 'amber' : 'green'}">${fmt(unpaid)} ₽</div>
-      <div class="stat-sub">остаток по договорам</div>
+      <div class="stat-value amber">${fmt(totalBudget - totalPaid)} ₽</div>
+      <div class="stat-sub">всего по договорам: ${fmt(totalBudget)} ₽</div>
     </div>
   `;
 }
 
 function renderAlerts() {
-  const alerts = [];
   const missing = state.contracts.filter(c => c.status === 'missing');
-  const pending = state.contracts.filter(c => c.status === 'pending');
+  const today = new Date().toISOString().slice(0, 10);
+  const overdue = state.contracts.filter(c => c.status !== 'signed' && c.date && c.date < today);
 
-  missing.forEach(c => {
-    const project = state.projects.find(p => p.id === c.projectId);
-    alerts.push({
-      type: 'critical',
-      title: `${TYPE_LABELS[c.type]}: ${c.person || 'не указано'}`,
-      desc: `Проект «${project?.name || '—'}» · роль: ${c.role || '—'} · ${c.notes || 'Договор не подписан'}`
-    });
-  });
+  const items = [...missing.map(c => `Не подписан: ${c.person || '—'} (${TYPE_LABELS[c.type]}) — ${state.projects.find(p => p.id === c.project_id)?.name || '—'}`),
+                 ...overdue.filter(c => c.status !== 'missing').map(c => `Просрочен: ${c.person || '—'} (${TYPE_LABELS[c.type]}) — дата ${c.date}`)];
 
-  // Договоры без акта (упомянуто в заметках или подписан + сумма > 0 но нет платежей)
-  state.contracts.filter(c => c.status === 'signed' && c.amount > 0).forEach(c => {
-    const paid = state.payments.filter(p => p.contractId === c.id).reduce((s, p) => s + p.amount, 0);
-    if (paid === 0) {
-      const project = state.projects.find(p => p.id === c.projectId);
-      alerts.push({
-        type: 'pending',
-        title: `Нет выплат: ${c.person}`,
-        desc: `Проект «${project?.name}» · сумма по договору ${fmt(c.amount)} ₽ · не выплачено`
-      });
-    }
-  });
-
-  if (alerts.length === 0) {
-    document.getElementById('alerts').innerHTML = `<div class="empty-state" style="padding: 2rem;"><span class="empty-state-icon">✓</span><div>Критических уведомлений нет</div></div>`;
-    return;
-  }
-
-  document.getElementById('alerts').innerHTML = `
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th style="width: 60px;">!</th><th>Событие</th><th>Детали</th></tr></thead>
-        <tbody>
-          ${alerts.map(a => `
-            <tr>
-              <td><span class="status ${a.type === 'critical' ? 'status-missing' : 'status-pending'}">${a.type === 'critical' ? '🚩' : '⏳'}</span></td>
-              <td class="td-primary">${a.title}</td>
-              <td class="td-mono">${a.desc}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
+  document.getElementById('alerts-list').innerHTML = items.length
+    ? items.map(t => `<div class="alert"><span class="alert-icon">⚠</span><span>${t}</span></div>`).join('')
+    : `<div style="color:var(--ink-muted);font-family:'JetBrains Mono',monospace;font-size:0.8rem;">Нет срочных уведомлений</div>`;
 }
 
 function renderProjectProgress() {
-  if (state.projects.length === 0) {
-    document.getElementById('project-progress').innerHTML = '<div class="empty-state">Пока нет проектов</div>';
-    return;
-  }
-
-  const html = state.projects.map(p => {
-    const cs = state.contracts.filter(c => c.projectId === p.id);
+  if (!state.projects.length) { document.getElementById('project-progress').innerHTML = ''; return; }
+  document.getElementById('project-progress').innerHTML = state.projects.map(p => {
+    const cs = state.contracts.filter(c => c.project_id === p.id);
     const signed = cs.filter(c => c.status === 'signed').length;
     const total = cs.length;
     const pct = total === 0 ? 0 : Math.round((signed / total) * 100);
-
     const budget = cs.reduce((s, c) => s + (c.amount || 0), 0);
-    const paid = state.payments.filter(pay => cs.some(c => c.id === pay.contractId)).reduce((s, p) => s + p.amount, 0);
+    const paid = state.payments.filter(pay => cs.some(c => c.id === pay.contract_id)).reduce((s, p) => s + p.amount, 0);
     const payPct = budget === 0 ? 0 : Math.round((paid / budget) * 100);
-
     return `
       <div class="progress-block">
         <div class="progress-head">
           <div>
             <div class="progress-title">${p.name}</div>
-            <div class="td-mono" style="color: var(--ink-muted); font-size: 0.75rem; margin-top: 0.2rem;">${PROJECT_STATUS_LABELS[p.status]} · ${p.genre || '—'}</div>
+            <div class="td-mono" style="font-size:0.75rem;margin-top:0.2rem;">${PROJECT_STATUS_LABELS[p.status] || p.status} · ${p.genre || '—'}</div>
           </div>
           <div class="progress-value">${pct}%</div>
         </div>
-        <div class="progress-bar">
-          <div class="progress-fill" style="width: ${pct}%"></div>
-        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
         <div class="progress-meta">
           <span>Договоры: ${signed} из ${total}</span>
           <span>Выплачено: ${fmt(paid)} / ${fmt(budget)} ₽ (${payPct}%)</span>
         </div>
-      </div>
-    `;
+      </div>`;
   }).join('');
-
-  document.getElementById('project-progress').innerHTML = html;
 }
 
 function renderDonut() {
@@ -1290,100 +1221,50 @@ function renderDonut() {
     missing: state.contracts.filter(c => c.status === 'missing').length,
     draft: state.contracts.filter(c => c.status === 'draft').length
   };
-  const total = counts.signed + counts.pending + counts.missing + counts.draft;
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  if (!total) { document.getElementById('donut-chart').innerHTML = '<div class="empty-state" style="padding:1rem;">Нет договоров</div>'; return; }
 
-  if (total === 0) {
-    document.getElementById('donut-chart').innerHTML = '<div class="empty-state" style="padding: 1rem;">Нет данных</div>';
-    return;
-  }
-
-  const colors = {
-    signed: 'var(--green)',
-    pending: 'var(--amber)',
-    missing: 'var(--red)',
-    draft: 'var(--ink-muted)'
-  };
-
-  const circumference = 2 * Math.PI * 60;
+  const colors = { signed: '#6a8f5e', pending: '#d4a853', missing: '#c85a54', draft: '#5a564e' };
   let offset = 0;
-
-  const segments = ['signed', 'pending', 'missing', 'draft']
-    .filter(k => counts[k] > 0)
-    .map(k => {
-      const frac = counts[k] / total;
-      const seg = `<circle r="60" cx="80" cy="80" fill="transparent" stroke="${colors[k]}" stroke-width="20" stroke-dasharray="${frac * circumference} ${circumference}" stroke-dashoffset="${-offset}" transform="rotate(-90 80 80)" />`;
-      offset += frac * circumference;
-      return seg;
-    }).join('');
+  const segments = Object.entries(counts).filter(([, v]) => v > 0).map(([k, v]) => {
+    const pct = (v / total) * 100;
+    const seg = `<circle cx="60" cy="60" r="40" fill="none" stroke="${colors[k]}" stroke-width="18" stroke-dasharray="${pct * 2.513} ${(100 - pct) * 2.513}" stroke-dashoffset="${-offset * 2.513}" transform="rotate(-90 60 60)"/>`;
+    offset += pct;
+    return seg;
+  }).join('');
 
   document.getElementById('donut-chart').innerHTML = `
-    <svg width="160" height="160" viewBox="0 0 160 160">
-      <circle r="60" cx="80" cy="80" fill="transparent" stroke="var(--border)" stroke-width="20" />
-      ${segments}
-      <text x="80" y="82" text-anchor="middle" fill="var(--ink)" font-family="Instrument Serif" font-size="28" font-style="italic">${total}</text>
-      <text x="80" y="100" text-anchor="middle" fill="var(--ink-muted)" font-family="JetBrains Mono" font-size="9" letter-spacing="1">ДОГОВОРОВ</text>
-    </svg>
+    <svg width="120" height="120" viewBox="0 0 120 120">${segments}</svg>
     <div class="donut-legend">
-      ${['signed', 'pending', 'missing', 'draft'].filter(k => counts[k] > 0).map(k => `
-        <div class="legend-item">
-          <span class="legend-dot" style="background: ${colors[k]}"></span>
-          <span>${STATUS_LABELS[k]}</span>
-          <span style="color: var(--ink-muted); margin-left: auto; padding-left: 2rem;">${counts[k]} · ${Math.round(counts[k]/total*100)}%</span>
-        </div>
-      `).join('')}
-    </div>
-  `;
+      ${Object.entries(counts).map(([k, v]) => `<div class="legend-item"><div class="legend-dot" style="background:${colors[k]}"></div>${STATUS_LABELS[k]}: ${v}</div>`).join('')}
+    </div>`;
 }
 
 function renderProjects() {
-  if (state.projects.length === 0) {
-    document.getElementById('projects-list').innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">∅</div>
-        <div>Пока нет ни одного проекта</div>
-        <div class="td-mono" style="margin-top: 0.5rem;">Нажмите «+ Новый проект»</div>
-      </div>
-    `;
+  if (!state.projects.length) {
+    document.getElementById('projects-list').innerHTML = '<div class="empty-state"><div class="empty-state-icon">∅</div><div>Нет проектов · создайте первый</div></div>';
     return;
   }
-
   document.getElementById('projects-list').innerHTML = `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Название</th>
-            <th>Жанр</th>
-            <th>Статус</th>
-            <th>Период</th>
-            <th>Бюджет</th>
-            <th>Договоры</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          ${state.projects.map(p => {
-            const cs = state.contracts.filter(c => c.projectId === p.id);
-            const signed = cs.filter(c => c.status === 'signed').length;
-            return `
-              <tr>
-                <td class="td-primary">${p.name}</td>
-                <td class="td-mono">${p.genre || '—'}${p.duration ? ' · ' + p.duration + ' мин' : ''}</td>
-                <td>${PROJECT_STATUS_LABELS[p.status]}</td>
-                <td class="td-mono">${p.startDate || '—'} → ${p.endDate || '—'}</td>
-                <td class="money">${p.budget ? fmt(p.budget) + ' ₽' : '—'}</td>
-                <td class="td-mono">${signed}/${cs.length}</td>
-                <td style="text-align: right; white-space: nowrap;">
-                  <button class="btn btn-small" onclick="openProjectModal('${p.id}')">✎</button>
-                  <button class="btn btn-small btn-danger" onclick="deleteProject('${p.id}')">×</button>
-                </td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
+    <div class="table-wrap"><table>
+      <thead><tr><th>Название</th><th>Жанр · хрон.</th><th>Статус</th><th>Сроки</th><th>Бюджет</th><th>Дог.</th><th></th></tr></thead>
+      <tbody>${state.projects.map(p => {
+        const cs = state.contracts.filter(c => c.project_id === p.id);
+        const signed = cs.filter(c => c.status === 'signed').length;
+        return `<tr>
+          <td class="td-primary">${p.name}</td>
+          <td class="td-mono">${p.genre || '—'}${p.duration ? ' · ' + p.duration + ' мин' : ''}</td>
+          <td>${PROJECT_STATUS_LABELS[p.status] || p.status}</td>
+          <td class="td-mono">${p.start_date || '—'} → ${p.end_date || '—'}</td>
+          <td class="money">${p.budget ? fmt(p.budget) + ' ₽' : '—'}</td>
+          <td class="td-mono">${signed}/${cs.length}</td>
+          <td style="text-align:right;white-space:nowrap;">
+            <button class="btn btn-small" onclick="openProjectModal('${p.id}')">✎</button>
+            <button class="btn btn-small btn-danger" onclick="deleteProject('${p.id}')">×</button>
+          </td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
 }
 
 function renderContracts() {
@@ -1397,144 +1278,67 @@ function renderContracts() {
   });
 
   const filtered = contractFilter === 'all' ? state.contracts : state.contracts.filter(c => c.status === contractFilter);
-
-  if (filtered.length === 0) {
-    document.getElementById('contracts-table').innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">∅</div>
-        <div>${contractFilter === 'all' ? 'Нет договоров' : 'Нет договоров с таким статусом'}</div>
-      </div>
-    `;
+  if (!filtered.length) {
+    document.getElementById('contracts-table').innerHTML = `<div class="empty-state"><div class="empty-state-icon">∅</div><div>${contractFilter === 'all' ? 'Нет договоров' : 'Нет договоров с таким статусом'}</div></div>`;
     return;
   }
 
   document.getElementById('contracts-table').innerHTML = `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Проект</th>
-            <th>Тип</th>
-            <th>ФИО</th>
-            <th>Роль</th>
-            <th>№ · дата</th>
-            <th>Сумма</th>
-            <th>Выплачено</th>
-            <th>Статус</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          ${filtered.map(c => {
-            const project = state.projects.find(p => p.id === c.projectId);
-            const paid = state.payments.filter(p => p.contractId === c.id).reduce((s, p) => s + p.amount, 0);
-            return `
-              <tr>
-                <td class="td-primary">${project?.name || '—'}</td>
-                <td class="td-mono">${TYPE_LABELS[c.type]}</td>
-                <td>${c.person || '—'}</td>
-                <td class="td-mono">${c.role || '—'}</td>
-                <td class="td-mono">${c.number || '—'}<br><span style="color: var(--ink-dim);">${c.date || ''}</span></td>
-                <td class="money">${c.amount ? fmt(c.amount) + ' ₽' : '—'}</td>
-                <td class="money" style="color: ${paid >= c.amount && c.amount > 0 ? 'var(--green)' : 'var(--amber)'}">${paid ? fmt(paid) + ' ₽' : '—'}</td>
-                <td><span class="status status-${c.status}">${STATUS_LABELS[c.status]}</span></td>
-                <td style="text-align: right; white-space: nowrap;">
-                  <button class="btn btn-small" onclick="openPaymentModal('${c.id}')">₽</button>
-                  <button class="btn btn-small" onclick="openContractModal('${c.id}')">✎</button>
-                  <button class="btn btn-small btn-danger" onclick="deleteContract('${c.id}')">×</button>
-                </td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
+    <div class="table-wrap"><table>
+      <thead><tr><th>Проект</th><th>Тип</th><th>ФИО</th><th>Роль</th><th>№ · дата</th><th>Сумма</th><th>Выплачено</th><th>Статус</th><th></th></tr></thead>
+      <tbody>${filtered.map(c => {
+        const project = state.projects.find(p => p.id === c.project_id);
+        const paid = state.payments.filter(p => p.contract_id === c.id).reduce((s, p) => s + p.amount, 0);
+        return `<tr>
+          <td class="td-primary">${project?.name || '—'}</td>
+          <td class="td-mono">${TYPE_LABELS[c.type] || c.type}</td>
+          <td>${c.person || '—'}</td>
+          <td class="td-mono">${c.role || '—'}</td>
+          <td class="td-mono">${c.number || '—'}<br><span style="color:var(--ink-dim)">${c.date || ''}</span></td>
+          <td class="money">${c.amount ? fmt(c.amount) + ' ₽' : '—'}</td>
+          <td class="money" style="color:${paid >= c.amount && c.amount > 0 ? 'var(--green)' : 'var(--amber)'}">
+            ${paid ? fmt(paid) + ' ₽' : '—'}
+          </td>
+          <td><span class="status status-${c.status}">${STATUS_LABELS[c.status] || c.status}</span></td>
+          <td style="text-align:right;white-space:nowrap;">
+            <button class="btn btn-small" onclick="openPaymentModal('${c.id}')" title="Добавить выплату">₽</button>
+            <button class="btn btn-small" onclick="openContractModal('${c.id}')">✎</button>
+            <button class="btn btn-small btn-danger" onclick="deleteContract('${c.id}')">×</button>
+          </td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
 }
 
 function renderPayments() {
-  const totalBudget = state.contracts.reduce((s, c) => s + (c.amount || 0), 0);
   const totalPaid = state.payments.reduce((s, p) => s + p.amount, 0);
-  const remaining = totalBudget - totalPaid;
-
   document.getElementById('payments-summary').innerHTML = `
-    <div class="stats-grid" style="margin-bottom: 2rem;">
-      <div class="stat-card">
-        <div class="stat-label">Общий объём обязательств</div>
-        <div class="stat-value small">${fmt(totalBudget)} ₽</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Выплачено</div>
-        <div class="stat-value small green">${fmt(totalPaid)} ₽</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Остаток</div>
-        <div class="stat-value small ${remaining > 0 ? 'amber' : 'green'}">${fmt(remaining)} ₽</div>
-      </div>
-    </div>
-  `;
+    <div class="stats-grid" style="margin-bottom:2rem;">
+      <div class="stat-card"><div class="stat-label">Всего выплат</div><div class="stat-value">${state.payments.length}</div></div>
+      <div class="stat-card"><div class="stat-label">Итого выплачено</div><div class="stat-value amber">${fmt(totalPaid)} ₽</div></div>
+    </div>`;
 
-  const grouped = {};
-  state.payments.forEach(p => {
-    if (!grouped[p.contractId]) grouped[p.contractId] = [];
-    grouped[p.contractId].push(p);
-  });
-
-  const rows = [];
-  state.contracts.forEach(c => {
-    if (c.amount === 0 && (!grouped[c.id] || grouped[c.id].length === 0)) return;
-    const project = state.projects.find(p => p.id === c.projectId);
-    const paid = (grouped[c.id] || []).reduce((s, p) => s + p.amount, 0);
-    const left = c.amount - paid;
-    rows.push({ contract: c, project, paid, left, payments: grouped[c.id] || [] });
-  });
-
-  if (rows.length === 0) {
-    document.getElementById('payments-table').innerHTML = `
-      <div class="empty-state"><div class="empty-state-icon">₽</div><div>Нет платежей</div></div>
-    `;
+  if (!state.payments.length) {
+    document.getElementById('payments-table').innerHTML = '<div class="empty-state"><div class="empty-state-icon">∅</div><div>Нет выплат</div></div>';
     return;
   }
 
   document.getElementById('payments-table').innerHTML = `
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>ФИО</th>
-            <th>Проект / роль</th>
-            <th>По договору</th>
-            <th>Выплачено</th>
-            <th>Остаток</th>
-            <th>Прогресс</th>
-            <th>Последний платёж</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map(r => {
-            const pct = r.contract.amount > 0 ? Math.round((r.paid / r.contract.amount) * 100) : 0;
-            const last = r.payments.sort((a,b) => b.date.localeCompare(a.date))[0];
-            return `
-              <tr>
-                <td class="td-primary">${r.contract.person || '—'}</td>
-                <td class="td-mono">${r.project?.name || '—'} · ${r.contract.role || '—'}</td>
-                <td class="money">${fmt(r.contract.amount)} ₽</td>
-                <td class="money" style="color: var(--green);">${fmt(r.paid)} ₽</td>
-                <td class="money" style="color: ${r.left > 0 ? 'var(--amber)' : 'var(--ink-muted)'};">${fmt(r.left)} ₽</td>
-                <td style="min-width: 120px;">
-                  <div class="progress-bar" style="height: 4px;"><div class="progress-fill" style="width: ${pct}%;"></div></div>
-                  <div class="td-mono" style="font-size: 0.65rem; margin-top: 0.3rem; color: var(--ink-muted);">${pct}%</div>
-                </td>
-                <td class="td-mono" style="font-size: 0.8rem;">${last ? last.date + '<br><span style="color: var(--ink-dim);">' + fmt(last.amount) + ' ₽ · ' + (last.note || '') + '</span>' : '—'}</td>
-                <td><button class="btn btn-small" onclick="openPaymentModal('${r.contract.id}')">+ платёж</button></td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
+    <div class="table-wrap"><table>
+      <thead><tr><th>Дата</th><th>Договор</th><th>Проект</th><th>Сумма</th><th>Комментарий</th><th></th></tr></thead>
+      <tbody>${state.payments.map(pay => {
+        const c = state.contracts.find(x => x.id === pay.contract_id);
+        const p = c ? state.projects.find(x => x.id === c.project_id) : null;
+        return `<tr>
+          <td class="td-mono">${pay.date || '—'}</td>
+          <td>${c ? (c.person || '—') + ' · ' + (TYPE_LABELS[c.type] || c.type) : '—'}</td>
+          <td class="td-primary">${p?.name || '—'}</td>
+          <td class="money">${fmt(pay.amount)} ₽</td>
+          <td class="td-mono">${pay.note || '—'}</td>
+          <td style="text-align:right;"><button class="btn btn-small btn-danger" onclick="deletePayment('${pay.id}')">×</button></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
 }
 
 function renderTimeline() {
@@ -1548,122 +1352,68 @@ function renderTimeline() {
   });
 
   const events = [];
+  const today = new Date().toISOString().slice(0, 10);
+
   state.contracts.forEach(c => {
     if (c.date) {
-      const project = state.projects.find(p => p.id === c.projectId);
-      events.push({
-        date: c.date,
-        status: c.status,
-        title: `${TYPE_LABELS[c.type]} · ${c.person || '—'}`,
-        desc: `${project?.name || '—'} · ${c.role || '—'} · ${STATUS_LABELS[c.status]} · ${c.amount ? fmt(c.amount) + ' ₽' : 'без оплаты'}`,
-        type: 'contract'
-      });
+      const p = state.projects.find(x => x.id === c.project_id);
+      events.push({ date: c.date, status: c.status, title: `${c.person || '—'} · ${TYPE_LABELS[c.type] || c.type}`, desc: p?.name || '—', type: 'contract' });
     }
   });
-
-  state.payments.forEach(p => {
-    const c = state.contracts.find(x => x.id === p.contractId);
-    const project = state.projects.find(pr => pr.id === c?.projectId);
-    events.push({
-      date: p.date,
-      status: 'signed',
-      title: `Платёж · ${fmt(p.amount)} ₽`,
-      desc: `${c?.person || '—'} · ${project?.name || '—'} · ${p.note || ''}`,
-      type: 'payment'
-    });
-  });
-
   state.projects.forEach(p => {
-    if (p.startDate) events.push({ date: p.startDate, status: 'signed', title: `Начало съёмок: ${p.name}`, desc: `${p.genre || ''} · бюджет ${fmt(p.budget || 0)} ₽`, type: 'project' });
-    if (p.endDate) events.push({ date: p.endDate, status: p.status === 'completed' ? 'signed' : 'pending', title: `Окончание съёмок: ${p.name}`, desc: PROJECT_STATUS_LABELS[p.status], type: 'project' });
+    if (p.end_date) events.push({ date: p.end_date, status: p.status === 'completed' ? 'signed' : 'pending', title: `Окончание съёмок: ${p.name}`, desc: PROJECT_STATUS_LABELS[p.status] || p.status, type: 'project' });
   });
 
   events.sort((a, b) => b.date.localeCompare(a.date));
 
-  const today = new Date().toISOString().slice(0, 10);
   const filtered = events.filter(e => {
     if (timelineFilter === 'all') return true;
     if (timelineFilter === 'overdue') return e.status !== 'signed' && e.date < today;
     return e.status === timelineFilter;
   });
 
-  if (filtered.length === 0) {
-    document.getElementById('timeline-view').innerHTML = '<div class="empty-state"><div class="empty-state-icon">—</div><div>Нет событий</div></div>';
-    return;
-  }
-
-  document.getElementById('timeline-view').innerHTML = `
-    <div class="timeline">
-      ${filtered.map(e => `
+  document.getElementById('timeline-view').innerHTML = filtered.length
+    ? `<div class="timeline">${filtered.map(e => `
         <div class="timeline-item ${e.status === 'signed' ? 'signed' : e.status === 'missing' ? 'missing' : 'pending'}">
           <div class="timeline-date">${e.date} · ${e.type.toUpperCase()}</div>
           <div class="timeline-title">${e.title}</div>
           <div class="timeline-desc">${e.desc}</div>
-        </div>
-      `).join('')}
-    </div>
-  `;
+        </div>`).join('')}</div>`
+    : '<div class="empty-state"><div class="empty-state-icon">—</div><div>Нет событий</div></div>';
 }
-
-// ============ UTILS ============
-function fmt(n) {
-  return (n || 0).toLocaleString('ru-RU');
-}
-
-function exportData() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `pravoeb-dashboard-${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function importData() {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.json';
-  input.onchange = e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        const imported = JSON.parse(ev.target.result);
-        if (!imported.projects || !imported.contracts) throw new Error('invalid');
-        if (!confirm('Заменить текущие данные импортированными?')) return;
-        state = imported;
-        if (!state.payments) state.payments = [];
-        saveState();
-      } catch(err) {
-        alert('Ошибка импорта: неверный формат JSON');
-      }
-    };
-    reader.readAsText(file);
-  };
-  input.click();
-}
-
-function clearData() {
-  if (!confirm('Удалить ВСЕ данные? Действие необратимо.')) return;
-  if (!confirm('Точно? Последнее предупреждение.')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  state = { projects: [], contracts: [], payments: [] };
-  saveState();
-}
-
-// Закрытие модалок по клику на фон
-document.querySelectorAll('.modal-overlay').forEach(m => {
-  m.addEventListener('click', e => {
-    if (e.target === m) m.classList.remove('active');
-  });
-});
 
 // ============ INIT ============
-loadState();
-render();
-</script>
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
 
+  if (session) {
+    currentUser = session.user;
+    document.getElementById('user-email-display').textContent = currentUser.email;
+    document.getElementById('loading-overlay').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    await loadData();
+  } else {
+    document.getElementById('loading-overlay').style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
+
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      currentUser = session.user;
+      document.getElementById('user-email-display').textContent = currentUser.email;
+      document.getElementById('auth-screen').style.display = 'none';
+      document.getElementById('app-screen').style.display = 'block';
+      await loadData();
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      state = { projects: [], contracts: [], payments: [] };
+      document.getElementById('app-screen').style.display = 'none';
+      document.getElementById('auth-screen').style.display = 'flex';
+    }
+  });
+}
+
+init();
+</script>
 </body>
 </html>
