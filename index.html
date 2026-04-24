@@ -28,10 +28,10 @@ body{background-image:radial-gradient(ellipse at top,#1a1918 0%,transparent 50%)
 .fi:focus{outline:none;border-color:var(--acc)}
 .auth-btn{padding:.9rem;background:var(--acc);color:var(--bg);border:none;font-family:'JetBrains Mono',monospace;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s;margin-top:.5rem}
 .auth-btn:hover{background:var(--acc-d)}
-.auth-err{background:rgba(200,90,84,.1);border:1px solid var(--red);color:var(--red);padding:.8rem 1rem;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:.75rem;display:none}
-.auth-err.on{display:block}
-.auth-ok{background:rgba(106,143,94,.1);border:1px solid var(--green);color:var(--green);padding:.8rem 1rem;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:.75rem;display:none}
-.auth-ok.on{display:block}
+.auth-msg{padding:.8rem 1rem;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:.75rem;display:none}
+.auth-msg.err{background:rgba(200,90,84,.1);border:1px solid var(--red);color:var(--red)}
+.auth-msg.ok{background:rgba(106,143,94,.1);border:1px solid var(--green);color:var(--green)}
+.auth-msg.on{display:block}
 .app{display:none}
 .app.on{display:block}
 .top-bar{display:flex;align-items:center;justify-content:space-between;padding:.6rem 3rem;background:var(--bg-el);border-bottom:1px solid var(--brd);font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ink-m);flex-wrap:wrap;gap:.5rem}
@@ -83,6 +83,8 @@ tbody tr:hover{background:rgba(201,169,97,.03)}
 .btn-p:hover{background:transparent;color:var(--acc)}
 .btn-d:hover{border-color:var(--red);color:var(--red)}
 .btn-s{padding:.4rem .8rem;font-size:.65rem}
+.btn-file{padding:.4rem .8rem;font-size:.65rem;color:var(--acc);border-color:var(--acc)}
+.btn-file:hover{background:var(--acc);color:var(--bg)}
 .ab{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;gap:1rem;flex-wrap:wrap}
 .fb{display:flex;gap:.6rem;margin-bottom:1.5rem;flex-wrap:wrap}
 .fc{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:.4rem .9rem;background:var(--bg-el);color:var(--ink-m);border:1px solid var(--brd);border-radius:2px;cursor:pointer;transition:all .2s}
@@ -119,10 +121,18 @@ tbody tr:hover{background:rgba(201,169,97,.03)}
 .ti.signed::before{border-color:var(--green);background:var(--green)}
 .ti.pending::before{border-color:var(--amber)}
 .ti.missing::before{border-color:var(--red)}
-.td{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ink-m);letter-spacing:.1em}
+.td-date{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ink-m);letter-spacing:.1em}
 .tt{font-family:'Fraunces',serif;font-size:1.1rem;margin:.2rem 0 .3rem}
 .tdesc{font-size:.9rem;color:var(--ink-m)}
 .money{font-family:'JetBrains Mono',monospace;font-weight:500}
+/* Загрузка файла */
+.file-upload-area{border:1px dashed var(--brd);border-radius:2px;padding:1.5rem;text-align:center;cursor:pointer;transition:all .2s;margin-top:.5rem}
+.file-upload-area:hover{border-color:var(--acc);background:rgba(201,169,97,.03)}
+.file-upload-area.dragging{border-color:var(--acc);background:rgba(201,169,97,.05)}
+.file-upload-label{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--ink-m);letter-spacing:.05em}
+.file-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .7rem;background:rgba(201,169,97,.1);border:1px solid var(--acc);border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--acc)}
+.upload-progress{height:3px;background:var(--brd);border-radius:1px;overflow:hidden;margin-top:.5rem;display:none}
+.upload-progress-fill{height:100%;background:var(--acc);transition:width .3s ease}
 footer{padding:1.5rem 3rem;border-top:1px solid var(--brd);font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ink-d);letter-spacing:.1em;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
 @media(max-width:768px){header,nav,main,footer,.top-bar{padding-left:1.5rem;padding-right:1.5rem}.fr{grid-template-columns:1fr}.sv{font-size:2rem}}
 </style>
@@ -137,8 +147,8 @@ footer{padding:1.5rem 3rem;border-top:1px solid var(--brd);font-family:'JetBrain
       <button class="auth-tab active" onclick="switchTab('login')">Войти</button>
       <button class="auth-tab" onclick="switchTab('register')">Регистрация</button>
     </div>
-    <div class="auth-err" id="auth-err"></div>
-    <div class="auth-ok" id="auth-ok"></div>
+    <div class="auth-msg err" id="auth-err"></div>
+    <div class="auth-msg ok" id="auth-ok"></div>
     <div class="auth-form" id="login-form">
       <div class="fg"><label class="fl">Email</label><input class="fi" type="email" id="l-email" placeholder="you@example.com"></div>
       <div class="fg"><label class="fl">Пароль</label><input class="fi" type="password" id="l-pass" placeholder="••••••••"></div>
@@ -212,12 +222,12 @@ footer{padding:1.5rem 3rem;border-top:1px solid var(--brd);font-family:'JetBrain
     </section>
   </main>
   <footer>
-    <span>данные защищены supabase · личный кабинет</span>
+    <span>данные защищены supabase · личный кабинет · pravoeb</span>
     <button class="btn btn-s" onclick="exportData()">Экспорт JSON</button>
   </footer>
 </div>
 
-<!-- Модалки -->
+<!-- Модалка: Проект -->
 <div class="mo" id="pm"><div class="md">
   <h3 class="mt" id="pm-title">Новый проект</h3><p class="ms">Создание записи</p>
   <div class="form-group"><label class="form-label">Название</label><input class="form-input" id="p-name" placeholder="Элионор Ригби"></div>
@@ -234,6 +244,7 @@ footer{padding:1.5rem 3rem;border-top:1px solid var(--brd);font-family:'JetBrain
   <div class="ma"><button class="btn" onclick="closeM('pm')">Отмена</button><button class="btn btn-p" onclick="saveP()">Сохранить</button></div>
 </div></div>
 
+<!-- Модалка: Договор -->
 <div class="mo" id="cm"><div class="md">
   <h3 class="mt" id="cm-title">Новый договор</h3><p class="ms">Создание записи</p>
   <div class="form-group"><label class="form-label">Проект</label><select class="form-select" id="c-proj"></select></div>
@@ -251,9 +262,18 @@ footer{padding:1.5rem 3rem;border-top:1px solid var(--brd);font-family:'JetBrain
     <div class="form-group"><label class="form-label">Статус</label><select class="form-select" id="c-status"><option value="draft">Черновик</option><option value="pending">В работе</option><option value="signed">Подписан</option><option value="missing">Не подписан (критично)</option></select></div>
   </div>
   <div class="form-group"><label class="form-label">Заметки</label><input class="form-input" id="c-notes" placeholder="Дополнительно"></div>
+  <div class="form-group">
+    <label class="form-label">Файл договора (PDF или DOCX)</label>
+    <div class="file-upload-area" id="upload-area" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+      <div class="file-upload-label" id="upload-label">📎 Нажмите или перетащите файл сюда</div>
+      <div class="upload-progress" id="upload-progress"><div class="upload-progress-fill" id="upload-progress-fill"></div></div>
+    </div>
+    <input type="file" id="file-input" accept=".pdf,.doc,.docx" style="display:none" onchange="handleFileSelect(event)">
+  </div>
   <div class="ma"><button class="btn" onclick="closeM('cm')">Отмена</button><button class="btn btn-p" onclick="saveC()">Сохранить</button></div>
 </div></div>
 
+<!-- Модалка: Платёж -->
 <div class="mo" id="paym"><div class="md">
   <h3 class="mt">Платёж по договору</h3><p class="ms" id="pay-sub">Фиксация выплаты</p>
   <div class="fr">
@@ -267,7 +287,7 @@ footer{padding:1.5rem 3rem;border-top:1px solid var(--brd);font-family:'JetBrain
 <script>
 const SB_URL='https://vcjwzkbsivgiivgvibjo.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjand6a2JzaXZnaWl2Z3ZpYmpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5OTY5NTEsImV4cCI6MjA5MjU3Mjk1MX0.LWGImSHtHz9CBuluC1hgTw8g8CayuoTRcQnV5qF6DSc';
-const {createClient}=supabase;
+const{createClient}=supabase;
 const sb=createClient(SB_URL,SB_KEY);
 
 const TL={'actor':'Актёр','actor-minor':'Актёр (несов.)','director':'Режиссёр','operator':'Оператор','author-order':'Авт. заказ','alienation':'Отчуждение','license':'Лицензия','consent':'Согласие','nda':'НДА','other':'Другое'};
@@ -276,36 +296,42 @@ const PL={'development':'Разработка','pre-production':'Подгото�
 
 let S={projects:[],contracts:[],payments:[]};
 let U=null,eP=null,eC=null,aPay=null,cF='all',tF='all';
+let selectedFile=null;
 
 function fmt(n){return(n||0).toLocaleString('ru-RU')}
-function showErr(m){const e=document.getElementById('auth-err');e.textContent=m;e.classList.add('on');document.getElementById('auth-ok').classList.remove('on')}
-function showOk(m){const e=document.getElementById('auth-ok');e.textContent=m;e.classList.add('on');document.getElementById('auth-err').classList.remove('on')}
-function clearMsg(){document.getElementById('auth-err').classList.remove('on');document.getElementById('auth-ok').classList.remove('on')}
+
+function showMsg(type,msg){
+  document.getElementById('auth-err').classList.remove('on');
+  document.getElementById('auth-ok').classList.remove('on');
+  const el=document.getElementById(type==='err'?'auth-err':'auth-ok');
+  el.textContent=msg;el.classList.add('on');
+}
 
 function switchTab(t){
   document.querySelectorAll('.auth-tab').forEach((x,i)=>x.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register')));
   document.getElementById('login-form').style.display=t==='login'?'flex':'none';
   document.getElementById('reg-form').style.display=t==='register'?'flex':'none';
-  clearMsg();
+  document.getElementById('auth-err').classList.remove('on');
+  document.getElementById('auth-ok').classList.remove('on');
 }
 
 async function login(){
   const email=document.getElementById('l-email').value.trim();
   const pass=document.getElementById('l-pass').value;
-  if(!email||!pass){showErr('Заполните все поля');return}
+  if(!email||!pass){showMsg('err','Заполните все поля');return}
   const{error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error)showErr('Ошибка: '+error.message);
+  if(error)showMsg('err','Ошибка: '+error.message);
 }
 
 async function register(){
   const name=document.getElementById('r-name').value.trim();
   const email=document.getElementById('r-email').value.trim();
   const pass=document.getElementById('r-pass').value;
-  if(!name||!email||!pass){showErr('Заполните все поля');return}
-  if(pass.length<6){showErr('Пароль минимум 6 символов');return}
+  if(!name||!email||!pass){showMsg('err','Заполните все поля');return}
+  if(pass.length<6){showMsg('err','Пароль минимум 6 символов');return}
   const{error}=await sb.auth.signUp({email,password:pass,options:{data:{name}}});
-  if(error)showErr('Ошибка: '+error.message);
-  else showOk('Проверьте email для подтверждения регистрации!');
+  if(error)showMsg('err','Ошибка: '+error.message);
+  else showMsg('ok','Аккаунт создан! Войдите с вашим email и паролем.');
 }
 
 async function logout(){
@@ -325,9 +351,55 @@ async function loadData(){
   render();
 }
 
+// ============ FILE UPLOAD ============
+function handleDragOver(e){e.preventDefault();document.getElementById('upload-area').classList.add('dragging')}
+function handleDragLeave(e){document.getElementById('upload-area').classList.remove('dragging')}
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-area').classList.remove('dragging');
+  const file=e.dataTransfer.files[0];
+  if(file)setSelectedFile(file);
+}
+function handleFileSelect(e){
+  const file=e.target.files[0];
+  if(file)setSelectedFile(file);
+}
+function setSelectedFile(file){
+  const allowed=['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  if(!allowed.includes(file.type)&&!file.name.match(/\.(pdf|doc|docx)$/i)){
+    alert('Поддерживаются только PDF и DOCX файлы');return;
+  }
+  selectedFile=file;
+  document.getElementById('upload-label').innerHTML=`<span class="file-badge">📄 ${file.name}</span>`;
+}
+
+async function uploadFile(contractId){
+  if(!selectedFile)return null;
+  const ext=selectedFile.name.split('.').pop();
+  const path=`${U.id}/${contractId}.${ext}`;
+  const{error}=await sb.storage.from('contracts').upload(path,selectedFile,{upsert:true});
+  if(error){console.error('Upload error:',error);return null;}
+  const{data}=sb.storage.from('contracts').getPublicUrl(path);
+  return{url:data.publicUrl,name:selectedFile.name};
+}
+
+function resetFileUpload(){
+  selectedFile=null;
+  document.getElementById('upload-label').innerHTML='📎 Нажмите или перетащите файл сюда';
+  document.getElementById('file-input').value='';
+}
+
+async function getSignedUrl(path){
+  const{data,error}=await sb.storage.from('contracts').createSignedUrl(path,3600);
+  if(error)return null;
+  return data.signedUrl;
+}
+
+// ============ NAV ============
 document.querySelectorAll('.nav-tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tv').forEach(v=>v.classList.remove('active'));t.classList.add('active');document.getElementById(t.dataset.tab).classList.add('active');});});
 document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on')}));
 
+// ============ PROJECTS ============
 function openPM(id=null){
   eP=id;const p=id?S.projects.find(x=>x.id===id):null;
   document.getElementById('pm-title').textContent=p?'Редактировать проект':'Новый проект';
@@ -355,29 +427,75 @@ async function delP(id){
   await loadData();
 }
 
+// ============ CONTRACTS ============
 function openCM(id=null){
   if(!S.projects.length){alert('Сначала создайте проект');return}
   eC=id;const c=id?S.contracts.find(x=>x.id===id):null;
   document.getElementById('cm-title').textContent=c?'Редактировать':'Новый договор';
   document.getElementById('c-proj').innerHTML=S.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
-  if(c){document.getElementById('c-proj').value=c.project_id;document.getElementById('c-type').value=c.type;document.getElementById('c-role').value=c.role||'';document.getElementById('c-person').value=c.person||'';document.getElementById('c-num').value=c.number||'';document.getElementById('c-date').value=c.date||'';document.getElementById('c-amount').value=c.amount||'';document.getElementById('c-status').value=c.status;document.getElementById('c-notes').value=c.notes||'';}
-  else{['c-role','c-person','c-num','c-notes'].forEach(x=>document.getElementById(x).value='');document.getElementById('c-type').value='actor';document.getElementById('c-date').value='';document.getElementById('c-amount').value='';document.getElementById('c-status').value='draft';}
+  resetFileUpload();
+  if(c){
+    document.getElementById('c-proj').value=c.project_id;
+    document.getElementById('c-type').value=c.type;
+    document.getElementById('c-role').value=c.role||'';
+    document.getElementById('c-person').value=c.person||'';
+    document.getElementById('c-num').value=c.number||'';
+    document.getElementById('c-date').value=c.date||'';
+    document.getElementById('c-amount').value=c.amount||'';
+    document.getElementById('c-status').value=c.status;
+    document.getElementById('c-notes').value=c.notes||'';
+    if(c.file_name)document.getElementById('upload-label').innerHTML=`<span class="file-badge">📄 ${c.file_name} (уже загружен)</span>`;
+  }else{
+    ['c-role','c-person','c-num','c-notes'].forEach(x=>document.getElementById(x).value='');
+    document.getElementById('c-type').value='actor';
+    document.getElementById('c-date').value='';
+    document.getElementById('c-amount').value='';
+    document.getElementById('c-status').value='draft';
+  }
   document.getElementById('cm').classList.add('on');
 }
 
 async function saveC(){
   const d={user_id:U.id,project_id:document.getElementById('c-proj').value,type:document.getElementById('c-type').value,role:document.getElementById('c-role').value.trim(),person:document.getElementById('c-person').value.trim(),number:document.getElementById('c-num').value.trim(),date:document.getElementById('c-date').value||null,amount:Number(document.getElementById('c-amount').value)||0,status:document.getElementById('c-status').value,notes:document.getElementById('c-notes').value.trim()};
-  if(eC)await sb.from('contracts').update(d).eq('id',eC);
-  else await sb.from('contracts').insert(d);
+  let contractId=eC;
+  if(eC){
+    await sb.from('contracts').update(d).eq('id',eC);
+  }else{
+    const{data}=await sb.from('contracts').insert(d).select().single();
+    contractId=data?.id;
+  }
+  // Загружаем файл если выбран
+  if(selectedFile&&contractId){
+    const prog=document.getElementById('upload-progress');
+    prog.style.display='block';
+    document.getElementById('upload-progress-fill').style.width='50%';
+    const ext=selectedFile.name.split('.').pop();
+    const path=`${U.id}/${contractId}.${ext}`;
+    const{error}=await sb.storage.from('contracts').upload(path,selectedFile,{upsert:true});
+    document.getElementById('upload-progress-fill').style.width='100%';
+    if(!error){
+      await sb.from('contracts').update({file_url:path,file_name:selectedFile.name}).eq('id',contractId);
+    }
+  }
   closeM('cm');await loadData();
 }
 
 async function delC(id){
   if(!confirm('Удалить договор?'))return;
+  // Удаляем файл если есть
+  const c=S.contracts.find(x=>x.id===id);
+  if(c?.file_url)await sb.storage.from('contracts').remove([c.file_url]);
   await sb.from('contracts').delete().eq('id',id);
   await loadData();
 }
 
+async function downloadFile(filePath,fileName){
+  const{data,error}=await sb.storage.from('contracts').createSignedUrl(filePath,3600);
+  if(error){alert('Ошибка получения файла');return}
+  const a=document.createElement('a');a.href=data.signedUrl;a.download=fileName;a.target='_blank';a.click();
+}
+
+// ============ PAYMENTS ============
 function openPayM(cid){
   aPay=cid;const c=S.contracts.find(x=>x.id===cid);
   document.getElementById('pay-sub').textContent=`${c.person||'—'} · ${TL[c.type]}`;
@@ -401,9 +519,15 @@ async function delPay(id){
   await loadData();
 }
 
-function closeM(id){document.getElementById(id).classList.remove('on')}
+function closeM(id){
+  document.getElementById(id).classList.remove('on');
+  resetFileUpload();
+  document.getElementById('upload-progress').style.display='none';
+  document.getElementById('upload-progress-fill').style.width='0%';
+}
 
-function render(){rStats();rAlerts();rProjects();rContracts();rPayments();rTimeline();rProgress();rDonut();}
+// ============ RENDER ============
+function render(){rStats();rAlerts();rProgress();rDonut();rProjects();rContracts();rPayments();rTimeline();}
 
 function rStats(){
   const ap=S.projects.filter(p=>['production','pre-production','post-production'].includes(p.status)).length;
@@ -412,20 +536,21 @@ function rStats(){
   const pending=S.contracts.filter(c=>c.status==='pending').length;
   const tb=S.contracts.reduce((s,c)=>s+(c.amount||0),0);
   const tp=S.payments.reduce((s,p)=>s+p.amount,0);
+  const withFiles=S.contracts.filter(c=>c.file_url).length;
   document.getElementById('stats-grid').innerHTML=`
     <div class="sc"><div class="sl">Проектов</div><div class="sv">${S.projects.length}</div><div class="ss">активных: ${ap}</div></div>
     <div class="sc"><div class="sl">Договоров</div><div class="sv">${S.contracts.length}</div><div class="ss">подписано: ${signed} · в работе: ${pending}</div></div>
     <div class="sc"><div class="sl">Критично</div><div class="sv ${missing>0?'rd':'gr'}">${missing}</div><div class="ss">${missing>0?'не подписано':'всё ок'}</div></div>
-    <div class="sc"><div class="sl">Обязательства</div><div class="sv sm ac">${fmt(tb)} ₽</div><div class="ss">выплачено: ${fmt(tp)} ₽</div></div>
-    <div class="sc"><div class="sl">К выплате</div><div class="sv sm ${tb-tp>0?'am':'gr'}">${fmt(tb-tp)} ₽</div><div class="ss">остаток</div></div>`;
+    <div class="sc"><div class="sl">Файлов загружено</div><div class="sv ac">${withFiles}</div><div class="ss">из ${S.contracts.length} договоров</div></div>
+    <div class="sc"><div class="sl">К выплате</div><div class="sv sm ${tb-tp>0?'am':'gr'}">${fmt(tb-tp)} ₽</div><div class="ss">из ${fmt(tb)} ₽</div></div>`;
 }
 
 function rAlerts(){
   const al=[];
-  S.contracts.filter(c=>c.status==='missing').forEach(c=>{const p=S.projects.find(pr=>pr.id===c.project_id);al.push({t:'missing',title:`${TL[c.type]}: ${c.person||'не указано'}`,desc:`«${p?.name||'—'}» · ${c.role||'—'} · ${c.notes||'Договор не подписан'}`});});
-  S.contracts.filter(c=>c.status==='signed'&&c.amount>0).forEach(c=>{const paid=S.payments.filter(p=>p.contract_id===c.id).reduce((s,p)=>s+p.amount,0);if(paid===0){const p=S.projects.find(pr=>pr.id===c.project_id);al.push({t:'pending',title:`Нет выплат: ${c.person||'—'}`,desc:`«${p?.name||'—'}» · ${fmt(c.amount)} ₽`});}});
-  if(!al.length){document.getElementById('alerts').innerHTML=`<div class="es"><div class="ei">✓</div><div>Критических уведомлений нет</div></div>`;return;}
-  document.getElementById('alerts').innerHTML=`<div class="tw"><table><thead><tr><th style="width:60px">!</th><th>Событие</th><th>Детали</th></tr></thead><tbody>${al.map(a=>`<tr><td><span class="status s-${a.t==='missing'?'missing':'pending'}">${a.t==='missing'?'🚩':'⏳'}</span></td><td class="tp">${a.title}</td><td class="tm">${a.desc}</td></tr>`).join('')}</tbody></table></div>`;
+  S.contracts.filter(c=>c.status==='missing').forEach(c=>{const p=S.projects.find(pr=>pr.id===c.project_id);al.push({t:'missing',title:`${TL[c.type]}: ${c.person||'не указано'}`,desc:`«${p?.name||'—'}» · ${c.role||'—'} · Договор не подписан`});});
+  S.contracts.filter(c=>c.status==='signed'&&!c.file_url).forEach(c=>{const p=S.projects.find(pr=>pr.id===c.project_id);al.push({t:'pending',title:`Нет файла: ${c.person||'—'}`,desc:`«${p?.name||'—'}» · ${TL[c.type]} · Договор подписан, но файл не загружен`});});
+  if(!al.length){document.getElementById('alerts').innerHTML=`<div class="es"><div class="ei">✓</div><div>Всё в порядке</div></div>`;return;}
+  document.getElementById('alerts').innerHTML=`<div class="tw"><table><thead><tr><th style="width:60px">!</th><th>Событие</th><th>Детали</th></tr></thead><tbody>${al.map(a=>`<tr><td><span class="status s-${a.t==='missing'?'missing':'pending'}">${a.t==='missing'?'🚩':'📎'}</span></td><td class="tp">${a.title}</td><td class="tm">${a.desc}</td></tr>`).join('')}</tbody></table></div>`;
 }
 
 function rProgress(){
@@ -447,7 +572,7 @@ function rDonut(){
   if(!total){document.getElementById('donut-chart').innerHTML='<div class="es" style="padding:1rem">Нет данных</div>';return;}
   const cols={signed:'var(--green)',pending:'var(--amber)',missing:'var(--red)',draft:'var(--ink-m)'};
   const circ=2*Math.PI*60;let off=0;
-  const segs=['signed','pending','missing','draft'].filter(k=>cnt[k]>0).map(k=>{const f=cnt[k]/total;const s=`<circle r="60" cx="80" cy="80" fill="transparent" stroke="${cols[k]}" stroke-width="20" stroke-dasharray="${f*circ} ${circ}" stroke-dashoffset="${-off}" transform="rotate(-90 80 80)"/>`;off+=f*circ;return s;}).join('');
+  const segs=['signed','pending','missing','draft'].filter(k=>cnt[k]>0).map(k=>{const f=cnt[k]/total;const seg=`<circle r="60" cx="80" cy="80" fill="transparent" stroke="${cols[k]}" stroke-width="20" stroke-dasharray="${f*circ} ${circ}" stroke-dashoffset="${-off}" transform="rotate(-90 80 80)"/>`;off+=f*circ;return seg;}).join('');
   document.getElementById('donut-chart').innerHTML=`<svg width="160" height="160" viewBox="0 0 160 160"><circle r="60" cx="80" cy="80" fill="transparent" stroke="var(--brd)" stroke-width="20"/>${segs}<text x="80" y="82" text-anchor="middle" fill="var(--ink)" font-family="Instrument Serif" font-size="28" font-style="italic">${total}</text><text x="80" y="100" text-anchor="middle" fill="var(--ink-m)" font-family="JetBrains Mono" font-size="9" letter-spacing="1">ДОГОВОРОВ</text></svg><div class="dl">${['signed','pending','missing','draft'].filter(k=>cnt[k]>0).map(k=>`<div class="li"><span class="ld" style="background:${cols[k]}"></span><span>${SL[k]}</span><span style="color:var(--ink-m);margin-left:auto;padding-left:2rem">${cnt[k]} · ${Math.round(cnt[k]/total*100)}%</span></div>`).join('')}</div>`;
 }
 
@@ -460,7 +585,12 @@ function rContracts(){
   document.querySelectorAll('#cf .fc').forEach(c=>{c.onclick=()=>{cF=c.dataset.f;document.querySelectorAll('#cf .fc').forEach(x=>x.classList.remove('active'));c.classList.add('active');rContracts();};});
   const fl=cF==='all'?S.contracts:S.contracts.filter(c=>c.status===cF);
   if(!fl.length){document.getElementById('contracts-table').innerHTML=`<div class="es"><div class="ei">∅</div><div>Нет договоров</div></div>`;return;}
-  document.getElementById('contracts-table').innerHTML=`<div class="tw"><table><thead><tr><th>Проект</th><th>Тип</th><th>ФИО</th><th>Роль</th><th>№ · Дата</th><th>Сумма</th><th>Выплачено</th><th>Статус</th><th></th></tr></thead><tbody>${fl.map(c=>{const p=S.projects.find(pr=>pr.id===c.project_id);const paid=S.payments.filter(pay=>pay.contract_id===c.id).reduce((s,p)=>s+p.amount,0);return`<tr><td class="tp">${p?.name||'—'}</td><td class="tm">${TL[c.type]}</td><td>${c.person||'—'}</td><td class="tm">${c.role||'—'}</td><td class="tm">${c.number||'—'}<br><span style="color:var(--ink-d)">${c.date||''}</span></td><td class="money">${c.amount?fmt(c.amount)+' ₽':'—'}</td><td class="money" style="color:${paid>=(c.amount||0)&&c.amount>0?'var(--green)':'var(--amber)'}">${paid?fmt(paid)+' ₽':'—'}</td><td><span class="status s-${c.status}">${SL[c.status]}</span></td><td style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openPayM('${c.id}')">₽</button> <button class="btn btn-s" onclick="openCM('${c.id}')">✎</button> <button class="btn btn-s btn-d" onclick="delC('${c.id}')">×</button></td></tr>`;}).join('')}</tbody></table></div>`;
+  document.getElementById('contracts-table').innerHTML=`<div class="tw"><table><thead><tr><th>Проект</th><th>Тип</th><th>ФИО</th><th>Роль</th><th>№ · Дата</th><th>Сумма</th><th>Выплачено</th><th>Статус</th><th>Файл</th><th></th></tr></thead><tbody>${fl.map(c=>{
+    const p=S.projects.find(pr=>pr.id===c.project_id);
+    const paid=S.payments.filter(pay=>pay.contract_id===c.id).reduce((s,p)=>s+p.amount,0);
+    const fileBtn=c.file_url?`<button class="btn btn-s btn-file" onclick="downloadFile('${c.file_url}','${c.file_name}')">📄 ${c.file_name.length>15?c.file_name.slice(0,15)+'…':c.file_name}</button>`:`<button class="btn btn-s" onclick="openCM('${c.id}')">+ файл</button>`;
+    return`<tr><td class="tp">${p?.name||'—'}</td><td class="tm">${TL[c.type]}</td><td>${c.person||'—'}</td><td class="tm">${c.role||'—'}</td><td class="tm">${c.number||'—'}<br><span style="color:var(--ink-d)">${c.date||''}</span></td><td class="money">${c.amount?fmt(c.amount)+' ₽':'—'}</td><td class="money" style="color:${paid>=(c.amount||0)&&c.amount>0?'var(--green)':'var(--amber)'}">${paid?fmt(paid)+' ₽':'—'}</td><td><span class="status s-${c.status}">${SL[c.status]}</span></td><td>${fileBtn}</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openPayM('${c.id}')">₽</button> <button class="btn btn-s" onclick="openCM('${c.id}')">✎</button> <button class="btn btn-s btn-d" onclick="delC('${c.id}')">×</button></td></tr>`;
+  }).join('')}</tbody></table></div>`;
 }
 
 function rPayments(){
@@ -475,13 +605,13 @@ function rPayments(){
 function rTimeline(){
   document.querySelectorAll('#tf .fc').forEach(c=>{c.onclick=()=>{tF=c.dataset.f;document.querySelectorAll('#tf .fc').forEach(x=>x.classList.remove('active'));c.classList.add('active');rTimeline();};});
   const ev=[];
-  S.contracts.forEach(c=>{if(c.date){const p=S.projects.find(pr=>pr.id===c.project_id);ev.push({date:c.date,status:c.status,title:`${TL[c.type]} · ${c.person||'—'}`,desc:`${p?.name||'—'} · ${c.role||'—'} · ${SL[c.status]}${c.amount?' · '+fmt(c.amount)+' ₽':''}`});}});
+  S.contracts.forEach(c=>{if(c.date){const p=S.projects.find(pr=>pr.id===c.project_id);ev.push({date:c.date,status:c.status,title:`${TL[c.type]} · ${c.person||'—'}`,desc:`${p?.name||'—'} · ${c.role||'—'} · ${SL[c.status]}${c.file_url?' · 📄':''}`});}});
   S.payments.forEach(p=>{const c=S.contracts.find(x=>x.id===p.contract_id);const pr=S.projects.find(x=>x.id===c?.project_id);ev.push({date:p.date,status:'signed',title:`Платёж · ${fmt(p.amount)} ₽`,desc:`${c?.person||'—'} · ${pr?.name||'—'}${p.note?' · '+p.note:''}`});});
   S.projects.forEach(p=>{if(p.start_date)ev.push({date:p.start_date,status:'signed',title:`Начало съёмок: ${p.name}`,desc:p.genre||''});if(p.end_date)ev.push({date:p.end_date,status:p.status==='completed'?'signed':'pending',title:`Окончание: ${p.name}`,desc:PL[p.status]});});
   ev.sort((a,b)=>b.date.localeCompare(a.date));
   const fl=tF==='all'?ev:ev.filter(e=>e.status===tF);
   if(!fl.length){document.getElementById('tl-view').innerHTML='<div class="es"><div class="ei">—</div><div>Нет событий</div></div>';return;}
-  document.getElementById('tl-view').innerHTML=`<div class="tl">${fl.map(e=>`<div class="ti ${e.status==='signed'?'signed':e.status==='missing'?'missing':'pending'}"><div class="td">${e.date}</div><div class="tt">${e.title}</div><div class="tdesc">${e.desc}</div></div>`).join('')}</div>`;
+  document.getElementById('tl-view').innerHTML=`<div class="tl">${fl.map(e=>`<div class="ti ${e.status==='signed'?'signed':e.status==='missing'?'missing':'pending'}"><div class="td-date">${e.date}</div><div class="tt">${e.title}</div><div class="tdesc">${e.desc}</div></div>`).join('')}</div>`;
 }
 
 function exportData(){
