@@ -559,7 +559,7 @@ async function register(){
 
 async function logout(){
   await sb.auth.signOut();
-  U=null;S={projects:[],contracts:[],payments:[]};dataLoaded=false;
+  U=null;S={projects:[],contracts:[],payments:[],contacts:[]};dataLoaded=false;
   document.getElementById('app').classList.remove('on');
   document.getElementById('auth-screen').style.display='flex';
 }
