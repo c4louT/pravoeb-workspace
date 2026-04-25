@@ -1056,6 +1056,7 @@ function onContactPick(){
   saveBtn.style.display='none';
 }
 async function saveContractContact(){
+  if(!migrationApplied){toast('Запусти SQL-миграцию (см. жёлтый баннер) — таблица контрагентов ещё не создана.','err','Контрагенты');return}
   const name=document.getElementById('c-person').value.trim();
   if(!name){toast('Сначала впиши ФИО','err','Контрагент');return}
   if(!U?.id)return;
@@ -1108,7 +1109,7 @@ const CL_STAGES=[
     {id:'all-consents',label:'Все согласия на изображение собраны',auto:null},
     {id:'all-music',label:'Права на всю музыку оформлены',auto:null},
     {id:'all-acts',label:'Все акты приёма-передачи подписаны',auto:null},
-    {id:'all-paid',label:'Финальные выплаты произведены по всем договорам',auto:(c,paid)=>paid>=(c.amount||0)&&c.amount>0}
+    {id:'all-paid',label:'Финальные выплаты произведены по всем договорам',auto:null}
   ]}
 ];
 const CL_FLAGS=[
