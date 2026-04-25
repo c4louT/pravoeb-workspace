@@ -140,7 +140,30 @@ footer{padding:1.5rem 3rem;border-top:1px solid var(--brd);font-family:'JetBrain
 .toast.ok{border-color:var(--green);color:var(--green);background:rgba(106,143,94,.08)}
 .toast .tt{font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:.65rem;margin-bottom:.2rem;opacity:.85}
 @keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
-@media(max-width:768px){header,nav,main,footer,.top-bar{padding-left:1.5rem;padding-right:1.5rem}.fr{grid-template-columns:1fr}.sv{font-size:2rem}}
+.toolbar{display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;flex-wrap:wrap}
+.search-input{flex:1;min-width:220px;padding:.6rem .9rem;background:var(--bg-el);border:1px solid var(--brd);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:.8rem;border-radius:2px;transition:border-color .2s}
+.search-input:focus{outline:none;border-color:var(--acc)}
+.search-input::placeholder{color:var(--ink-d)}
+.tb-select{padding:.55rem .8rem;background:var(--bg-el);border:1px solid var(--brd);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.04em;border-radius:2px;cursor:pointer;max-width:220px}
+.tb-select:focus{outline:none;border-color:var(--acc)}
+.fc-count{display:inline-block;margin-left:.4rem;opacity:.7;font-weight:400}
+.fc.active .fc-count{opacity:.9}
+th.sortable{cursor:pointer;user-select:none;transition:color .15s}
+th.sortable:hover{color:var(--ink)}
+th.sortable .ar{display:inline-block;margin-left:.3rem;opacity:.4;font-size:.7em;transform:translateY(-1px)}
+th.sortable.act{color:var(--acc)}
+th.sortable.act .ar{opacity:1}
+.es-title{font-family:'Fraunces',serif;font-size:1.3rem;color:var(--ink);margin-bottom:.4rem}
+.es-desc{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--ink-m);max-width:420px;margin:0 auto 1rem;line-height:1.5}
+.es-cta{margin-top:.4rem}
+.skeleton{background:linear-gradient(90deg,var(--bg-el) 0%,var(--brd) 50%,var(--bg-el) 100%);background-size:200% 100%;animation:sk 1.4s ease-in-out infinite;border-radius:2px;height:14px}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk-row{padding:1rem 1.2rem;border-bottom:1px solid var(--brd-s);display:flex;gap:1.5rem;align-items:center}
+.sk-row:last-child{border-bottom:none}
+.sk-cell{flex:1}
+.sk-cell.w-sm{flex:0 0 80px}
+.sk-cell.w-md{flex:0 0 140px}
+@media(max-width:768px){header,nav,main,footer,.top-bar{padding-left:1.2rem;padding-right:1.2rem}.fr{grid-template-columns:1fr}.sv{font-size:2rem}.md{padding:1.5rem;max-height:96vh}.mo{padding:.5rem}.tb-select{max-width:100%;width:100%}.search-input{min-width:0;width:100%}.toolbar{flex-direction:column;align-items:stretch}}
 </style>
 </head>
 <body>
@@ -201,37 +224,71 @@ footer{padding:1.5rem 3rem;border-top:1px solid var(--brd);font-family:'JetBrain
     </section>
     <section class="tv" id="projects">
       <div class="ab"><h2 class="st" style="margin-bottom:0">Проекты</h2><button class="btn btn-p" onclick="openPM()">+ Новый проект</button></div>
+      <div class="toolbar">
+        <input class="search-input" id="p-search" placeholder="Поиск: название, жанр" autocomplete="off">
+        <select class="tb-select" id="p-status-filter" aria-label="Фильтр по статусу">
+          <option value="all">Все статусы</option>
+          <option value="active">Только активные</option>
+          <option value="development">Разработка</option>
+          <option value="pre-production">Подготовка</option>
+          <option value="production">Съёмки</option>
+          <option value="post-production">МТП</option>
+          <option value="completed">Завершён</option>
+        </select>
+      </div>
       <div id="projects-list"></div>
     </section>
     <section class="tv" id="contracts">
       <div class="ab"><h2 class="st" style="margin-bottom:0">Договоры</h2><button class="btn btn-p" onclick="openCM()">+ Новый договор</button></div>
+      <div class="toolbar">
+        <input class="search-input" id="c-search" placeholder="Поиск: ФИО, проект, роль, № договора" autocomplete="off">
+        <select class="tb-select" id="c-proj-filter" aria-label="Фильтр по проекту"><option value="all">Все проекты</option></select>
+        <select class="tb-select" id="c-type-filter" aria-label="Фильтр по типу"><option value="all">Все типы</option></select>
+      </div>
       <div class="fb" id="cf">
-        <span class="fc active" data-f="all">Все</span>
-        <span class="fc" data-f="signed">Подписаны</span>
-        <span class="fc" data-f="pending">В работе</span>
-        <span class="fc" data-f="missing">Не подписаны</span>
-        <span class="fc" data-f="draft">Черновик</span>
+        <span class="fc active" data-f="all" data-label="Все">Все</span>
+        <span class="fc" data-f="signed" data-label="Подписаны">Подписаны</span>
+        <span class="fc" data-f="pending" data-label="В работе">В работе</span>
+        <span class="fc" data-f="missing" data-label="Не подписаны">Не подписаны</span>
+        <span class="fc" data-f="draft" data-label="Черновик">Черновик</span>
       </div>
       <div id="contracts-table"></div>
     </section>
     <section class="tv" id="payments">
       <h2 class="st" style="margin-bottom:1.5rem">Выплаты</h2>
       <div id="pay-summary"></div>
+      <div class="toolbar">
+        <input class="search-input" id="pay-search" placeholder="Поиск: ФИО, проект, комментарий" autocomplete="off">
+        <select class="tb-select" id="pay-proj-filter" aria-label="Фильтр по проекту"><option value="all">Все проекты</option></select>
+        <select class="tb-select" id="pay-status-filter" aria-label="Фильтр по статусу выплат">
+          <option value="all">Все договоры</option>
+          <option value="open">С остатком</option>
+          <option value="closed">Полностью оплачены</option>
+          <option value="empty">Без выплат</option>
+        </select>
+      </div>
       <div id="pay-table"></div>
     </section>
     <section class="tv" id="timeline">
       <h2 class="st">Таймлайн <span class="st-sub">хронология</span></h2>
+      <div class="toolbar">
+        <input class="search-input" id="t-search" placeholder="Поиск по событию" autocomplete="off">
+        <select class="tb-select" id="t-proj-filter" aria-label="Фильтр по проекту"><option value="all">Все проекты</option></select>
+      </div>
       <div class="fb" id="tf">
-        <span class="fc active" data-f="all">Все</span>
-        <span class="fc" data-f="signed">Подписано</span>
-        <span class="fc" data-f="pending">Ожидается</span>
+        <span class="fc active" data-f="all" data-label="Все">Все</span>
+        <span class="fc" data-f="signed" data-label="Подписано">Подписано</span>
+        <span class="fc" data-f="pending" data-label="Ожидается">Ожидается</span>
       </div>
       <div id="tl-view"></div>
     </section>
   </main>
   <footer>
     <span>данные защищены supabase · личный кабинет · pravoeb</span>
-    <button class="btn btn-s" onclick="exportData()">Экспорт JSON</button>
+    <span style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <button class="btn btn-s" onclick="exportCSV()">Экспорт CSV</button>
+      <button class="btn btn-s" onclick="exportData()">Экспорт JSON</button>
+    </span>
   </footer>
 </div>
 
@@ -311,8 +368,42 @@ const PL={'development':'Разработка','pre-production':'Подгото�
 let S={projects:[],contracts:[],payments:[]};
 let U=null,eP=null,eC=null,aPay=null,cF='all',tF='all';
 let selectedFile=null;
+// Поиск/фильтры/сортировка
+const Q={p:'',pStat:'all',c:'',cProj:'all',cType:'all',pay:'',payProj:'all',payStat:'all',t:'',tProj:'all'};
+const SO={p:{k:'name',d:1},c:{k:'date',d:-1},pay:{k:'last',d:-1}};
+let dataLoaded=false;
 
 function fmt(n){return(n||0).toLocaleString('ru-RU')}
+function esc(s){return(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
+function lc(s){return(s==null?'':String(s)).toLowerCase()}
+function matchQ(q,...fields){const ql=(q||'').toLowerCase().trim();if(!ql)return true;return fields.some(f=>lc(f).includes(ql))}
+function debounce(fn,t){let h;return(...a)=>{clearTimeout(h);h=setTimeout(()=>fn(...a),t)}}
+function sortRows(rows,key,dir,getter){return[...rows].sort((a,b)=>{const va=getter(a,key),vb=getter(b,key);if(va==null&&vb==null)return 0;if(va==null||va==='')return 1;if(vb==null||vb==='')return -1;if(typeof va==='number'&&typeof vb==='number')return(va-vb)*dir;return String(va).localeCompare(String(vb),'ru',{numeric:true})*dir})}
+function thSort(table,key,label){const so=SO[table];const act=so.k===key?'act':'';const ar=so.k===key?(so.d>0?'▲':'▼'):'△';return`<th class="sortable ${act}" onclick="setSort('${table}','${key}')">${label}<span class="ar">${ar}</span></th>`}
+function setSort(table,key){const so=SO[table];if(!so)return;if(so.k===key)so.d=-so.d;else{so.k=key;so.d=1}render()}
+function emptyHTML(icon,title,desc,ctaLabel,ctaAttrs){return`<div class="es"><div class="ei">${icon}</div><div class="es-title">${esc(title)}</div><div class="es-desc">${esc(desc)}</div>${ctaLabel?`<button class="btn btn-p es-cta" ${ctaAttrs||''}>${esc(ctaLabel)}</button>`:''}</div>`}
+function resetFilters(table){
+  if(table==='p'){Q.p='';Q.pStat='all';const a=document.getElementById('p-search');if(a)a.value='';const b=document.getElementById('p-status-filter');if(b)b.value='all'}
+  if(table==='c'){Q.c='';Q.cProj='all';Q.cType='all';cF='all';['c-search'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});['c-proj-filter','c-type-filter'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='all'});document.querySelectorAll('#cf .fc').forEach((x,i)=>x.classList.toggle('active',i===0))}
+  if(table==='pay'){Q.pay='';Q.payProj='all';Q.payStat='all';const s=document.getElementById('pay-search');if(s)s.value='';['pay-proj-filter','pay-status-filter'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='all'})}
+  if(table==='t'){Q.t='';Q.tProj='all';tF='all';const s=document.getElementById('t-search');if(s)s.value='';const f=document.getElementById('t-proj-filter');if(f)f.value='all';document.querySelectorAll('#tf .fc').forEach((x,i)=>x.classList.toggle('active',i===0))}
+  render();
+}
+function showSkeletons(){
+  const skTable=`<div class="tw">${'<div class="sk-row"><div class="sk-cell w-md"><div class="skeleton"></div></div><div class="sk-cell"><div class="skeleton"></div></div><div class="sk-cell w-sm"><div class="skeleton"></div></div></div>'.repeat(4)}</div>`;
+  ['projects-list','contracts-table','pay-table','tl-view','alerts','project-progress'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=skTable});
+  const sg=document.getElementById('stats-grid');if(sg)sg.innerHTML='<div class="sc"><div class="skeleton" style="height:60px"></div></div>'.repeat(5);
+}
+function populateProjFilters(){
+  const opts='<option value="all">Все проекты</option>'+S.projects.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  ['c-proj-filter','pay-proj-filter','t-proj-filter'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML=opts;el.value=S.projects.find(p=>p.id===cur)?cur:'all'});
+  const tEl=document.getElementById('c-type-filter');if(tEl){const cur=tEl.value;tEl.innerHTML='<option value="all">Все типы</option>'+Object.entries(TL).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('');tEl.value=TL[cur]?cur:'all'}
+}
+function rChips(){
+  const cnt={all:S.contracts.length,signed:0,pending:0,missing:0,draft:0};
+  S.contracts.forEach(c=>{cnt[c.status]=(cnt[c.status]||0)+1});
+  document.querySelectorAll('#cf .fc').forEach(c=>{const f=c.dataset.f;const lbl=c.dataset.label||c.textContent;c.dataset.label=lbl;c.innerHTML=`${esc(lbl)}<span class="fc-count">(${cnt[f]||0})</span>`});
+}
 
 function toast(msg,type='err',title){
   const wrap=document.getElementById('toasts');
@@ -380,7 +471,7 @@ async function register(){
 
 async function logout(){
   await sb.auth.signOut();
-  U=null;S={projects:[],contracts:[],payments:[]};
+  U=null;S={projects:[],contracts:[],payments:[]};dataLoaded=false;
   document.getElementById('app').classList.remove('on');
   document.getElementById('auth-screen').style.display='flex';
 }
@@ -414,7 +505,7 @@ function handleFileSelect(e){
 function setSelectedFile(file){
   const allowed=['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
   if(!allowed.includes(file.type)&&!file.name.match(/\.(pdf|doc|docx)$/i)){
-    alert('Поддерживаются только PDF и DOCX файлы');return;
+    toast('Поддерживаются только PDF и DOCX файлы','err','Файл');return;
   }
   selectedFile=file;
   document.getElementById('upload-label').innerHTML=`<span class="file-badge">📄 ${file.name}</span>`;
@@ -464,7 +555,7 @@ function openPM(id=null){
 async function saveP(ev){
   const btn=ev?.target;
   const d={user_id:U?.id,name:document.getElementById('p-name').value.trim(),genre:document.getElementById('p-genre').value.trim(),duration:Number(document.getElementById('p-dur').value)||null,status:document.getElementById('p-status').value,start_date:document.getElementById('p-start').value||null,end_date:document.getElementById('p-end').value||null,budget:Number(document.getElementById('p-budget').value)||0};
-  if(!d.name){alert('Укажите название');return}
+  if(!d.name){toast('Укажите название проекта','err','Проект');return}
   if(!U?.id){toast('Нет активной сессии. Войдите заново.','err','Auth');return}
   const restore=startBtn(btn,'Сохранение...');
   try{
@@ -487,7 +578,7 @@ async function delP(id){
 
 // ============ CONTRACTS ============
 function openCM(id=null){
-  if(!S.projects.length){alert('Сначала создайте проект');return}
+  if(!S.projects.length){toast('Сначала создай хотя бы один проект — потом сможешь привязать к нему договор.','err','Договор');document.querySelector('.nav-tab[data-tab=projects]').click();return}
   eC=id;const c=id?S.contracts.find(x=>x.id===id):null;
   document.getElementById('cm-title').textContent=c?'Редактировать':'Новый договор';
   document.getElementById('c-proj').innerHTML=S.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
@@ -583,7 +674,7 @@ async function savePay(ev){
   if(!U?.id){toast('Нет активной сессии. Войдите заново.','err','Auth');return}
   const amount=Number(document.getElementById('pay-amount').value);
   const date=document.getElementById('pay-date').value;
-  if(!amount||!date){alert('Укажите сумму и дату');return}
+  if(!amount||!date){toast('Укажите сумму и дату платежа','err','Платёж');return}
   const restore=startBtn(btn,'Сохранение...');
   try{
     const{error}=await sb.from('payments').insert({user_id:U.id,contract_id:aPay,amount,date,note:document.getElementById('pay-note').value.trim()});
@@ -609,7 +700,7 @@ function closeM(id){
 }
 
 // ============ RENDER ============
-function render(){rStats();rAlerts();rProgress();rDonut();rProjects();rContracts();rPayments();rTimeline();}
+function render(){populateProjFilters();rChips();rStats();rAlerts();rProgress();rDonut();rProjects();rContracts();rPayments();rTimeline();}
 
 function rStats(){
   const ap=S.projects.filter(p=>['production','pre-production','post-production'].includes(p.status)).length;
@@ -631,12 +722,12 @@ function rAlerts(){
   const al=[];
   S.contracts.filter(c=>c.status==='missing').forEach(c=>{const p=S.projects.find(pr=>pr.id===c.project_id);al.push({t:'missing',title:`${TL[c.type]}: ${c.person||'не указано'}`,desc:`«${p?.name||'—'}» · ${c.role||'—'} · Договор не подписан`});});
   S.contracts.filter(c=>c.status==='signed'&&!c.file_url).forEach(c=>{const p=S.projects.find(pr=>pr.id===c.project_id);al.push({t:'pending',title:`Нет файла: ${c.person||'—'}`,desc:`«${p?.name||'—'}» · ${TL[c.type]} · Договор подписан, но файл не загружен`});});
-  if(!al.length){document.getElementById('alerts').innerHTML=`<div class="es"><div class="ei">✓</div><div>Всё в порядке</div></div>`;return;}
-  document.getElementById('alerts').innerHTML=`<div class="tw"><table><thead><tr><th style="width:60px">!</th><th>Событие</th><th>Детали</th></tr></thead><tbody>${al.map(a=>`<tr><td><span class="status s-${a.t==='missing'?'missing':'pending'}">${a.t==='missing'?'🚩':'📎'}</span></td><td class="tp">${a.title}</td><td class="tm">${a.desc}</td></tr>`).join('')}</tbody></table></div>`;
+  if(!al.length){document.getElementById('alerts').innerHTML=`<div class="es"><div class="ei">✓</div><div class="es-title">Всё в порядке</div><div class="es-desc">Нет неподписанных договоров и нет договоров без файлов.</div></div>`;return;}
+  document.getElementById('alerts').innerHTML=`<div class="tw"><table><thead><tr><th style="width:60px">!</th><th>Событие</th><th>Детали</th></tr></thead><tbody>${al.map(a=>`<tr><td><span class="status s-${a.t==='missing'?'missing':'pending'}">${a.t==='missing'?'🚩':'📎'}</span></td><td class="tp">${esc(a.title)}</td><td class="tm">${esc(a.desc)}</td></tr>`).join('')}</tbody></table></div>`;
 }
 
 function rProgress(){
-  if(!S.projects.length){document.getElementById('project-progress').innerHTML='<div class="es">Нет проектов</div>';return;}
+  if(!S.projects.length){document.getElementById('project-progress').innerHTML=emptyHTML('∅','Ещё нет проектов','Создай первый проект, чтобы видеть прогресс по договорам и выплатам.','+ Создать проект',`onclick="document.querySelector('.nav-tab[data-tab=projects]').click();openPM();"`);return}
   document.getElementById('project-progress').innerHTML=S.projects.map(p=>{
     const cs=S.contracts.filter(c=>c.project_id===p.id);
     const signed=cs.filter(c=>c.status==='signed').length;
@@ -659,41 +750,99 @@ function rDonut(){
 }
 
 function rProjects(){
-  if(!S.projects.length){document.getElementById('projects-list').innerHTML=`<div class="es"><div class="ei">∅</div><div>Нет проектов</div></div>`;return;}
-  document.getElementById('projects-list').innerHTML=`<div class="tw"><table><thead><tr><th>Название</th><th>Жанр</th><th>Статус</th><th>Период</th><th>Бюджет</th><th>Договоры</th><th></th></tr></thead><tbody>${S.projects.map(p=>{const cs=S.contracts.filter(c=>c.project_id===p.id);return`<tr><td class="tp">${p.name}</td><td class="tm">${p.genre||'—'}${p.duration?' · '+p.duration+' мин':''}</td><td>${PL[p.status]}</td><td class="tm">${p.start_date||'—'} → ${p.end_date||'—'}</td><td class="money">${p.budget?fmt(p.budget)+' ₽':'—'}</td><td class="tm">${cs.filter(c=>c.status==='signed').length}/${cs.length}</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openPM('${p.id}')">✎</button> <button class="btn btn-s btn-d" onclick="delP('${p.id}')">×</button></td></tr>`;}).join('')}</tbody></table></div>`;
+  const tgt=document.getElementById('projects-list');if(!tgt)return;
+  if(!S.projects.length){tgt.innerHTML=emptyHTML('∅','Ещё нет проектов','Создай первый проект — название, период съёмок и бюджет. Потом сюда упадут договоры и выплаты.','+ Создать проект',`onclick="openPM()"`);return}
+  let rows=S.projects.filter(p=>{
+    if(Q.pStat==='active'&&!['production','pre-production','post-production'].includes(p.status))return false;
+    if(Q.pStat!=='all'&&Q.pStat!=='active'&&p.status!==Q.pStat)return false;
+    return matchQ(Q.p,p.name,p.genre,PL[p.status]);
+  });
+  rows=sortRows(rows,SO.p.k,SO.p.d,(p,k)=>{
+    if(k==='name')return lc(p.name);
+    if(k==='status')return PL[p.status]||p.status||'';
+    if(k==='start_date')return p.start_date||'';
+    if(k==='budget')return p.budget||0;
+    if(k==='contracts')return S.contracts.filter(c=>c.project_id===p.id).length;
+    return '';
+  });
+  if(!rows.length){tgt.innerHTML=emptyHTML('?','Ничего не найдено','По запросу/фильтрам не нашлось проектов.','Сбросить фильтры',`onclick="resetFilters('p')"`);return}
+  tgt.innerHTML=`<div class="tw"><table><thead><tr>${thSort('p','name','Название')}<th>Жанр</th>${thSort('p','status','Статус')}${thSort('p','start_date','Период')}${thSort('p','budget','Бюджет')}${thSort('p','contracts','Договоры')}<th></th></tr></thead><tbody>${rows.map(p=>{const cs=S.contracts.filter(c=>c.project_id===p.id);return`<tr><td class="tp">${esc(p.name)}</td><td class="tm">${esc(p.genre||'—')}${p.duration?' · '+p.duration+' мин':''}</td><td>${esc(PL[p.status]||p.status||'—')}</td><td class="tm">${esc(p.start_date||'—')} → ${esc(p.end_date||'—')}</td><td class="money">${p.budget?fmt(p.budget)+' ₽':'—'}</td><td class="tm">${cs.filter(c=>c.status==='signed').length}/${cs.length}</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openPM('${esc(p.id)}')">✎</button> <button class="btn btn-s btn-d" onclick="delP('${esc(p.id)}')">×</button></td></tr>`}).join('')}</tbody></table></div>`;
 }
 
 function rContracts(){
-  document.querySelectorAll('#cf .fc').forEach(c=>{c.onclick=()=>{cF=c.dataset.f;document.querySelectorAll('#cf .fc').forEach(x=>x.classList.remove('active'));c.classList.add('active');rContracts();};});
-  const fl=cF==='all'?S.contracts:S.contracts.filter(c=>c.status===cF);
-  if(!fl.length){document.getElementById('contracts-table').innerHTML=`<div class="es"><div class="ei">∅</div><div>Нет договоров</div></div>`;return;}
-  document.getElementById('contracts-table').innerHTML=`<div class="tw"><table><thead><tr><th>Проект</th><th>Тип</th><th>ФИО</th><th>Роль</th><th>№ · Дата</th><th>Сумма</th><th>Выплачено</th><th>Статус</th><th>Файл</th><th></th></tr></thead><tbody>${fl.map(c=>{
+  const tgt=document.getElementById('contracts-table');if(!tgt)return;
+  document.querySelectorAll('#cf .fc').forEach(c=>{c.onclick=()=>{cF=c.dataset.f;document.querySelectorAll('#cf .fc').forEach(x=>x.classList.remove('active'));c.classList.add('active');rContracts();}});
+  if(!S.contracts.length){tgt.innerHTML=emptyHTML('∅','Ещё нет договоров',S.projects.length?'Создай договор — выбери проект, тип (актёр / режиссёр / лицензия и т.д.), ФИО и сумму. Файл договора можно прикрепить позже.':'Сначала создай хотя бы один проект, потом сможешь привязывать к нему договоры.','+ Новый договор',S.projects.length?`onclick="openCM()"`:`onclick="document.querySelector('.nav-tab[data-tab=projects]').click()"`);return}
+  let rows=S.contracts.filter(c=>{
+    if(cF!=='all'&&c.status!==cF)return false;
+    if(Q.cProj!=='all'&&c.project_id!==Q.cProj)return false;
+    if(Q.cType!=='all'&&c.type!==Q.cType)return false;
+    const p=S.projects.find(pr=>pr.id===c.project_id);
+    return matchQ(Q.c,c.person,c.role,c.number,c.notes,p?.name,TL[c.type]);
+  });
+  rows=sortRows(rows,SO.c.k,SO.c.d,(c,k)=>{
+    if(k==='date')return c.date||'';
+    if(k==='person')return lc(c.person);
+    if(k==='project'){const p=S.projects.find(pr=>pr.id===c.project_id);return lc(p?.name)}
+    if(k==='type')return TL[c.type]||c.type||'';
+    if(k==='status')return SL[c.status]||c.status||'';
+    if(k==='amount')return c.amount||0;
+    if(k==='paid')return S.payments.filter(pay=>pay.contract_id===c.id).reduce((s,p)=>s+p.amount,0);
+    return '';
+  });
+  if(!rows.length){tgt.innerHTML=emptyHTML('?','Ничего не найдено','Подкрути фильтры или поиск.','Сбросить фильтры',`onclick="resetFilters('c')"`);return}
+  tgt.innerHTML=`<div class="tw"><table><thead><tr>${thSort('c','project','Проект')}${thSort('c','type','Тип')}${thSort('c','person','ФИО')}<th>Роль</th>${thSort('c','date','№ · Дата')}${thSort('c','amount','Сумма')}${thSort('c','paid','Выплачено')}${thSort('c','status','Статус')}<th>Файл</th><th></th></tr></thead><tbody>${rows.map(c=>{
     const p=S.projects.find(pr=>pr.id===c.project_id);
     const paid=S.payments.filter(pay=>pay.contract_id===c.id).reduce((s,p)=>s+p.amount,0);
-    const fileBtn=c.file_url?`<button class="btn btn-s btn-file" onclick="downloadFile('${c.file_url}','${c.file_name}')">📄 ${c.file_name.length>15?c.file_name.slice(0,15)+'…':c.file_name}</button>`:`<button class="btn btn-s" onclick="openCM('${c.id}')">+ файл</button>`;
-    return`<tr><td class="tp">${p?.name||'—'}</td><td class="tm">${TL[c.type]}</td><td>${c.person||'—'}</td><td class="tm">${c.role||'—'}</td><td class="tm">${c.number||'—'}<br><span style="color:var(--ink-d)">${c.date||''}</span></td><td class="money">${c.amount?fmt(c.amount)+' ₽':'—'}</td><td class="money" style="color:${paid>=(c.amount||0)&&c.amount>0?'var(--green)':'var(--amber)'}">${paid?fmt(paid)+' ₽':'—'}</td><td><span class="status s-${c.status}">${SL[c.status]}</span></td><td>${fileBtn}</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openPayM('${c.id}')">₽</button> <button class="btn btn-s" onclick="openCM('${c.id}')">✎</button> <button class="btn btn-s btn-d" onclick="delC('${c.id}')">×</button></td></tr>`;
+    const fileBtn=c.file_url?`<button class="btn btn-s btn-file" onclick="downloadFile('${esc(c.file_url)}','${esc(c.file_name||'')}')">📄 ${esc(c.file_name&&c.file_name.length>15?c.file_name.slice(0,15)+'…':(c.file_name||''))}</button>`:`<button class="btn btn-s" onclick="openCM('${esc(c.id)}')">+ файл</button>`;
+    return`<tr><td class="tp">${esc(p?.name||'—')}</td><td class="tm">${esc(TL[c.type]||'—')}</td><td>${esc(c.person||'—')}</td><td class="tm">${esc(c.role||'—')}</td><td class="tm">${esc(c.number||'—')}<br><span style="color:var(--ink-d)">${esc(c.date||'')}</span></td><td class="money">${c.amount?fmt(c.amount)+' ₽':'—'}</td><td class="money" style="color:${paid>=(c.amount||0)&&c.amount>0?'var(--green)':'var(--amber)'}">${paid?fmt(paid)+' ₽':'—'}</td><td><span class="status s-${esc(c.status)}">${esc(SL[c.status]||c.status||'')}</span></td><td>${fileBtn}</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openPayM('${esc(c.id)}')">₽</button> <button class="btn btn-s" onclick="openCM('${esc(c.id)}')">✎</button> <button class="btn btn-s btn-d" onclick="delC('${esc(c.id)}')">×</button></td></tr>`;
   }).join('')}</tbody></table></div>`;
 }
 
 function rPayments(){
+  const tgt=document.getElementById('pay-table');if(!tgt)return;
   const tb=S.contracts.reduce((s,c)=>s+(c.amount||0),0);
   const tp=S.payments.reduce((s,p)=>s+p.amount,0);
   document.getElementById('pay-summary').innerHTML=`<div class="sg" style="margin-bottom:2rem"><div class="sc"><div class="sl">Обязательства</div><div class="sv sm">${fmt(tb)} ₽</div></div><div class="sc"><div class="sl">Выплачено</div><div class="sv sm gr">${fmt(tp)} ₽</div></div><div class="sc"><div class="sl">Остаток</div><div class="sv sm ${tb-tp>0?'am':'gr'}">${fmt(tb-tp)} ₽</div></div></div>`;
-  const rows=S.contracts.filter(c=>c.amount>0||S.payments.some(p=>p.contract_id===c.id)).map(c=>{const p=S.projects.find(pr=>pr.id===c.project_id);const pays=S.payments.filter(pay=>pay.contract_id===c.id);const paid=pays.reduce((s,p)=>s+p.amount,0);return{c,p,paid,left:c.amount-paid,pays};});
-  if(!rows.length){document.getElementById('pay-table').innerHTML=`<div class="es"><div class="ei">₽</div><div>Нет платежей</div></div>`;return;}
-  document.getElementById('pay-table').innerHTML=`<div class="tw"><table><thead><tr><th>ФИО</th><th>Проект / роль</th><th>По договору</th><th>Выплачено</th><th>Остаток</th><th>Прогресс</th><th>Последний платёж</th><th></th></tr></thead><tbody>${rows.map(r=>{const pct=r.c.amount>0?Math.round(r.paid/r.c.amount*100):0;const last=r.pays.sort((a,b)=>b.date.localeCompare(a.date))[0];return`<tr><td class="tp">${r.c.person||'—'}</td><td class="tm">${r.p?.name||'—'} · ${r.c.role||'—'}</td><td class="money">${fmt(r.c.amount)} ₽</td><td class="money" style="color:var(--green)">${fmt(r.paid)} ₽</td><td class="money" style="color:${r.left>0?'var(--amber)':'var(--ink-d)'}">${fmt(r.left)} ₽</td><td style="min-width:120px"><div class="pbar" style="height:4px"><div class="pfill" style="width:${pct}%"></div></div><div class="tm" style="font-size:.65rem;margin-top:.3rem">${pct}%</div></td><td class="tm" style="font-size:.8rem">${last?last.date+'<br><span style="color:var(--ink-d)">'+fmt(last.amount)+' ₽'+(last.note?' · '+last.note:'')+'</span>':'—'}</td><td><button class="btn btn-s" onclick="openPayM('${r.c.id}')">+ платёж</button></td></tr>`;}).join('')}</tbody></table></div>`;
+  const all=S.contracts.filter(c=>c.amount>0||S.payments.some(p=>p.contract_id===c.id)).map(c=>{const p=S.projects.find(pr=>pr.id===c.project_id);const pays=S.payments.filter(pay=>pay.contract_id===c.id);const paid=pays.reduce((s,p)=>s+p.amount,0);return{c,p,paid,left:(c.amount||0)-paid,pays}});
+  if(!all.length){tgt.innerHTML=emptyHTML('₽','Ещё нет выплат','Когда у договора будет сумма — он появится тут. Платежи можно добавлять через кнопку «₽» в таблице договоров.',S.contracts.length?'К договорам':'',`onclick="document.querySelector('.nav-tab[data-tab=contracts]').click()"`);return}
+  let rows=all.filter(r=>{
+    if(Q.payProj!=='all'&&r.c.project_id!==Q.payProj)return false;
+    if(Q.payStat==='open'&&r.left<=0)return false;
+    if(Q.payStat==='closed'&&!(r.c.amount>0&&r.left<=0))return false;
+    if(Q.payStat==='empty'&&r.pays.length>0)return false;
+    return matchQ(Q.pay,r.c.person,r.c.role,r.p?.name,r.pays.map(x=>x.note||'').join(' '));
+  });
+  rows=sortRows(rows,SO.pay.k,SO.pay.d,(r,k)=>{
+    if(k==='person')return lc(r.c.person);
+    if(k==='project')return lc(r.p?.name);
+    if(k==='amount')return r.c.amount||0;
+    if(k==='paid')return r.paid;
+    if(k==='left')return r.left;
+    if(k==='pct')return r.c.amount>0?r.paid/r.c.amount:0;
+    if(k==='last'){const last=r.pays.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];return last?.date||''}
+    return '';
+  });
+  if(!rows.length){tgt.innerHTML=emptyHTML('?','Ничего не найдено','По выбранным фильтрам выплат нет.','Сбросить фильтры',`onclick="resetFilters('pay')"`);return}
+  tgt.innerHTML=`<div class="tw"><table><thead><tr>${thSort('pay','person','ФИО')}${thSort('pay','project','Проект / роль')}${thSort('pay','amount','По договору')}${thSort('pay','paid','Выплачено')}${thSort('pay','left','Остаток')}${thSort('pay','pct','Прогресс')}${thSort('pay','last','Последний платёж')}<th></th></tr></thead><tbody>${rows.map(r=>{const pct=r.c.amount>0?Math.round(r.paid/r.c.amount*100):0;const last=r.pays.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];return`<tr><td class="tp">${esc(r.c.person||'—')}</td><td class="tm">${esc(r.p?.name||'—')} · ${esc(r.c.role||'—')}</td><td class="money">${fmt(r.c.amount)} ₽</td><td class="money" style="color:var(--green)">${fmt(r.paid)} ₽</td><td class="money" style="color:${r.left>0?'var(--amber)':'var(--ink-d)'}">${fmt(r.left)} ₽</td><td style="min-width:120px"><div class="pbar" style="height:4px"><div class="pfill" style="width:${pct}%"></div></div><div class="tm" style="font-size:.65rem;margin-top:.3rem">${pct}%</div></td><td class="tm" style="font-size:.8rem">${last?esc(last.date)+'<br><span style="color:var(--ink-d)">'+fmt(last.amount)+' ₽'+(last.note?' · '+esc(last.note):'')+'</span>':'—'}</td><td><button class="btn btn-s" onclick="openPayM('${esc(r.c.id)}')">+ платёж</button></td></tr>`}).join('')}</tbody></table></div>`;
 }
 
 function rTimeline(){
-  document.querySelectorAll('#tf .fc').forEach(c=>{c.onclick=()=>{tF=c.dataset.f;document.querySelectorAll('#tf .fc').forEach(x=>x.classList.remove('active'));c.classList.add('active');rTimeline();};});
+  const tgt=document.getElementById('tl-view');if(!tgt)return;
+  document.querySelectorAll('#tf .fc').forEach(c=>{c.onclick=()=>{tF=c.dataset.f;document.querySelectorAll('#tf .fc').forEach(x=>x.classList.remove('active'));c.classList.add('active');rTimeline();}});
   const ev=[];
-  S.contracts.forEach(c=>{if(c.date){const p=S.projects.find(pr=>pr.id===c.project_id);ev.push({date:c.date,status:c.status,title:`${TL[c.type]} · ${c.person||'—'}`,desc:`${p?.name||'—'} · ${c.role||'—'} · ${SL[c.status]}${c.file_url?' · 📄':''}`});}});
-  S.payments.forEach(p=>{const c=S.contracts.find(x=>x.id===p.contract_id);const pr=S.projects.find(x=>x.id===c?.project_id);ev.push({date:p.date,status:'signed',title:`Платёж · ${fmt(p.amount)} ₽`,desc:`${c?.person||'—'} · ${pr?.name||'—'}${p.note?' · '+p.note:''}`});});
-  S.projects.forEach(p=>{if(p.start_date)ev.push({date:p.start_date,status:'signed',title:`Начало съёмок: ${p.name}`,desc:p.genre||''});if(p.end_date)ev.push({date:p.end_date,status:p.status==='completed'?'signed':'pending',title:`Окончание: ${p.name}`,desc:PL[p.status]});});
-  ev.sort((a,b)=>b.date.localeCompare(a.date));
-  const fl=tF==='all'?ev:ev.filter(e=>e.status===tF);
-  if(!fl.length){document.getElementById('tl-view').innerHTML='<div class="es"><div class="ei">—</div><div>Нет событий</div></div>';return;}
-  document.getElementById('tl-view').innerHTML=`<div class="tl">${fl.map(e=>`<div class="ti ${e.status==='signed'?'signed':e.status==='missing'?'missing':'pending'}"><div class="td-date">${e.date}</div><div class="tt">${e.title}</div><div class="tdesc">${e.desc}</div></div>`).join('')}</div>`;
+  S.contracts.forEach(c=>{if(c.date){const p=S.projects.find(pr=>pr.id===c.project_id);ev.push({date:c.date,status:c.status,projectId:c.project_id,title:`${TL[c.type]||c.type} · ${c.person||'—'}`,desc:`${p?.name||'—'} · ${c.role||'—'} · ${SL[c.status]||c.status}${c.file_url?' · 📄':''}`})}});
+  S.payments.forEach(p=>{const c=S.contracts.find(x=>x.id===p.contract_id);const pr=S.projects.find(x=>x.id===c?.project_id);ev.push({date:p.date,status:'signed',projectId:c?.project_id,title:`Платёж · ${fmt(p.amount)} ₽`,desc:`${c?.person||'—'} · ${pr?.name||'—'}${p.note?' · '+p.note:''}`})});
+  S.projects.forEach(p=>{if(p.start_date)ev.push({date:p.start_date,status:'signed',projectId:p.id,title:`Начало съёмок: ${p.name}`,desc:p.genre||''});if(p.end_date)ev.push({date:p.end_date,status:p.status==='completed'?'signed':'pending',projectId:p.id,title:`Окончание: ${p.name}`,desc:PL[p.status]||p.status||''})});
+  ev.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const fl=ev.filter(e=>{
+    if(tF!=='all'&&e.status!==tF)return false;
+    if(Q.tProj!=='all'&&e.projectId!==Q.tProj)return false;
+    return matchQ(Q.t,e.title,e.desc);
+  });
+  if(!ev.length){tgt.innerHTML=emptyHTML('—','Таймлайн пуст','Сюда автоматически попадают даты договоров, платежей, начала и окончания проектов.','');return}
+  if(!fl.length){tgt.innerHTML=emptyHTML('?','Ничего не найдено','По текущим фильтрам событий нет.','Сбросить фильтры',`onclick="resetFilters('t')"`);return}
+  tgt.innerHTML=`<div class="tl">${fl.map(e=>`<div class="ti ${e.status==='signed'?'signed':e.status==='missing'?'missing':'pending'}"><div class="td-date">${esc(e.date||'')}</div><div class="tt">${esc(e.title)}</div><div class="tdesc">${esc(e.desc)}</div></div>`).join('')}</div>`;
 }
 
 function exportData(){
@@ -701,6 +850,33 @@ function exportData(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');a.href=url;a.download=`pravoeb-${new Date().toISOString().slice(0,10)}.json`;a.click();
   URL.revokeObjectURL(url);
+  toast('JSON выгружен','ok');
+}
+
+function csvCell(v){const s=v==null?'':String(v);return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+function csvDownload(name,header,rows){const lines=[header.map(csvCell).join(';'),...rows.map(r=>r.map(csvCell).join(';'))];const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
+function exportCSV(){
+  const today=new Date().toISOString().slice(0,10);
+  csvDownload(`pravoeb-projects-${today}.csv`,['id','name','genre','duration','status','start_date','end_date','budget'],S.projects.map(p=>[p.id,p.name,p.genre,p.duration,PL[p.status]||p.status,p.start_date,p.end_date,p.budget]));
+  csvDownload(`pravoeb-contracts-${today}.csv`,['id','project','type','person','role','number','date','amount','paid','status','file'],S.contracts.map(c=>{const p=S.projects.find(pr=>pr.id===c.project_id);const paid=S.payments.filter(pay=>pay.contract_id===c.id).reduce((s,x)=>s+x.amount,0);return[c.id,p?.name||'',TL[c.type]||c.type,c.person,c.role,c.number,c.date,c.amount,paid,SL[c.status]||c.status,c.file_name||'']}));
+  csvDownload(`pravoeb-payments-${today}.csv`,['id','contract_id','person','project','date','amount','note'],S.payments.map(pay=>{const c=S.contracts.find(x=>x.id===pay.contract_id);const p=S.projects.find(pr=>pr.id===c?.project_id);return[pay.id,pay.contract_id,c?.person||'',p?.name||'',pay.date,pay.amount,pay.note]}));
+  toast('Три CSV выгружены: проекты, договоры, выплаты','ok');
+}
+
+let searchWired=false;
+function wireSearch(){
+  if(searchWired)return;searchWired=true;
+  const re=(id,fn,deb=true)=>{const el=document.getElementById(id);if(!el)return;el.addEventListener('input',deb?debounce(fn,180):fn);el.addEventListener('change',fn)};
+  re('p-search',()=>{Q.p=document.getElementById('p-search').value;rProjects()});
+  re('p-status-filter',()=>{Q.pStat=document.getElementById('p-status-filter').value;rProjects()},false);
+  re('c-search',()=>{Q.c=document.getElementById('c-search').value;rContracts()});
+  re('c-proj-filter',()=>{Q.cProj=document.getElementById('c-proj-filter').value;rContracts()},false);
+  re('c-type-filter',()=>{Q.cType=document.getElementById('c-type-filter').value;rContracts()},false);
+  re('pay-search',()=>{Q.pay=document.getElementById('pay-search').value;rPayments()});
+  re('pay-proj-filter',()=>{Q.payProj=document.getElementById('pay-proj-filter').value;rPayments()},false);
+  re('pay-status-filter',()=>{Q.payStat=document.getElementById('pay-status-filter').value;rPayments()},false);
+  re('t-search',()=>{Q.t=document.getElementById('t-search').value;rTimeline()});
+  re('t-proj-filter',()=>{Q.tProj=document.getElementById('t-proj-filter').value;rTimeline()},false);
 }
 
 sb.auth.onAuthStateChange(async(event,session)=>{
@@ -709,7 +885,10 @@ sb.auth.onAuthStateChange(async(event,session)=>{
     document.getElementById('user-email').textContent=U.email;
     document.getElementById('auth-screen').style.display='none';
     document.getElementById('app').classList.add('on');
+    wireSearch();
+    if(!dataLoaded)showSkeletons();
     await loadData();
+    dataLoaded=true;
   }else{
     U=null;
     document.getElementById('auth-screen').style.display='flex';
