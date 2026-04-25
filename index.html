@@ -249,7 +249,7 @@ footer{padding:1.5rem 3rem;border-top:1px solid var(--brd);font-family:'JetBrain
     <div class="form-group"><label class="form-label">Окончание</label><input class="form-input" type="date" id="p-end"></div>
   </div>
   <div class="form-group"><label class="form-label">Бюджет (₽)</label><input class="form-input" type="number" id="p-budget"></div>
-  <div class="ma"><button class="btn" onclick="closeM('pm')">Отмена</button><button class="btn btn-p" onclick="saveP()">Сохранить</button></div>
+  <div class="ma"><button class="btn" onclick="closeM('pm')">Отмена</button><button class="btn btn-p" onclick="saveP(event)">Сохранить</button></div>
 </div></div>
 
 <!-- Модалка: Договор -->
@@ -278,7 +278,7 @@ footer{padding:1.5rem 3rem;border-top:1px solid var(--brd);font-family:'JetBrain
     </div>
     <input type="file" id="file-input" accept=".pdf,.doc,.docx" style="display:none" onchange="handleFileSelect(event)">
   </div>
-  <div class="ma"><button class="btn" onclick="closeM('cm')">Отмена</button><button class="btn btn-p" onclick="saveC()">Сохранить</button></div>
+  <div class="ma"><button class="btn" onclick="closeM('cm')">Отмена</button><button class="btn btn-p" onclick="saveC(event)">Сохранить</button></div>
 </div></div>
 
 <!-- Модалка: Платёж -->
@@ -289,14 +289,20 @@ footer{padding:1.5rem 3rem;border-top:1px solid var(--brd);font-family:'JetBrain
     <div class="form-group"><label class="form-label">Дата</label><input class="form-input" type="date" id="pay-date"></div>
   </div>
   <div class="form-group"><label class="form-label">Комментарий</label><input class="form-input" id="pay-note" placeholder="Аванс / финальный платёж"></div>
-  <div class="ma"><button class="btn" onclick="closeM('paym')">Отмена</button><button class="btn btn-p" onclick="savePay()">Добавить</button></div>
+  <div class="ma"><button class="btn" onclick="closeM('paym')">Отмена</button><button class="btn btn-p" onclick="savePay(event)">Добавить</button></div>
 </div></div>
 
 <script>
 const SB_URL='https://vcjwzkbsivgiivgvibjo.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjand6a2JzaXZnaWl2Z3ZpYmpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5OTY5NTEsImV4cCI6MjA5MjU3Mjk1MX0.LWGImSHtHz9CBuluC1hgTw8g8CayuoTRcQnV5qF6DSc';
 const{createClient}=supabase;
-const sb=createClient(SB_URL,SB_KEY);
+// Отключаем navigator.locks в gotrue: были залипавшие орфаны от предыдущих вкладок,
+// из-за чего CRUD висел 5+ секунд на каждом запросе и выглядел «не работает». Одна-вкладковый
+// no-op lock — официальный рецепт (см. supabase/auth-js исходники).
+const noopLock=async(_n,_t,fn)=>fn();
+// Чистим старый ключ из предыдущей версии — там оставался залипший navigator.locks-токен.
+try{localStorage.removeItem('sb-vcjwzkbsivgiivgvibjo-auth-token');}catch(_){}
+const sb=createClient(SB_URL,SB_KEY,{auth:{lock:noopLock,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'pravoeb-auth-v2'}});
 
 const TL={'actor':'Актёр','actor-minor':'Актёр (несов.)','director':'Режиссёр','operator':'Оператор','author-order':'Авт. заказ','alienation':'Отчуждение','license':'Лицензия','consent':'Согласие','nda':'НДА','other':'Другое'};
 const SL={'signed':'Подписан','pending':'В работе','missing':'Не подписан','draft':'Черновик'};
@@ -317,6 +323,13 @@ function toast(msg,type='err',title){
   el.innerHTML=`<div class="tt">${t}</div>${msg}`;
   wrap.appendChild(el);
   setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},type==='ok'?3500:7000);
+}
+
+function startBtn(btn,label){
+  if(!btn)return()=>{};
+  const orig=btn.textContent;const od=btn.disabled;
+  btn.textContent=label;btn.disabled=true;
+  return()=>{btn.textContent=orig;btn.disabled=od};
 }
 
 function sbErr(op,error){
@@ -448,16 +461,20 @@ function openPM(id=null){
   document.getElementById('pm').classList.add('on');
 }
 
-async function saveP(){
-  const d={user_id:U.id,name:document.getElementById('p-name').value.trim(),genre:document.getElementById('p-genre').value.trim(),duration:Number(document.getElementById('p-dur').value)||null,status:document.getElementById('p-status').value,start_date:document.getElementById('p-start').value||null,end_date:document.getElementById('p-end').value||null,budget:Number(document.getElementById('p-budget').value)||0};
+async function saveP(ev){
+  const btn=ev?.target;
+  const d={user_id:U?.id,name:document.getElementById('p-name').value.trim(),genre:document.getElementById('p-genre').value.trim(),duration:Number(document.getElementById('p-dur').value)||null,status:document.getElementById('p-status').value,start_date:document.getElementById('p-start').value||null,end_date:document.getElementById('p-end').value||null,budget:Number(document.getElementById('p-budget').value)||0};
   if(!d.name){alert('Укажите название');return}
   if(!U?.id){toast('Нет активной сессии. Войдите заново.','err','Auth');return}
-  const res=eP
-    ?await sb.from('projects').update(d).eq('id',eP).select()
-    :await sb.from('projects').insert(d).select();
-  if(sbErr(eP?'обновление проекта':'создание проекта',res.error))return;
-  toast(eP?'Проект обновлён':'Проект создан','ok');
-  closeM('pm');await loadData();
+  const restore=startBtn(btn,'Сохранение...');
+  try{
+    const res=eP
+      ?await sb.from('projects').update(d).eq('id',eP).select()
+      :await sb.from('projects').insert(d).select();
+    if(sbErr(eP?'обновление проекта':'создание проекта',res.error))return;
+    toast(eP?'Проект обновлён':'Проект создан','ok');
+    closeM('pm');await loadData();
+  }finally{restore()}
 }
 
 async function delP(id){
@@ -496,8 +513,11 @@ function openCM(id=null){
   document.getElementById('cm').classList.add('on');
 }
 
-async function saveC(){
+async function saveC(ev){
+  const btn=ev?.target;
   if(!U?.id){toast('Нет активной сессии. Войдите заново.','err','Auth');return}
+  const restore=startBtn(btn,'Сохранение...');
+  try{
   const d={user_id:U.id,project_id:document.getElementById('c-proj').value,type:document.getElementById('c-type').value,role:document.getElementById('c-role').value.trim(),person:document.getElementById('c-person').value.trim(),number:document.getElementById('c-num').value.trim(),date:document.getElementById('c-date').value||null,amount:Number(document.getElementById('c-amount').value)||0,status:document.getElementById('c-status').value,notes:document.getElementById('c-notes').value.trim()};
   let contractId=eC;
   if(eC){
@@ -525,6 +545,7 @@ async function saveC(){
   }
   toast(eC?'Договор обновлён':'Договор создан','ok');
   closeM('cm');await loadData();
+  }finally{restore()}
 }
 
 async function delC(id){
@@ -557,15 +578,19 @@ function openPayM(cid){
   document.getElementById('paym').classList.add('on');
 }
 
-async function savePay(){
+async function savePay(ev){
+  const btn=ev?.target;
   if(!U?.id){toast('Нет активной сессии. Войдите заново.','err','Auth');return}
   const amount=Number(document.getElementById('pay-amount').value);
   const date=document.getElementById('pay-date').value;
   if(!amount||!date){alert('Укажите сумму и дату');return}
-  const{error}=await sb.from('payments').insert({user_id:U.id,contract_id:aPay,amount,date,note:document.getElementById('pay-note').value.trim()});
-  if(sbErr('создание выплаты',error))return;
-  toast('Выплата добавлена','ok');
-  closeM('paym');await loadData();
+  const restore=startBtn(btn,'Сохранение...');
+  try{
+    const{error}=await sb.from('payments').insert({user_id:U.id,contract_id:aPay,amount,date,note:document.getElementById('pay-note').value.trim()});
+    if(sbErr('создание выплаты',error))return;
+    toast('Выплата добавлена','ok');
+    closeM('paym');await loadData();
+  }finally{restore()}
 }
 
 async function delPay(id){
