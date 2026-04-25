@@ -134,10 +134,18 @@ tbody tr:hover{background:rgba(201,169,97,.03)}
 .upload-progress{height:3px;background:var(--brd);border-radius:1px;overflow:hidden;margin-top:.5rem;display:none}
 .upload-progress-fill{height:100%;background:var(--acc);transition:width .3s ease}
 footer{padding:1.5rem 3rem;border-top:1px solid var(--brd);font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ink-d);letter-spacing:.1em;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+#toasts{position:fixed;top:1rem;right:1rem;z-index:1000;display:flex;flex-direction:column;gap:.5rem;max-width:420px}
+.toast{padding:.7rem 1rem;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:.72rem;line-height:1.4;background:var(--bg-el);border:1px solid var(--brd);color:var(--ink);box-shadow:0 4px 16px rgba(0,0,0,.4);word-break:break-word;animation:toastIn .25s ease-out}
+.toast.err{border-color:var(--red);color:var(--red);background:rgba(200,90,84,.08)}
+.toast.ok{border-color:var(--green);color:var(--green);background:rgba(106,143,94,.08)}
+.toast .tt{font-weight:600;letter-spacing:.08em;text-transform:uppercase;font-size:.65rem;margin-bottom:.2rem;opacity:.85}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
 @media(max-width:768px){header,nav,main,footer,.top-bar{padding-left:1.5rem;padding-right:1.5rem}.fr{grid-template-columns:1fr}.sv{font-size:2rem}}
 </style>
 </head>
 <body>
+
+<div id="toasts"></div>
 
 <div class="auth-screen" id="auth-screen">
   <div class="auth-box">
@@ -300,6 +308,29 @@ let selectedFile=null;
 
 function fmt(n){return(n||0).toLocaleString('ru-RU')}
 
+function toast(msg,type='err',title){
+  const wrap=document.getElementById('toasts');
+  if(!wrap)return;
+  const el=document.createElement('div');
+  el.className='toast '+(type||'err');
+  const t=title||(type==='ok'?'Готово':'Ошибка');
+  el.innerHTML=`<div class="tt">${t}</div>${msg}`;
+  wrap.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},type==='ok'?3500:7000);
+}
+
+function sbErr(op,error){
+  if(!error)return false;
+  console.error(`[supabase:${op}]`,error);
+  const parts=[];
+  if(error.message)parts.push(error.message);
+  if(error.code)parts.push(`code: ${error.code}`);
+  if(error.details)parts.push(error.details);
+  if(error.hint)parts.push(`hint: ${error.hint}`);
+  toast(`<b>${op}</b><br>${parts.join('<br>')||'unknown error'}`,'err');
+  return true;
+}
+
 function showMsg(type,msg){
   document.getElementById('auth-err').classList.remove('on');
   document.getElementById('auth-ok').classList.remove('on');
@@ -347,6 +378,9 @@ async function loadData(){
     sb.from('contracts').select('*').order('created_at'),
     sb.from('payments').select('*').order('created_at')
   ]);
+  if(p.error)sbErr('загрузка проектов',p.error);
+  if(c.error)sbErr('загрузка договоров',c.error);
+  if(pay.error)sbErr('загрузка выплат',pay.error);
   S.projects=p.data||[];S.contracts=c.data||[];S.payments=pay.data||[];
   render();
 }
@@ -378,6 +412,7 @@ async function uploadFile(contractId){
   const ext=selectedFile.name.split('.').pop();
   const path=`${U.id}/${contractId}.${ext}`;
   const{error}=await sb.storage.from('contracts').upload(path,selectedFile,{upsert:true});
+  if(sbErr('загрузка файла',error))return null;
   if(error){console.error('Upload error:',error);return null;}
   const{data}=sb.storage.from('contracts').getPublicUrl(path);
   return{url:data.publicUrl,name:selectedFile.name};
@@ -416,14 +451,20 @@ function openPM(id=null){
 async function saveP(){
   const d={user_id:U.id,name:document.getElementById('p-name').value.trim(),genre:document.getElementById('p-genre').value.trim(),duration:Number(document.getElementById('p-dur').value)||null,status:document.getElementById('p-status').value,start_date:document.getElementById('p-start').value||null,end_date:document.getElementById('p-end').value||null,budget:Number(document.getElementById('p-budget').value)||0};
   if(!d.name){alert('Укажите название');return}
-  if(eP)await sb.from('projects').update(d).eq('id',eP);
-  else await sb.from('projects').insert(d);
+  if(!U?.id){toast('Нет активной сессии. Войдите заново.','err','Auth');return}
+  const res=eP
+    ?await sb.from('projects').update(d).eq('id',eP).select()
+    :await sb.from('projects').insert(d).select();
+  if(sbErr(eP?'обновление проекта':'создание проекта',res.error))return;
+  toast(eP?'Проект обновлён':'Проект создан','ok');
   closeM('pm');await loadData();
 }
 
 async function delP(id){
   if(!confirm('Удалить проект?'))return;
-  await sb.from('projects').delete().eq('id',id);
+  const{error}=await sb.from('projects').delete().eq('id',id);
+  if(sbErr('удаление проекта',error))return;
+  toast('Проект удалён','ok');
   await loadData();
 }
 
@@ -456,12 +497,15 @@ function openCM(id=null){
 }
 
 async function saveC(){
+  if(!U?.id){toast('Нет активной сессии. Войдите заново.','err','Auth');return}
   const d={user_id:U.id,project_id:document.getElementById('c-proj').value,type:document.getElementById('c-type').value,role:document.getElementById('c-role').value.trim(),person:document.getElementById('c-person').value.trim(),number:document.getElementById('c-num').value.trim(),date:document.getElementById('c-date').value||null,amount:Number(document.getElementById('c-amount').value)||0,status:document.getElementById('c-status').value,notes:document.getElementById('c-notes').value.trim()};
   let contractId=eC;
   if(eC){
-    await sb.from('contracts').update(d).eq('id',eC);
+    const{error}=await sb.from('contracts').update(d).eq('id',eC);
+    if(sbErr('обновление договора',error))return;
   }else{
-    const{data}=await sb.from('contracts').insert(d).select().single();
+    const{data,error}=await sb.from('contracts').insert(d).select().single();
+    if(sbErr('создание договора',error))return;
     contractId=data?.id;
   }
   // Загружаем файл если выбран
@@ -473,10 +517,13 @@ async function saveC(){
     const path=`${U.id}/${contractId}.${ext}`;
     const{error}=await sb.storage.from('contracts').upload(path,selectedFile,{upsert:true});
     document.getElementById('upload-progress-fill').style.width='100%';
-    if(!error){
-      await sb.from('contracts').update({file_url:path,file_name:selectedFile.name}).eq('id',contractId);
+    if(sbErr('загрузка файла',error)){/* продолжаем — договор уже сохранён */}
+    else{
+      const{error:uerr}=await sb.from('contracts').update({file_url:path,file_name:selectedFile.name}).eq('id',contractId);
+      if(uerr)sbErr('привязка файла к договору',uerr);
     }
   }
+  toast(eC?'Договор обновлён':'Договор создан','ok');
   closeM('cm');await loadData();
 }
 
@@ -484,14 +531,19 @@ async function delC(id){
   if(!confirm('Удалить договор?'))return;
   // Удаляем файл если есть
   const c=S.contracts.find(x=>x.id===id);
-  if(c?.file_url)await sb.storage.from('contracts').remove([c.file_url]);
-  await sb.from('contracts').delete().eq('id',id);
+  if(c?.file_url){
+    const{error}=await sb.storage.from('contracts').remove([c.file_url]);
+    if(error)sbErr('удаление файла',error);
+  }
+  const{error}=await sb.from('contracts').delete().eq('id',id);
+  if(sbErr('удаление договора',error))return;
+  toast('Договор удалён','ok');
   await loadData();
 }
 
 async function downloadFile(filePath,fileName){
   const{data,error}=await sb.storage.from('contracts').createSignedUrl(filePath,3600);
-  if(error){alert('Ошибка получения файла');return}
+  if(sbErr('получение файла',error))return;
   const a=document.createElement('a');a.href=data.signedUrl;a.download=fileName;a.target='_blank';a.click();
 }
 
@@ -506,16 +558,21 @@ function openPayM(cid){
 }
 
 async function savePay(){
+  if(!U?.id){toast('Нет активной сессии. Войдите заново.','err','Auth');return}
   const amount=Number(document.getElementById('pay-amount').value);
   const date=document.getElementById('pay-date').value;
   if(!amount||!date){alert('Укажите сумму и дату');return}
-  await sb.from('payments').insert({user_id:U.id,contract_id:aPay,amount,date,note:document.getElementById('pay-note').value.trim()});
+  const{error}=await sb.from('payments').insert({user_id:U.id,contract_id:aPay,amount,date,note:document.getElementById('pay-note').value.trim()});
+  if(sbErr('создание выплаты',error))return;
+  toast('Выплата добавлена','ok');
   closeM('paym');await loadData();
 }
 
 async function delPay(id){
   if(!confirm('Удалить платёж?'))return;
-  await sb.from('payments').delete().eq('id',id);
+  const{error}=await sb.from('payments').delete().eq('id',id);
+  if(sbErr('удаление выплаты',error))return;
+  toast('Выплата удалена','ok');
   await loadData();
 }
 
