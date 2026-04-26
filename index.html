@@ -1877,9 +1877,10 @@ async function cwSend(){
         toast('AI не ответил: '+err,'err','Чат');
         return;
       }
-      // Оба сообщения ('out' и 'ai') уже записаны в БД Worker-ом. Подстрахуемся локальным append (dedupe по id).
+      // Оба сообщения ('out' и 'ai') уже в БД Worker-ом. Подстрахуемся локальным append с настоящими UUID (dedupe по id совпадёт с realtime).
+      // Фоллбэк на синтетический id не делаем: если row не вернулся, realtime всё равно доставит запись из БД.
       if(body.user_row)cwAppend(body.user_row);
-      if(body.ai_row)cwAppend(body.ai_row);else cwAppend({id:'ai-'+Date.now(),direction:'ai',text:body.text,model:body.model,created_at:new Date().toISOString()});
+      if(body.ai_row)cwAppend(body.ai_row);
     }else{
       const res=await fetch('/api/chat/send',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+jwt},body:JSON.stringify({text})});
       const body=await res.json().catch(()=>({}));
@@ -1901,7 +1902,7 @@ async function cwSend(){
 function cwKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();cwSend()}}
 function cwShow(on){const r=document.getElementById('cw-root');if(r)r.style.display=on?'block':'none'}
 function cwTeardown(){
-  cwShow(false);cwOpen=false;cwHistory=[];profile=null;profileAvailable=true;cwUnreadCnt=0;
+  cwShow(false);cwOpen=false;cwHistory=[];profile=null;profileAvailable=true;cwUnreadCnt=0;cwAiWaiting=false;
   const p=document.getElementById('cw-panel');if(p)p.classList.remove('on');
   const d=document.getElementById('cw-dot');if(d)d.classList.remove('on');
   if(cwChannel){try{sb.removeChannel(cwChannel)}catch(_){}cwChannel=null}
