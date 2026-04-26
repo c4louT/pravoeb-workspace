@@ -559,7 +559,7 @@ async function register(){
 
 async function logout(){
   await sb.auth.signOut();
-  U=null;S={projects:[],contracts:[],payments:[],contacts:[]};dataLoaded=false;
+  U=null;S={projects:[],contracts:[],payments:[],contacts:[]};dataLoaded=false;loadingInFlight=null;
   document.getElementById('app').classList.remove('on');
   document.getElementById('auth-screen').style.display='flex';
 }
@@ -589,7 +589,9 @@ async function loadData(){
     if(p.error&&p.error.code!=='TIMEOUT')sbErr('загрузка проектов',p.error);
     else if(p.error)toast('Не дождался проектов — попробуй обновить страницу','err','Сеть');
     if(c.error&&c.error.code!=='TIMEOUT')sbErr('загрузка договоров',c.error);
+    else if(c.error)toast('Не дождался договоров — попробуй обновить страницу','err','Сеть');
     if(pay.error&&pay.error.code!=='TIMEOUT')sbErr('загрузка выплат',pay.error);
+    else if(pay.error)toast('Не дождался выплат — попробуй обновить страницу','err','Сеть');
     // Контрагенты — таблица из миграции 2026-04-26. Если ещё не накатана, скрываем фичи и показываем баннер.
     if(ct.error&&(/relation .* does not exist/i.test(ct.error.message||'')||ct.error.code==='42P01')){
       migrationApplied=false;
@@ -1245,6 +1247,7 @@ sb.auth.onAuthStateChange(async(event,session)=>{
       dataLoaded=true;
     }else{
       U=null;
+      loadingInFlight=null;
       document.getElementById('auth-screen').style.display='flex';
       document.getElementById('app').classList.remove('on');
     }
