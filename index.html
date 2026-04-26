@@ -163,7 +163,41 @@ th.sortable.act .ar{opacity:1}
 .sk-cell{flex:1}
 .sk-cell.w-sm{flex:0 0 80px}
 .sk-cell.w-md{flex:0 0 140px}
-@media(max-width:768px){header,nav,main,footer,.top-bar{padding-left:1.2rem;padding-right:1.2rem}.fr{grid-template-columns:1fr}.sv{font-size:2rem}.md{padding:1.5rem;max-height:96vh}.mo{padding:.5rem}.tb-select{max-width:100%;width:100%}.search-input{min-width:0;width:100%}.toolbar{flex-direction:column;align-items:stretch}}
+.cl-stage{margin-bottom:2rem;border:1px solid var(--brd);border-radius:2px;overflow:hidden}
+.cl-stage-h{background:var(--bg-el);padding:.9rem 1.2rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.cl-stage-t{font-family:'Fraunces',serif;font-size:1.05rem;color:var(--ink)}
+.cl-stage-c{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ink-m);letter-spacing:.05em}
+.cl-bar{height:4px;background:var(--brd);border-radius:2px;overflow:hidden;margin:0;width:100%}
+.cl-bar-f{height:100%;background:var(--acc);transition:width .3s ease}
+.cl-items{padding:.6rem 0}
+.cl-item{display:flex;align-items:center;gap:.8rem;padding:.7rem 1.2rem;border-bottom:1px solid var(--brd-s);transition:background .15s}
+.cl-item:last-child{border-bottom:none}
+.cl-item:hover{background:rgba(255,255,255,.02)}
+.cl-item.done{opacity:.55}
+.cl-item.done .cl-text{text-decoration:line-through}
+.cl-item.auto{cursor:default}
+.cl-cb{appearance:none;width:18px;height:18px;border:1px solid var(--brd);border-radius:2px;background:var(--bg-el);cursor:pointer;flex-shrink:0;position:relative;transition:border-color .15s}
+.cl-cb:hover{border-color:var(--ink-m)}
+.cl-cb:checked{background:var(--acc);border-color:var(--acc)}
+.cl-cb:checked::after{content:'✓';position:absolute;top:-3px;left:2px;color:var(--bg);font-weight:700;font-size:.85rem}
+.cl-cb:disabled{cursor:not-allowed}
+.cl-text{flex:1;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--ink);line-height:1.45}
+.cl-badge{font-family:'JetBrains Mono',monospace;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;padding:.2rem .5rem;border-radius:2px;flex-shrink:0}
+.cl-badge.auto{background:rgba(106,143,94,.15);color:var(--green);border:1px solid rgba(106,143,94,.4)}
+.cl-badge.warn{background:rgba(212,168,83,.15);color:var(--amber);border:1px solid rgba(212,168,83,.4)}
+.cl-flags{margin-top:1rem;padding:1rem 1.2rem;border:1px solid rgba(200,90,84,.3);background:rgba(200,90,84,.06);border-radius:2px}
+.cl-flags-t{font-family:'Fraunces',serif;color:var(--red);font-size:1rem;margin-bottom:.6rem}
+.cl-flags ul{list-style:none;padding:0;margin:0}
+.cl-flags li{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--ink);padding:.3rem 0;line-height:1.5}
+.cl-flags li::before{content:'🚩 ';margin-right:.3rem}
+.ct-row{display:grid;grid-template-columns:1.4fr 1fr 1.2fr 1fr 80px 60px;gap:.5rem;align-items:center;padding:.7rem 1.2rem;border-bottom:1px solid var(--brd-s);font-size:.78rem}
+.ct-row:hover{background:rgba(255,255,255,.02)}
+.ct-row .ct-name{font-weight:500}
+.ct-row .ct-meta{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ink-m)}
+.ct-row .ct-cnt{text-align:center;color:var(--ink-m);font-family:'JetBrains Mono',monospace;font-size:.7rem}
+.ct-head{background:var(--bg-el);font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-m)}
+.ct-head:hover{background:var(--bg-el)}
+@media(max-width:768px){header,nav,main,footer,.top-bar{padding-left:1.2rem;padding-right:1.2rem}.fr{grid-template-columns:1fr}.sv{font-size:2rem}.md{padding:1.5rem;max-height:96vh}.mo{padding:.5rem}.tb-select{max-width:100%;width:100%}.search-input{min-width:0;width:100%}.toolbar{flex-direction:column;align-items:stretch}.ct-row{grid-template-columns:1fr 50px;gap:.4rem}.ct-row .ct-meta,.ct-row .ct-cnt{display:none}.ct-head{display:none}}
 </style>
 </head>
 <body>
@@ -210,6 +244,8 @@ th.sortable.act .ar{opacity:1}
     <span class="nav-tab" data-tab="projects">Проекты</span>
     <span class="nav-tab" data-tab="contracts">Договоры</span>
     <span class="nav-tab" data-tab="payments">Выплаты</span>
+    <span class="nav-tab" data-tab="contacts">Контрагенты</span>
+    <span class="nav-tab" data-tab="checklists">Чеклисты</span>
     <span class="nav-tab" data-tab="timeline">Таймлайн</span>
   </nav>
   <main>
@@ -269,6 +305,25 @@ th.sortable.act .ar{opacity:1}
       </div>
       <div id="pay-table"></div>
     </section>
+    <section class="tv" id="contacts">
+      <div class="ab"><h2 class="st" style="margin-bottom:0">Контрагенты <span class="st-sub">справочник</span></h2><button class="btn btn-p" onclick="openCT()">+ Новый контрагент</button></div>
+      <div class="toolbar">
+        <input class="search-input" id="ct-search" placeholder="Поиск: ФИО, ИНН, телефон, email" autocomplete="off">
+        <select class="tb-select" id="ct-kind-filter" aria-label="Фильтр по типу">
+          <option value="all">Все типы</option>
+          <option value="person">Физ. лица</option>
+          <option value="org">Юр. лица</option>
+        </select>
+      </div>
+      <div id="ct-table"></div>
+    </section>
+    <section class="tv" id="checklists">
+      <h2 class="st" style="margin-bottom:1rem">Чеклисты <span class="st-sub">этапы производства</span></h2>
+      <div class="toolbar">
+        <select class="tb-select" id="cl-proj" aria-label="Проект для чеклиста" style="max-width:none;flex:1"></select>
+      </div>
+      <div id="cl-view"></div>
+    </section>
     <section class="tv" id="timeline">
       <h2 class="st">Таймлайн <span class="st-sub">хронология</span></h2>
       <div class="toolbar">
@@ -317,7 +372,17 @@ th.sortable.act .ar{opacity:1}
     <div class="form-group"><label class="form-label">Тип</label><select class="form-select" id="c-type"><option value="actor">Актёр</option><option value="actor-minor">Актёр (несов.)</option><option value="director">Режиссёр</option><option value="operator">Оператор</option><option value="author-order">Авт. заказ</option><option value="alienation">Отчуждение</option><option value="license">Лицензия</option><option value="consent">Согласие</option><option value="nda">НДА</option><option value="other">Другое</option></select></div>
     <div class="form-group"><label class="form-label">Роль</label><input class="form-input" id="c-role" placeholder="Главная роль"></div>
   </div>
-  <div class="form-group"><label class="form-label">ФИО контрагента</label><input class="form-input" id="c-person" placeholder="Иванов Иван Иванович"></div>
+  <div class="form-group">
+    <label class="form-label">Контрагент <span style="color:var(--ink-d);font-weight:400">— из справочника или вписать вручную</span></label>
+    <select class="form-select" id="c-contact" onchange="onContactPick()" style="margin-bottom:.5rem">
+      <option value="">— ручной ввод —</option>
+    </select>
+    <input class="form-input" id="c-person" placeholder="Иванов Иван Иванович" autocomplete="off">
+    <div style="margin-top:.4rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+      <button type="button" class="btn btn-s" id="c-save-contact" onclick="saveContractContact()" style="display:none">+ Сохранить как контрагента</button>
+      <span class="es-desc" id="c-contact-hint" style="margin:0;font-size:.7rem"></span>
+    </div>
+  </div>
   <div class="fr">
     <div class="form-group"><label class="form-label">Номер</label><input class="form-input" id="c-num" placeholder="01/2025"></div>
     <div class="form-group"><label class="form-label">Дата</label><input class="form-input" type="date" id="c-date"></div>
@@ -336,6 +401,26 @@ th.sortable.act .ar{opacity:1}
     <input type="file" id="file-input" accept=".pdf,.doc,.docx" style="display:none" onchange="handleFileSelect(event)">
   </div>
   <div class="ma"><button class="btn" onclick="closeM('cm')">Отмена</button><button class="btn btn-p" onclick="saveC(event)">Сохранить</button></div>
+</div></div>
+
+<!-- Модалка: Контрагент -->
+<div class="mo" id="ctm"><div class="md">
+  <h3 class="mt" id="ctm-title">Новый контрагент</h3><p class="ms">Реквизиты для подстановки в договоры</p>
+  <div class="fr">
+    <div class="form-group"><label class="form-label">Тип</label><select class="form-select" id="ct-kind"><option value="person">Физ. лицо</option><option value="org">Юр. лицо</option></select></div>
+    <div class="form-group"><label class="form-label">ФИО / Название</label><input class="form-input" id="ct-name" placeholder="Иванов Иван Иванович"></div>
+  </div>
+  <div class="fr">
+    <div class="form-group"><label class="form-label">ИНН</label><input class="form-input" id="ct-inn" placeholder="123456789012"></div>
+    <div class="form-group"><label class="form-label">Паспорт / ОГРН</label><input class="form-input" id="ct-passport" placeholder="4500 123456 / ОГРН"></div>
+  </div>
+  <div class="fr">
+    <div class="form-group"><label class="form-label">Телефон</label><input class="form-input" id="ct-phone" placeholder="+7 999 123-45-67"></div>
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="ct-email" placeholder="name@mail.ru"></div>
+  </div>
+  <div class="form-group"><label class="form-label">Адрес</label><input class="form-input" id="ct-addr" placeholder="г. Москва, ..."></div>
+  <div class="form-group"><label class="form-label">Заметки</label><input class="form-input" id="ct-notes" placeholder="Агент / комментарий"></div>
+  <div class="ma"><button class="btn" onclick="closeM('ctm')">Отмена</button><button class="btn btn-p" onclick="saveCT(event)">Сохранить</button></div>
 </div></div>
 
 <!-- Модалка: Платёж -->
@@ -365,13 +450,15 @@ const TL={'actor':'Актёр','actor-minor':'Актёр (несов.)','directo
 const SL={'signed':'Подписан','pending':'В работе','missing':'Не подписан','draft':'Черновик'};
 const PL={'development':'Разработка','pre-production':'Подготовка','production':'Съёмки','post-production':'МТП','completed':'Завершён'};
 
-let S={projects:[],contracts:[],payments:[]};
-let U=null,eP=null,eC=null,aPay=null,cF='all',tF='all';
+let S={projects:[],contracts:[],payments:[],contacts:[]};
+let U=null,eP=null,eC=null,eCT=null,aPay=null,cF='all',tF='all';
 let selectedFile=null;
 // Поиск/фильтры/сортировка
-const Q={p:'',pStat:'all',c:'',cProj:'all',cType:'all',pay:'',payProj:'all',payStat:'all',t:'',tProj:'all'};
-const SO={p:{k:'name',d:1},c:{k:'date',d:-1},pay:{k:'last',d:-1}};
+const Q={p:'',pStat:'all',c:'',cProj:'all',cType:'all',pay:'',payProj:'all',payStat:'all',t:'',tProj:'all',ct:'',ctKind:'all'};
+const SO={p:{k:'name',d:1},c:{k:'date',d:-1},pay:{k:'last',d:-1},ct:{k:'name',d:1}};
 let dataLoaded=false;
+let clProj=null;
+let migrationApplied=true; // contacts/contact_id/checklist_state — выставится в false при загрузке, если SQL ещё не накатан
 
 function fmt(n){return(n||0).toLocaleString('ru-RU')}
 function esc(s){return(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
@@ -387,6 +474,7 @@ function resetFilters(table){
   if(table==='c'){Q.c='';Q.cProj='all';Q.cType='all';cF='all';['c-search'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});['c-proj-filter','c-type-filter'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='all'});document.querySelectorAll('#cf .fc').forEach((x,i)=>x.classList.toggle('active',i===0))}
   if(table==='pay'){Q.pay='';Q.payProj='all';Q.payStat='all';const s=document.getElementById('pay-search');if(s)s.value='';['pay-proj-filter','pay-status-filter'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='all'})}
   if(table==='t'){Q.t='';Q.tProj='all';tF='all';const s=document.getElementById('t-search');if(s)s.value='';const f=document.getElementById('t-proj-filter');if(f)f.value='all';document.querySelectorAll('#tf .fc').forEach((x,i)=>x.classList.toggle('active',i===0))}
+  if(table==='ct'){Q.ct='';Q.ctKind='all';const s=document.getElementById('ct-search');if(s)s.value='';const f=document.getElementById('ct-kind-filter');if(f)f.value='all'}
   render();
 }
 function showSkeletons(){
@@ -471,23 +559,45 @@ async function register(){
 
 async function logout(){
   await sb.auth.signOut();
-  U=null;S={projects:[],contracts:[],payments:[]};dataLoaded=false;
+  U=null;S={projects:[],contracts:[],payments:[],contacts:[]};dataLoaded=false;
   document.getElementById('app').classList.remove('on');
   document.getElementById('auth-screen').style.display='flex';
 }
 
 async function loadData(){
-  const[p,c,pay]=await Promise.all([
+  const[p,c,pay,ct]=await Promise.all([
     sb.from('projects').select('*').order('created_at'),
     sb.from('contracts').select('*').order('created_at'),
-    sb.from('payments').select('*').order('created_at')
+    sb.from('payments').select('*').order('created_at'),
+    sb.from('contacts').select('*').order('created_at')
   ]);
   if(p.error)sbErr('загрузка проектов',p.error);
   if(c.error)sbErr('загрузка договоров',c.error);
   if(pay.error)sbErr('загрузка выплат',pay.error);
-  S.projects=p.data||[];S.contracts=c.data||[];S.payments=pay.data||[];
+  // Контрагенты — таблица из миграции 2026-04-26. Если ещё не накатана, скрываем фичи и показываем баннер.
+  if(ct.error&&(/relation .* does not exist/i.test(ct.error.message||'')||ct.error.code==='42P01')){
+    migrationApplied=false;
+    showMigrationBanner();
+  }else if(ct.error){
+    sbErr('загрузка контрагентов',ct.error);
+  }else{
+    migrationApplied=true;
+    hideMigrationBanner();
+  }
+  S.projects=p.data||[];S.contracts=c.data||[];S.payments=pay.data||[];S.contacts=ct.data||[];
   render();
 }
+
+function showMigrationBanner(){
+  if(document.getElementById('mig-banner'))return;
+  const div=document.createElement('div');
+  div.id='mig-banner';
+  div.style.cssText='background:rgba(212,168,83,.12);border:1px solid var(--amber);padding:.9rem 1.2rem;margin:0 0 1.5rem;border-radius:2px;font-family:JetBrains Mono,monospace;font-size:.78rem;color:var(--ink);line-height:1.5';
+  div.innerHTML='⚠ <b>Нужна SQL-миграция</b> для контрагентов и чеклистов. Открой Supabase → SQL Editor → запусти содержимое <code>migrations/2026-04-26_contacts_checklists.sql</code> из репозитория. После этого обнови страницу.';
+  const main=document.querySelector('main');
+  if(main)main.insertBefore(div,main.firstChild);
+}
+function hideMigrationBanner(){const el=document.getElementById('mig-banner');if(el)el.remove()}
 
 // ============ FILE UPLOAD ============
 function handleDragOver(e){e.preventDefault();document.getElementById('upload-area').classList.add('dragging')}
@@ -581,25 +691,32 @@ function openCM(id=null){
   if(!S.projects.length){toast('Сначала создай хотя бы один проект — потом сможешь привязать к нему договор.','err','Договор');document.querySelector('.nav-tab[data-tab=projects]').click();return}
   eC=id;const c=id?S.contracts.find(x=>x.id===id):null;
   document.getElementById('cm-title').textContent=c?'Редактировать':'Новый договор';
-  document.getElementById('c-proj').innerHTML=S.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  document.getElementById('c-proj').innerHTML=S.projects.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  fillContactSelect();
   resetFileUpload();
+  document.getElementById('c-contact-hint').textContent='';
+  document.getElementById('c-save-contact').style.display='none';
   if(c){
     document.getElementById('c-proj').value=c.project_id;
     document.getElementById('c-type').value=c.type;
     document.getElementById('c-role').value=c.role||'';
     document.getElementById('c-person').value=c.person||'';
+    document.getElementById('c-contact').value=c.contact_id||'';
+    if(c.contact_id&&S.contacts.find(x=>x.id===c.contact_id))onContactPick();
     document.getElementById('c-num').value=c.number||'';
     document.getElementById('c-date').value=c.date||'';
     document.getElementById('c-amount').value=c.amount||'';
     document.getElementById('c-status').value=c.status;
     document.getElementById('c-notes').value=c.notes||'';
-    if(c.file_name)document.getElementById('upload-label').innerHTML=`<span class="file-badge">📄 ${c.file_name} (уже загружен)</span>`;
+    if(c.file_name)document.getElementById('upload-label').innerHTML=`<span class="file-badge">📄 ${esc(c.file_name)} (уже загружен)</span>`;
   }else{
     ['c-role','c-person','c-num','c-notes'].forEach(x=>document.getElementById(x).value='');
+    document.getElementById('c-contact').value='';
     document.getElementById('c-type').value='actor';
     document.getElementById('c-date').value='';
     document.getElementById('c-amount').value='';
     document.getElementById('c-status').value='draft';
+    document.getElementById('c-save-contact').style.display='inline-block';
   }
   document.getElementById('cm').classList.add('on');
 }
@@ -610,6 +727,7 @@ async function saveC(ev){
   const restore=startBtn(btn,'Сохранение...');
   try{
   const d={user_id:U.id,project_id:document.getElementById('c-proj').value,type:document.getElementById('c-type').value,role:document.getElementById('c-role').value.trim(),person:document.getElementById('c-person').value.trim(),number:document.getElementById('c-num').value.trim(),date:document.getElementById('c-date').value||null,amount:Number(document.getElementById('c-amount').value)||0,status:document.getElementById('c-status').value,notes:document.getElementById('c-notes').value.trim()};
+  if(migrationApplied)d.contact_id=document.getElementById('c-contact').value||null;
   let contractId=eC;
   if(eC){
     const{error}=await sb.from('contracts').update(d).eq('id',eC);
@@ -700,7 +818,7 @@ function closeM(id){
 }
 
 // ============ RENDER ============
-function render(){populateProjFilters();rChips();rStats();rAlerts();rProgress();rDonut();rProjects();rContracts();rPayments();rTimeline();}
+function render(){populateProjFilters();rChips();rStats();rAlerts();rProgress();rDonut();rProjects();rContracts();rPayments();rContacts();rChecklists();rTimeline();}
 
 function rStats(){
   const ap=S.projects.filter(p=>['production','pre-production','post-production'].includes(p.status)).length;
@@ -845,6 +963,214 @@ function rTimeline(){
   tgt.innerHTML=`<div class="tl">${fl.map(e=>`<div class="ti ${e.status==='signed'?'signed':e.status==='missing'?'missing':'pending'}"><div class="td-date">${esc(e.date||'')}</div><div class="tt">${esc(e.title)}</div><div class="tdesc">${esc(e.desc)}</div></div>`).join('')}</div>`;
 }
 
+// ============ CONTACTS ============
+function rContacts(){
+  const tgt=document.getElementById('ct-table');if(!tgt)return;
+  if(!S.contacts.length){tgt.innerHTML=emptyHTML('∅','Справочник контрагентов пуст','Добавь актёров, режиссёров, юр. лиц — потом будешь подставлять их в новые договоры одним кликом, без перепечатывания ФИО и реквизитов.','+ Создать первого контрагента',`onclick="openCT()"`);return}
+  let rows=S.contacts.filter(c=>{
+    if(Q.ctKind!=='all'&&c.kind!==Q.ctKind)return false;
+    return matchQ(Q.ct,c.name,c.inn,c.phone,c.email,c.passport,c.notes);
+  });
+  rows=sortRows(rows,SO.ct.k,SO.ct.d,(c,k)=>{
+    if(k==='name')return lc(c.name);
+    if(k==='kind')return c.kind||'';
+    if(k==='cnt')return S.contracts.filter(x=>x.contact_id===c.id||lc(x.person)===lc(c.name)).length;
+    return ''
+  });
+  if(!rows.length){tgt.innerHTML=emptyHTML('?','Ничего не найдено','По текущим фильтрам контрагентов нет.','Сбросить фильтры',`onclick="resetFilters('ct')"`);return}
+  const head=`<div class="ct-row ct-head"><div onclick="setSort('ct','name')" class="sortable" style="cursor:pointer">Имя <span class="ar">${SO.ct.k==='name'?(SO.ct.d>0?'▲':'▼'):'△'}</span></div><div onclick="setSort('ct','kind')" class="sortable" style="cursor:pointer">Тип <span class="ar">${SO.ct.k==='kind'?(SO.ct.d>0?'▲':'▼'):'△'}</span></div><div>Контакты</div><div>ИНН / паспорт</div><div onclick="setSort('ct','cnt')" class="sortable" style="cursor:pointer;text-align:center">Договоров <span class="ar">${SO.ct.k==='cnt'?(SO.ct.d>0?'▲':'▼'):'△'}</span></div><div></div></div>`;
+  const body=rows.map(c=>{
+    const cnt=S.contracts.filter(x=>x.contact_id===c.id||(c.name&&lc(x.person)===lc(c.name))).length;
+    const contact=[c.phone,c.email].filter(Boolean).join(' · ')||'—';
+    const id=[c.inn?'ИНН '+c.inn:'',c.passport].filter(Boolean).join(' · ')||'—';
+    const kindLabel=c.kind==='org'?'юр. лицо':'физ. лицо';
+    return`<div class="ct-row"><div class="ct-name">${esc(c.name)}${c.notes?`<div class="ct-meta">${esc(c.notes)}</div>`:''}</div><div class="ct-meta">${esc(kindLabel)}</div><div class="ct-meta">${esc(contact)}</div><div class="ct-meta">${esc(id)}</div><div class="ct-cnt">${cnt}</div><div style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openCT('${esc(c.id)}')">✎</button> <button class="btn btn-s btn-d" onclick="delCT('${esc(c.id)}')">×</button></div></div>`;
+  }).join('');
+  tgt.innerHTML=`<div style="border:1px solid var(--brd);border-radius:2px;overflow:hidden">${head}${body}</div>`;
+}
+
+function openCT(id=null){
+  if(!migrationApplied){toast('Запусти SQL-миграцию (см. жёлтый баннер сверху) — таблица контрагентов ещё не создана.','err','Контрагенты');return}
+  eCT=id;const c=id?S.contacts.find(x=>x.id===id):null;
+  document.getElementById('ctm-title').textContent=c?'Редактировать контрагента':'Новый контрагент';
+  ['ct-name','ct-inn','ct-passport','ct-phone','ct-email','ct-addr','ct-notes'].forEach(x=>document.getElementById(x).value=c?(c[x.slice(3).replace('addr','address')]||''):'');
+  // ручной маппинг (id -> поле)
+  if(c){
+    document.getElementById('ct-name').value=c.name||'';
+    document.getElementById('ct-inn').value=c.inn||'';
+    document.getElementById('ct-passport').value=c.passport||'';
+    document.getElementById('ct-phone').value=c.phone||'';
+    document.getElementById('ct-email').value=c.email||'';
+    document.getElementById('ct-addr').value=c.address||'';
+    document.getElementById('ct-notes').value=c.notes||'';
+    document.getElementById('ct-kind').value=c.kind||'person';
+  }else{
+    document.getElementById('ct-kind').value='person';
+  }
+  document.getElementById('ctm').classList.add('on');
+}
+
+async function saveCT(ev){
+  const btn=ev?.target;
+  if(!U?.id){toast('Нет активной сессии','err','Auth');return}
+  const name=document.getElementById('ct-name').value.trim();
+  if(!name){toast('Укажи ФИО или название','err','Контрагент');return}
+  const restore=startBtn(btn,'Сохранение...');
+  try{
+    const d={user_id:U.id,name,kind:document.getElementById('ct-kind').value,inn:document.getElementById('ct-inn').value.trim()||null,passport:document.getElementById('ct-passport').value.trim()||null,phone:document.getElementById('ct-phone').value.trim()||null,email:document.getElementById('ct-email').value.trim()||null,address:document.getElementById('ct-addr').value.trim()||null,notes:document.getElementById('ct-notes').value.trim()||null};
+    if(eCT){
+      const{error}=await sb.from('contacts').update(d).eq('id',eCT);
+      if(sbErr('обновление контрагента',error))return;
+    }else{
+      const{error}=await sb.from('contacts').insert(d);
+      if(sbErr('создание контрагента',error))return;
+    }
+    toast(eCT?'Контрагент обновлён':'Контрагент создан','ok');
+    closeM('ctm');await loadData();
+  }finally{restore()}
+}
+
+async function delCT(id){
+  if(!confirm('Удалить контрагента из справочника? Договоры останутся, но связь сбросится.'))return;
+  const{error}=await sb.from('contacts').delete().eq('id',id);
+  if(sbErr('удаление контрагента',error))return;
+  toast('Контрагент удалён','ok');
+  await loadData();
+}
+
+// Подставить контрагента в форму договора
+function fillContactSelect(){
+  const sel=document.getElementById('c-contact');if(!sel)return;
+  const sorted=[...S.contacts].sort((a,b)=>lc(a.name).localeCompare(lc(b.name),'ru'));
+  sel.innerHTML='<option value="">— ручной ввод —</option>'+sorted.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}${c.kind==='org'?' (юр.)':''}</option>`).join('');
+}
+function onContactPick(){
+  const id=document.getElementById('c-contact').value;
+  const hint=document.getElementById('c-contact-hint');
+  const saveBtn=document.getElementById('c-save-contact');
+  if(!id){hint.textContent='';saveBtn.style.display='inline-block';return}
+  const c=S.contacts.find(x=>x.id===id);if(!c){hint.textContent='';return}
+  document.getElementById('c-person').value=c.name;
+  const meta=[c.inn?'ИНН '+c.inn:'',c.phone,c.email].filter(Boolean).join(' · ');
+  hint.textContent=meta?`Подставлено из справочника: ${meta}`:'Подставлено из справочника';
+  saveBtn.style.display='none';
+}
+async function saveContractContact(){
+  if(!migrationApplied){toast('Запусти SQL-миграцию (см. жёлтый баннер) — таблица контрагентов ещё не создана.','err','Контрагенты');return}
+  const name=document.getElementById('c-person').value.trim();
+  if(!name){toast('Сначала впиши ФИО','err','Контрагент');return}
+  if(!U?.id)return;
+  // если контрагент уже есть с таким же name — просто привяжем
+  const existing=S.contacts.find(c=>lc(c.name)===lc(name));
+  if(existing){
+    document.getElementById('c-contact').value=existing.id;
+    onContactPick();
+    toast('Уже есть в справочнике, привязано','ok');
+    return;
+  }
+  const{data,error}=await sb.from('contacts').insert({user_id:U.id,name,kind:'person'}).select().single();
+  if(sbErr('создание контрагента из договора',error))return;
+  S.contacts=[...S.contacts,data];
+  fillContactSelect();
+  document.getElementById('c-contact').value=data.id;
+  onContactPick();
+  toast('Контрагент добавлен в справочник','ok');
+}
+
+// ============ CHECKLISTS ============
+const CL_STAGES=[
+  {id:'pre',title:'До начала съёмок',sub:'Подготовительный период',items:[
+    {id:'director',label:'Договор с режиссёром-постановщиком',auto:c=>c.type==='director'&&c.status==='signed'},
+    {id:'operator',label:'Договор с оператором-постановщиком',auto:c=>c.type==='operator'&&c.status==='signed'},
+    {id:'screenwriter',label:'Договор со сценаристом (авт. заказ или отчуждение)',auto:c=>['author-order','alienation'].includes(c.type)&&c.status==='signed'},
+    {id:'composer',label:'Договор с композитором (авт. заказ)',auto:null},
+    {id:'nda',label:'НДА со всеми ключевыми участниками',auto:c=>c.type==='nda'&&c.status==='signed'},
+    {id:'lead-actors',label:'Договоры со всеми актёрами главных ролей',auto:c=>c.type==='actor'&&c.status==='signed'},
+    {id:'minor-actors',label:'Договоры с несовершеннолетними актёрами через представителей',auto:c=>c.type==='actor-minor'&&c.status==='signed'},
+    {id:'second-actors',label:'Договоры с актёрами второго плана',auto:null},
+    {id:'lit-rights',label:'Права на литературный источник (если экранизация)',auto:null},
+    {id:'music-rights',label:'Права на существующую музыку — лицензия',auto:c=>c.type==='license'&&c.status==='signed'}
+  ]},
+  {id:'shoot',title:'В ходе съёмок',sub:'Съёмочный период',items:[
+    {id:'consents',label:'Согласия на изображение от массовки (каждый съёмочный день)',auto:c=>c.type==='consent'&&c.status==='signed'},
+    {id:'new-actors',label:'Договор с каждым новым актёром ДО первого съёмочного дня',auto:null},
+    {id:'crew-nda',label:'НДА с каждым новым членом группы с доступом к материалам',auto:null}
+  ]},
+  {id:'post',title:'После съёмок (МТП)',sub:'Монтажно-тонировочный период',items:[
+    {id:'acts-author',label:'Акты приёма-передачи по договорам авт. заказа',auto:null},
+    {id:'acts-alien',label:'Акты приёма-передачи по договорам об отчуждении',auto:null},
+    {id:'related-rights',label:'Передача смежных прав исполнителями',auto:null},
+    {id:'archive',label:'Права на архивные фото/видео',auto:null},
+    {id:'final-music',label:'Права на музыку в финальном монтаже',auto:null}
+  ]},
+  {id:'distrib',title:'Перед сдачей / дистрибуцией',sub:'Финальная проверка',items:[
+    {id:'all-creative',label:'Все творческие участники подписали договоры',auto:null},
+    {id:'all-actors-signed',label:'Все актёры подписали передачу смежных прав',auto:null},
+    {id:'all-consents',label:'Все согласия на изображение собраны',auto:null},
+    {id:'all-music',label:'Права на всю музыку оформлены',auto:null},
+    {id:'all-acts',label:'Все акты приёма-передачи подписаны',auto:null},
+    {id:'all-paid',label:'Финальные выплаты произведены по всем договорам',auto:null}
+  ]}
+];
+const CL_FLAGS=[
+  'Актёр снялся, договор не подписан → риск блокировки релиза',
+  'Массовка без согласий на изображение → каждый может потребовать убрать себя из кадра',
+  'Сценарий без оформленных прав → угроза судебного иска',
+  'Музыка без лицензии → фильм могут снять с проката',
+  'Несовершеннолетний без договора через представителя → договор ничтожен',
+  'Договор подписан, акт не подписан → момент перехода прав не подтверждён'
+];
+
+function rChecklists(){
+  const tgt=document.getElementById('cl-view');if(!tgt)return;
+  const sel=document.getElementById('cl-proj');
+  if(!S.projects.length){if(sel)sel.innerHTML='<option value="">— нет проектов —</option>';tgt.innerHTML=emptyHTML('∅','Сначала создай проект','Чеклисты привязаны к проекту: галочки и автопроверка договоров идут по конкретному фильму.','+ Создать проект',`onclick="document.querySelector('.nav-tab[data-tab=projects]').click();openPM();"`);return}
+  if(sel){
+    if(!clProj||!S.projects.find(p=>p.id===clProj))clProj=S.projects[0].id;
+    sel.innerHTML=S.projects.map(p=>`<option value="${esc(p.id)}"${p.id===clProj?' selected':''}>${esc(p.name)} · ${esc(PL[p.status]||p.status||'')}</option>`).join('');
+  }
+  const proj=S.projects.find(p=>p.id===clProj);if(!proj){tgt.innerHTML='';return}
+  const projContracts=S.contracts.filter(c=>c.project_id===proj.id);
+  const state=proj.checklist_state||{};
+  const html=CL_STAGES.map(stage=>{
+    const items=stage.items.map(it=>{
+      const manual=!!state[it.id];
+      let autoMatch=null;
+      if(it.auto){
+        autoMatch=projContracts.find(c=>{
+          const paid=S.payments.filter(pay=>pay.contract_id===c.id).reduce((s,x)=>s+x.amount,0);
+          try{return it.auto(c,paid)}catch(_){return false}
+        });
+      }
+      const done=manual||!!autoMatch;
+      const badge=autoMatch?`<span class="cl-badge auto" title="${esc(autoMatch.person||'договор')}">авто</span>`:'';
+      const dis=autoMatch?'disabled':'';
+      return`<label class="cl-item ${done?'done':''} ${autoMatch?'auto':''}"><input type="checkbox" class="cl-cb" ${manual||autoMatch?'checked':''} ${dis} onchange="toggleCL('${esc(stage.id)}','${esc(it.id)}',this.checked)"><span class="cl-text">${esc(it.label)}</span>${badge}</label>`;
+    }).join('');
+    const total=stage.items.length;
+    const done=stage.items.filter(it=>{
+      if(state[it.id])return true;
+      if(!it.auto)return false;
+      return projContracts.some(c=>{const paid=S.payments.filter(pay=>pay.contract_id===c.id).reduce((s,x)=>s+x.amount,0);try{return it.auto(c,paid)}catch(_){return false}});
+    }).length;
+    const pct=total?Math.round(done/total*100):0;
+    return`<div class="cl-stage"><div class="cl-stage-h"><div><div class="cl-stage-t">${esc(stage.title)}</div><div class="cl-stage-c">${esc(stage.sub)}</div></div><div class="cl-stage-c">${done} / ${total} · ${pct}%</div></div><div class="cl-bar"><div class="cl-bar-f" style="width:${pct}%"></div></div><div class="cl-items">${items}</div></div>`;
+  }).join('');
+  const flags=`<div class="cl-flags"><div class="cl-flags-t">Красные флаги — немедленно сообщать продюсеру</div><ul>${CL_FLAGS.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div>`;
+  tgt.innerHTML=html+flags;
+}
+
+async function toggleCL(stageId,itemId,checked){
+  if(!migrationApplied){toast('Нужна SQL-миграция (см. баннер) — поле checklist_state ещё не добавлено.','err','Чеклист');await loadData();return}
+  const proj=S.projects.find(p=>p.id===clProj);if(!proj)return;
+  const state={...(proj.checklist_state||{})};
+  if(checked)state[itemId]=new Date().toISOString();else delete state[itemId];
+  proj.checklist_state=state;
+  const{error}=await sb.from('projects').update({checklist_state:state}).eq('id',proj.id);
+  if(error){sbErr('сохранение чеклиста',error);await loadData();return}
+  rChecklists();
+}
+
 function exportData(){
   const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
@@ -877,6 +1203,9 @@ function wireSearch(){
   re('pay-status-filter',()=>{Q.payStat=document.getElementById('pay-status-filter').value;rPayments()},false);
   re('t-search',()=>{Q.t=document.getElementById('t-search').value;rTimeline()});
   re('t-proj-filter',()=>{Q.tProj=document.getElementById('t-proj-filter').value;rTimeline()},false);
+  re('ct-search',()=>{Q.ct=document.getElementById('ct-search').value;rContacts()});
+  re('ct-kind-filter',()=>{Q.ctKind=document.getElementById('ct-kind-filter').value;rContacts()},false);
+  const cls=document.getElementById('cl-proj');if(cls)cls.addEventListener('change',()=>{clProj=cls.value||null;rChecklists()});
 }
 
 sb.auth.onAuthStateChange(async(event,session)=>{
