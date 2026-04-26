@@ -1,10 +1,12 @@
 name = "pravoeb-workspace"
 compatibility_date = "2026-04-25"
+main = "worker.js"
 
 # Сборка статики: копируем index.html и _headers в dist/, чтобы Workers Builds CI ничего не валилось.
 [build]
 command = "mkdir -p dist && cp index.html dist/ && cp _headers dist/_headers"
 
-# Assets-only Worker — main entry не указан, Cloudflare использует встроенный facade.
+# Статика отдаётся через Assets-биндинг: worker.js проксирует всё кроме /api/* в env.ASSETS.
 [assets]
 directory = "./dist"
+binding = "ASSETS"
