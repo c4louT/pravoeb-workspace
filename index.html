@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Правоеб · Контрольная панель</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 <style>
@@ -197,7 +198,26 @@ th.sortable.act .ar{opacity:1}
 .ct-row .ct-cnt{text-align:center;color:var(--ink-m);font-family:'JetBrains Mono',monospace;font-size:.7rem}
 .ct-head{background:var(--bg-el);font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-m)}
 .ct-head:hover{background:var(--bg-el)}
-@media(max-width:768px){header,nav,main,footer,.top-bar{padding-left:1.2rem;padding-right:1.2rem}.fr{grid-template-columns:1fr}.sv{font-size:2rem}.md{padding:1.5rem;max-height:96vh}.mo{padding:.5rem}.tb-select{max-width:100%;width:100%}.search-input{min-width:0;width:100%}.toolbar{flex-direction:column;align-items:stretch}.ct-row{grid-template-columns:1fr 50px;gap:.4rem}.ct-row .ct-meta,.ct-row .ct-cnt{display:none}.ct-head{display:none}}
+.st-h{font-family:'Instrument Serif',serif;font-size:1.3rem;color:var(--ink);margin:2rem 0 1rem;font-weight:400}
+.ch-wrap{position:relative;height:280px;background:var(--bg-el);border:1px solid var(--brd);border-radius:2px;padding:1.2rem;margin-bottom:1rem}
+.gn-wrap{background:var(--bg-el);border:1px solid var(--brd);border-radius:2px;padding:1rem;overflow-x:auto}
+.gn-table{display:grid;gap:.4rem;min-width:600px;font-family:'JetBrains Mono',monospace;font-size:.72rem}
+.gn-row{display:grid;grid-template-columns:160px 1fr;align-items:center;gap:.6rem;padding:.4rem 0;border-bottom:1px solid var(--brd-s)}
+.gn-row:last-child{border:none}
+.gn-name{color:var(--ink);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gn-bar-track{position:relative;height:22px;background:rgba(255,255,255,.03);border-radius:2px}
+.gn-bar{position:absolute;top:2px;height:18px;background:linear-gradient(90deg,var(--acc-d),var(--acc));border-radius:2px;display:flex;align-items:center;padding:0 .5rem;color:var(--bg);font-size:.65rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gn-bar.s-completed{background:linear-gradient(90deg,#3a5f33,var(--green))}
+.gn-bar.s-production{background:linear-gradient(90deg,#9b3f3a,var(--red))}
+.gn-bar.s-development,.gn-bar.s-pre-production{background:linear-gradient(90deg,#8a6a30,var(--amber))}
+.gn-pay{position:absolute;top:0;width:2px;height:22px;background:var(--ink);box-shadow:0 0 4px rgba(232,228,220,.4)}
+.gn-head{display:grid;grid-template-columns:160px 1fr;gap:.6rem;color:var(--ink-m);font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;padding-bottom:.5rem;border-bottom:1px solid var(--brd)}
+.gn-head-mo{display:flex;justify-content:space-between}
+.md-wide{max-width:1100px;width:95vw}
+.prv-body{height:70vh;background:#fff;border:1px solid var(--brd);border-radius:2px;overflow:hidden;margin-bottom:1.2rem}
+.prv-body iframe{width:100%;height:100%;border:none}
+.prv-body .prv-fall{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--bg-el);color:var(--ink-m);text-align:center;padding:2rem;gap:1rem;font-family:'JetBrains Mono',monospace;font-size:.8rem}
+@media(max-width:768px){header,nav,main,footer,.top-bar{padding-left:1.2rem;padding-right:1.2rem}.fr{grid-template-columns:1fr}.sv{font-size:2rem}.md{padding:1.5rem;max-height:96vh}.mo{padding:.5rem}.tb-select{max-width:100%;width:100%}.search-input{min-width:0;width:100%}.toolbar{flex-direction:column;align-items:stretch}.ct-row{grid-template-columns:1fr 50px;gap:.4rem}.ct-row .ct-meta,.ct-row .ct-cnt{display:none}.ct-head{display:none}.ch-wrap{height:220px;padding:.6rem}.md-wide{padding:1rem}.prv-body{height:60vh}.gn-row,.gn-head{grid-template-columns:100px 1fr}}
 </style>
 </head>
 <body>
@@ -246,6 +266,7 @@ th.sortable.act .ar{opacity:1}
     <span class="nav-tab" data-tab="payments">Выплаты</span>
     <span class="nav-tab" data-tab="contacts">Контрагенты</span>
     <span class="nav-tab" data-tab="checklists">Чеклисты</span>
+    <span class="nav-tab" data-tab="analytics">Аналитика</span>
     <span class="nav-tab" data-tab="timeline">Таймлайн</span>
   </nav>
   <main>
@@ -323,6 +344,25 @@ th.sortable.act .ar{opacity:1}
         <select class="tb-select" id="cl-proj" aria-label="Проект для чеклиста" style="max-width:none;flex:1"></select>
       </div>
       <div id="cl-view"></div>
+    </section>
+    <section class="tv" id="analytics">
+      <h2 class="st" style="margin-bottom:1rem">Аналитика <span class="st-sub">графики · бюджет · gantt</span></h2>
+      <div class="toolbar">
+        <select class="tb-select" id="an-proj" aria-label="Проект для аналитики">
+          <option value="all">Все проекты</option>
+        </select>
+        <select class="tb-select" id="an-range" aria-label="Период">
+          <option value="6">Последние 6 мес</option>
+          <option value="12" selected>Последние 12 мес</option>
+          <option value="24">Последние 24 мес</option>
+        </select>
+      </div>
+      <h3 class="st-h">Выплаты по месяцам</h3>
+      <div class="ch-wrap"><canvas id="pay-chart"></canvas></div>
+      <h3 class="st-h">Бюджет по типам договоров</h3>
+      <div class="ch-wrap"><canvas id="budget-chart"></canvas></div>
+      <h3 class="st-h">Gantt — проекты по месяцам</h3>
+      <div id="gantt-view"></div>
     </section>
     <section class="tv" id="timeline">
       <h2 class="st">Таймлайн <span class="st-sub">хронология</span></h2>
@@ -434,6 +474,13 @@ th.sortable.act .ar{opacity:1}
   <div class="ma"><button class="btn" onclick="closeM('paym')">Отмена</button><button class="btn btn-p" onclick="savePay(event)">Добавить</button></div>
 </div></div>
 
+<!-- Модалка: Превью документа -->
+<div class="mo" id="prv"><div class="md md-wide">
+  <h3 class="mt" id="prv-title">Документ</h3><p class="ms" id="prv-sub">Превью без скачивания</p>
+  <div id="prv-body" class="prv-body"></div>
+  <div class="ma"><button class="btn" onclick="closeM('prv')">Закрыть</button><a class="btn btn-p" id="prv-dl" target="_blank" rel="noopener">Скачать</a></div>
+</div></div>
+
 <script>
 const SB_URL='https://vcjwzkbsivgiivgvibjo.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjand6a2JzaXZnaWl2Z3ZpYmpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5OTY5NTEsImV4cCI6MjA5MjU3Mjk1MX0.LWGImSHtHz9CBuluC1hgTw8g8CayuoTRcQnV5qF6DSc';
@@ -459,6 +506,8 @@ const SO={p:{k:'name',d:1},c:{k:'date',d:-1},pay:{k:'last',d:-1},ct:{k:'name',d:
 let dataLoaded=false;
 let clProj=null;
 let migrationApplied=true; // contacts/contact_id/checklist_state — выставится в false при загрузке, если SQL ещё не накатан
+let anProj='all',anRange=12; // фильтры аналитики
+let chPay=null,chBudget=null; // экземпляры Chart.js (чтобы dispose'ить при перерисовке)
 
 function fmt(n){return(n||0).toLocaleString('ru-RU')}
 function esc(s){return(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
@@ -484,7 +533,7 @@ function showSkeletons(){
 }
 function populateProjFilters(){
   const opts='<option value="all">Все проекты</option>'+S.projects.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
-  ['c-proj-filter','pay-proj-filter','t-proj-filter'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML=opts;el.value=S.projects.find(p=>p.id===cur)?cur:'all'});
+  ['c-proj-filter','pay-proj-filter','t-proj-filter','an-proj'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML=opts;el.value=S.projects.find(p=>p.id===cur)?cur:'all'});
   const tEl=document.getElementById('c-type-filter');if(tEl){const cur=tEl.value;tEl.innerHTML='<option value="all">Все типы</option>'+Object.entries(TL).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('');tEl.value=TL[cur]?cur:'all'}
 }
 function rChips(){
@@ -800,6 +849,29 @@ async function downloadFile(filePath,fileName){
   const a=document.createElement('a');a.href=data.signedUrl;a.download=fileName;a.target='_blank';a.click();
 }
 
+async function previewFile(filePath,fileName){
+  const{data,error}=await sb.storage.from('contracts').createSignedUrl(filePath,3600);
+  if(sbErr('превью файла',error))return;
+  const url=data.signedUrl;
+  const ext=(fileName||'').split('.').pop().toLowerCase();
+  document.getElementById('prv-title').textContent=fileName||'Документ';
+  document.getElementById('prv-sub').textContent='Превью без скачивания · подпись действительна 1 час';
+  const dl=document.getElementById('prv-dl');dl.href=url;dl.setAttribute('download',fileName||'');
+  const body=document.getElementById('prv-body');
+  // PDF: браузеры умеют отрисовать через <iframe>. DOCX/прочее — fallback с быстрой ссылкой Google Docs Viewer.
+  if(ext==='pdf'){
+    body.innerHTML=`<iframe src="${esc(url)}#view=FitH" title="${esc(fileName||'')}"></iframe>`;
+  }else if(['doc','docx','rtf','odt'].includes(ext)){
+    const gv='https://docs.google.com/viewer?embedded=true&url='+encodeURIComponent(url);
+    body.innerHTML=`<iframe src="${esc(gv)}" title="${esc(fileName||'')}"></iframe>`;
+  }else if(['png','jpg','jpeg','gif','webp'].includes(ext)){
+    body.innerHTML=`<div class="prv-fall"><img src="${esc(url)}" alt="${esc(fileName||'')}" style="max-width:100%;max-height:100%;object-fit:contain"></div>`;
+  }else{
+    body.innerHTML=`<div class="prv-fall"><div>Превью для .${esc(ext||'?')} в браузере недоступно.</div><a class="btn btn-p" href="${esc(url)}" target="_blank" rel="noopener">Открыть в новой вкладке</a></div>`;
+  }
+  document.getElementById('prv').classList.add('on');
+}
+
 // ============ PAYMENTS ============
 function openPayM(cid){
   aPay=cid;const c=S.contracts.find(x=>x.id===cid);
@@ -838,10 +910,12 @@ function closeM(id){
   resetFileUpload();
   document.getElementById('upload-progress').style.display='none';
   document.getElementById('upload-progress-fill').style.width='0%';
+  // Чистим iframe превью, чтобы он не качал документ в фоне после закрытия.
+  if(id==='prv'){const b=document.getElementById('prv-body');if(b)b.innerHTML=''}
 }
 
 // ============ RENDER ============
-function render(){populateProjFilters();rChips();rStats();rAlerts();rProgress();rDonut();rProjects();rContracts();rPayments();rContacts();rChecklists();rTimeline();}
+function render(){populateProjFilters();rChips();rStats();rAlerts();rProgress();rDonut();rProjects();rContracts();rPayments();rContacts();rChecklists();rAnalytics();rTimeline();}
 
 function rStats(){
   const ap=S.projects.filter(p=>['production','pre-production','post-production'].includes(p.status)).length;
@@ -935,7 +1009,7 @@ function rContracts(){
   tgt.innerHTML=`<div class="tw"><table><thead><tr>${thSort('c','project','Проект')}${thSort('c','type','Тип')}${thSort('c','person','ФИО')}<th>Роль</th>${thSort('c','date','№ · Дата')}${thSort('c','amount','Сумма')}${thSort('c','paid','Выплачено')}${thSort('c','status','Статус')}<th>Файл</th><th></th></tr></thead><tbody>${rows.map(c=>{
     const p=S.projects.find(pr=>pr.id===c.project_id);
     const paid=S.payments.filter(pay=>pay.contract_id===c.id).reduce((s,p)=>s+p.amount,0);
-    const fileBtn=c.file_url?`<button class="btn btn-s btn-file" onclick="downloadFile('${esc(c.file_url)}','${esc(c.file_name||'')}')">📄 ${esc(c.file_name&&c.file_name.length>15?c.file_name.slice(0,15)+'…':(c.file_name||''))}</button>`:`<button class="btn btn-s" onclick="openCM('${esc(c.id)}')">+ файл</button>`;
+    const fileBtn=c.file_url?`<span style="display:inline-flex;gap:.3rem"><button class="btn btn-s" title="Превью" onclick="previewFile('${esc(c.file_url)}','${esc(c.file_name||'')}')">👁</button><button class="btn btn-s btn-file" onclick="downloadFile('${esc(c.file_url)}','${esc(c.file_name||'')}')">📄 ${esc(c.file_name&&c.file_name.length>12?c.file_name.slice(0,12)+'…':(c.file_name||''))}</button></span>`:`<button class="btn btn-s" onclick="openCM('${esc(c.id)}')">+ файл</button>`;
     return`<tr><td class="tp">${esc(p?.name||'—')}</td><td class="tm">${esc(TL[c.type]||'—')}</td><td>${esc(c.person||'—')}</td><td class="tm">${esc(c.role||'—')}</td><td class="tm">${esc(c.number||'—')}<br><span style="color:var(--ink-d)">${esc(c.date||'')}</span></td><td class="money">${c.amount?fmt(c.amount)+' ₽':'—'}</td><td class="money" style="color:${paid>=(c.amount||0)&&c.amount>0?'var(--green)':'var(--amber)'}">${paid?fmt(paid)+' ₽':'—'}</td><td><span class="status s-${esc(c.status)}">${esc(SL[c.status]||c.status||'')}</span></td><td>${fileBtn}</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openPayM('${esc(c.id)}')">₽</button> <button class="btn btn-s" onclick="openCM('${esc(c.id)}')">✎</button> <button class="btn btn-s btn-d" onclick="delC('${esc(c.id)}')">×</button></td></tr>`;
   }).join('')}</tbody></table></div>`;
 }
@@ -966,6 +1040,65 @@ function rPayments(){
   });
   if(!rows.length){tgt.innerHTML=emptyHTML('?','Ничего не найдено','По выбранным фильтрам выплат нет.','Сбросить фильтры',`onclick="resetFilters('pay')"`);return}
   tgt.innerHTML=`<div class="tw"><table><thead><tr>${thSort('pay','person','ФИО')}${thSort('pay','project','Проект / роль')}${thSort('pay','amount','По договору')}${thSort('pay','paid','Выплачено')}${thSort('pay','left','Остаток')}${thSort('pay','pct','Прогресс')}${thSort('pay','last','Последний платёж')}<th></th></tr></thead><tbody>${rows.map(r=>{const pct=r.c.amount>0?Math.round(r.paid/r.c.amount*100):0;const last=r.pays.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''))[0];return`<tr><td class="tp">${esc(r.c.person||'—')}</td><td class="tm">${esc(r.p?.name||'—')} · ${esc(r.c.role||'—')}</td><td class="money">${fmt(r.c.amount)} ₽</td><td class="money" style="color:var(--green)">${fmt(r.paid)} ₽</td><td class="money" style="color:${r.left>0?'var(--amber)':'var(--ink-d)'}">${fmt(r.left)} ₽</td><td style="min-width:120px"><div class="pbar" style="height:4px"><div class="pfill" style="width:${pct}%"></div></div><div class="tm" style="font-size:.65rem;margin-top:.3rem">${pct}%</div></td><td class="tm" style="font-size:.8rem">${last?esc(last.date)+'<br><span style="color:var(--ink-d)">'+fmt(last.amount)+' ₽'+(last.note?' · '+esc(last.note):'')+'</span>':'—'}</td><td><button class="btn btn-s" onclick="openPayM('${esc(r.c.id)}')">+ платёж</button></td></tr>`}).join('')}</tbody></table></div>`;
+}
+
+// ============ ANALYTICS ============
+// Цвета по типам договоров — для легенд и стэк-баров.
+const TYPE_COLORS={'actor':'#c9a961','actor-minor':'#d4b878','director':'#8a6fc9','operator':'#5a9eb8','author-order':'#6a8f5e','alienation':'#8d7543','license':'#b88a5e','consent':'#9b8b7a','nda':'#c85a54','other':'#5a564e'};
+function ymKey(d){if(!d)return null;const x=new Date(d);if(isNaN(x))return null;return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')}
+function ymLabel(k){const[y,m]=k.split('-');return['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'][+m-1]+' '+y.slice(2)}
+function lastNMonths(n){const out=[];const d=new Date();d.setDate(1);for(let i=n-1;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1);out.push(x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0'))}return out}
+function rAnalytics(){
+  // тригер только когда вкладка активна — Chart.js всё равно справится, но без лишней работы
+  const tab=document.getElementById('analytics');if(!tab)return;
+  rPayChart();rBudgetChart();rGantt();
+}
+function filteredByProj(arr,getProjId){return anProj==='all'?arr:arr.filter(x=>getProjId(x)===anProj)}
+function rPayChart(){
+  const cv=document.getElementById('pay-chart');if(!cv||!window.Chart)return;
+  const months=lastNMonths(anRange);
+  const pays=filteredByProj(S.payments,p=>{const c=S.contracts.find(x=>x.id===p.contract_id);return c?.project_id});
+  const buckets=Object.fromEntries(months.map(m=>[m,0]));
+  pays.forEach(p=>{const k=ymKey(p.date);if(k!=null&&k in buckets)buckets[k]+=Number(p.amount||0)});
+  const data=months.map(m=>buckets[m]);
+  if(chPay){chPay.destroy();chPay=null}
+  chPay=new Chart(cv.getContext('2d'),{type:'bar',data:{labels:months.map(ymLabel),datasets:[{label:'Выплачено, ₽',data,backgroundColor:'rgba(201,169,97,.55)',borderColor:'#c9a961',borderWidth:1,borderRadius:2}]},options:chartOpts(true)});
+}
+function rBudgetChart(){
+  const cv=document.getElementById('budget-chart');if(!cv||!window.Chart)return;
+  const projs=anProj==='all'?S.projects:S.projects.filter(p=>p.id===anProj);
+  const labels=projs.map(p=>p.name||'—');
+  const types=Object.keys(TL);
+  const datasets=types.map(t=>({label:TL[t],data:projs.map(p=>S.contracts.filter(c=>c.project_id===p.id&&c.type===t).reduce((s,c)=>s+Number(c.amount||0),0)),backgroundColor:TYPE_COLORS[t]||'#5a564e',borderWidth:0,stack:'b'}));
+  if(chBudget){chBudget.destroy();chBudget=null}
+  chBudget=new Chart(cv.getContext('2d'),{type:'bar',data:{labels,datasets},options:chartOpts(false,true)});
+}
+function chartOpts(showSingle,stacked){
+  const ink='#e8e4dc',inkM='#8a857a',brd='rgba(255,255,255,.06)';
+  return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:!showSingle,labels:{color:ink,font:{family:'JetBrains Mono',size:10}}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.parsed.y||c.parsed||0).toLocaleString('ru-RU')+' ₽'}}},scales:{x:{stacked:!!stacked,ticks:{color:inkM,font:{family:'JetBrains Mono',size:10}},grid:{color:brd}},y:{stacked:!!stacked,ticks:{color:inkM,font:{family:'JetBrains Mono',size:10},callback:v=>v.toLocaleString('ru-RU')},grid:{color:brd}}}};
+}
+function rGantt(){
+  const tgt=document.getElementById('gantt-view');if(!tgt)return;
+  const projs=(anProj==='all'?S.projects:S.projects.filter(p=>p.id===anProj)).filter(p=>p.start_date||p.end_date);
+  if(!projs.length){tgt.innerHTML=emptyHTML('—','Нет данных для Gantt','Добавь даты начала/окончания проектам, чтобы они появились на сетке.','');return}
+  // диапазон: min(start) -> max(end), padding по 1 месяцу
+  const dates=projs.flatMap(p=>[p.start_date,p.end_date].filter(Boolean).map(d=>new Date(d)));
+  let min=new Date(Math.min(...dates)),max=new Date(Math.max(...dates));
+  min=new Date(min.getFullYear(),min.getMonth()-1,1);max=new Date(max.getFullYear(),max.getMonth()+1,1);
+  const months=[];const cur=new Date(min);while(cur<=max){months.push(new Date(cur));cur.setMonth(cur.getMonth()+1)}
+  const total=months.length;if(!total){tgt.innerHTML=emptyHTML('—','Нет данных для Gantt','Слишком короткий диапазон.','');return}
+  const pct=(d)=>{const x=new Date(d);const mi=(x.getFullYear()-min.getFullYear())*12+(x.getMonth()-min.getMonth())+x.getDate()/30;return Math.max(0,Math.min(100,(mi/total)*100))};
+  const head=months.map(m=>`<span>${['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'][m.getMonth()]} ${String(m.getFullYear()).slice(2)}</span>`).join('');
+  const rows=projs.map(p=>{
+    const s=p.start_date?pct(p.start_date):0;
+    const e=p.end_date?pct(p.end_date):s+5;
+    const w=Math.max(2,e-s);
+    const pays=S.payments.filter(pay=>{const c=S.contracts.find(x=>x.id===pay.contract_id);return c?.project_id===p.id&&pay.date}).map(pay=>pct(pay.date));
+    const payDots=pays.map(pp=>`<span class="gn-pay" style="left:${pp}%" title="платёж"></span>`).join('');
+    const label=p.start_date&&p.end_date?p.start_date.slice(5)+' → '+p.end_date.slice(5):(PL[p.status]||p.status||'');
+    return`<div class="gn-row"><div class="gn-name" title="${esc(p.name||'')}">${esc(p.name||'—')}</div><div class="gn-bar-track"><div class="gn-bar s-${esc(p.status||'')}" style="left:${s}%;width:${w}%">${esc(label)}</div>${payDots}</div></div>`;
+  }).join('');
+  tgt.innerHTML=`<div class="gn-wrap"><div class="gn-table"><div class="gn-head"><div></div><div class="gn-head-mo">${head}</div></div>${rows}</div></div>`;
 }
 
 function rTimeline(){
@@ -1229,6 +1362,8 @@ function wireSearch(){
   re('ct-search',()=>{Q.ct=document.getElementById('ct-search').value;rContacts()});
   re('ct-kind-filter',()=>{Q.ctKind=document.getElementById('ct-kind-filter').value;rContacts()},false);
   const cls=document.getElementById('cl-proj');if(cls)cls.addEventListener('change',()=>{clProj=cls.value||null;rChecklists()});
+  const anP=document.getElementById('an-proj');if(anP)anP.addEventListener('change',()=>{anProj=anP.value;rAnalytics()});
+  const anR=document.getElementById('an-range');if(anR)anR.addEventListener('change',()=>{anRange=Number(anR.value)||12;rAnalytics()});
 }
 
 let loadingInFlight=null;
