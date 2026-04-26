@@ -596,7 +596,8 @@ async function loadData(){
       showMigrationBanner();
     }else if(ct.error&&ct.error.code!=='TIMEOUT'){
       sbErr('загрузка контрагентов',ct.error);
-    }else if(!ct.error){
+    }else if(!ct.error&&ct.data!==null){
+      // Только при подтверждённом ответе сервера — иначе банер мог стоять обоснованно (миграция не накатана)
       migrationApplied=true;
       hideMigrationBanner();
     }
