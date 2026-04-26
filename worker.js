@@ -128,8 +128,13 @@ async function handleChatSend(request, env) {
     return json({ ok: false, error: 'no_telegram_chat_id', hint: 'Укажи свой Telegram ID в настройках профиля' }, 400);
   }
 
-  const prefix = profile?.display_name ? `[${profile.display_name} · дашборд]\n` : '[дашборд]\n';
-  const tgRes = await tgSendMessage(env, chatId, prefix + text);
+  // Лимит Telegram Bot API — 4096 символов. Урезаем display_name и, если надо, сам текст.
+  const nameRaw = String(profile?.display_name || '').slice(0, 80);
+  const prefix = nameRaw ? `[${nameRaw} · дашборд]\n` : '[дашборд]\n';
+  const TG_LIMIT = 4096;
+  let finalMsg = prefix + text;
+  if (finalMsg.length > TG_LIMIT) finalMsg = finalMsg.slice(0, TG_LIMIT - 1) + '…';
+  const tgRes = await tgSendMessage(env, chatId, finalMsg);
   if (!tgRes.ok) return json({ ok: false, error: 'telegram_failed', detail: tgRes.error }, 502);
 
   const ins = await sbInsertChatMessageAsUser(env, jwt, {

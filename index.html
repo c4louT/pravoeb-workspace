@@ -1689,7 +1689,7 @@ async function openProfile(){
 async function saveProfile(){
   if(!U?.id)return;
   if(!profileAvailable){toast('Сначала запусти SQL-миграцию','err','Профиль');return}
-  const name=document.getElementById('prf-name').value.trim()||null;
+  const name=(document.getElementById('prf-name').value.trim()||'').slice(0,80)||null;
   const raw=document.getElementById('prf-tgid').value.trim();
   let tgId=null;
   if(raw){
