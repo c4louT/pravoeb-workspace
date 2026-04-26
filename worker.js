@@ -171,12 +171,17 @@ async function handleTgWebhook(request, env) {
     return json({ ok: true });
   }
 
-  await sbInsertChatMessageAsService(env, {
+  const ins = await sbInsertChatMessageAsService(env, {
     user_id: userId,
     direction: 'in',
     text,
     tg_message_id: mid,
   });
+  if (!ins.ok) {
+    // Возвращаем 500, чтобы Telegram повторил вебхук (транзиентные сбои БД) и сообщение не потерялось.
+    console.error('tg webhook: failed to insert incoming message', ins.error, ins.detail);
+    return json({ ok: false, error: ins.error, detail: ins.detail }, 500);
+  }
 
   return json({ ok: true });
 }
