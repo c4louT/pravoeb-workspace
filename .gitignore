@@ -14,3 +14,7 @@ tools/.venv/
 # Данные дашборда (хранятся в браузере, не в файлах)
 *.sqlite
 *.db
+
+# Cloudflare Workers build output
+dist/
+.wrangler/

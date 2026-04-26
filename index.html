@@ -559,33 +559,56 @@ async function register(){
 
 async function logout(){
   await sb.auth.signOut();
-  U=null;S={projects:[],contracts:[],payments:[],contacts:[]};dataLoaded=false;
+  U=null;S={projects:[],contracts:[],payments:[],contacts:[]};dataLoaded=false;loadingInFlight=null;
   document.getElementById('app').classList.remove('on');
   document.getElementById('auth-screen').style.display='flex';
 }
 
-async function loadData(){
-  const[p,c,pay,ct]=await Promise.all([
-    sb.from('projects').select('*').order('created_at'),
-    sb.from('contracts').select('*').order('created_at'),
-    sb.from('payments').select('*').order('created_at'),
-    sb.from('contacts').select('*').order('created_at')
+// Вспомогательное: одиночный запрос с таймаутом, чтобы Promise.all не залипал бесконечно
+function withTimeout(promise,ms,label){
+  return Promise.race([
+    Promise.resolve(promise).catch(e=>({data:null,error:{message:e?.message||String(e),code:'FETCH_ERROR'}})),
+    new Promise(res=>setTimeout(()=>res({data:null,error:{message:`Timeout ${ms}ms: ${label}`,code:'TIMEOUT'}}),ms))
   ]);
-  if(p.error)sbErr('загрузка проектов',p.error);
-  if(c.error)sbErr('загрузка договоров',c.error);
-  if(pay.error)sbErr('загрузка выплат',pay.error);
-  // Контрагенты — таблица из миграции 2026-04-26. Если ещё не накатана, скрываем фичи и показываем баннер.
-  if(ct.error&&(/relation .* does not exist/i.test(ct.error.message||'')||ct.error.code==='42P01')){
-    migrationApplied=false;
-    showMigrationBanner();
-  }else if(ct.error){
-    sbErr('загрузка контрагентов',ct.error);
-  }else{
-    migrationApplied=true;
-    hideMigrationBanner();
+}
+async function loadData(){
+  const T=10000; // 10 секунд на каждый запрос
+  let p={data:null,error:null},c={data:null,error:null},pay={data:null,error:null},ct={data:null,error:null};
+  try{
+    [p,c,pay,ct]=await Promise.all([
+      withTimeout(sb.from('projects').select('*').order('created_at'),T,'projects'),
+      withTimeout(sb.from('contracts').select('*').order('created_at'),T,'contracts'),
+      withTimeout(sb.from('payments').select('*').order('created_at'),T,'payments'),
+      withTimeout(sb.from('contacts').select('*').order('created_at'),T,'contacts')
+    ]);
+  }catch(e){
+    console.error('loadData failed unexpectedly',e);
+    toast('Сбой загрузки данных: '+(e?.message||e),'err','Сеть');
   }
-  S.projects=p.data||[];S.contracts=c.data||[];S.payments=pay.data||[];S.contacts=ct.data||[];
-  render();
+  try{
+    if(p.error&&p.error.code!=='TIMEOUT')sbErr('загрузка проектов',p.error);
+    else if(p.error)toast('Не дождался проектов — попробуй обновить страницу','err','Сеть');
+    if(c.error&&c.error.code!=='TIMEOUT')sbErr('загрузка договоров',c.error);
+    else if(c.error)toast('Не дождался договоров — попробуй обновить страницу','err','Сеть');
+    if(pay.error&&pay.error.code!=='TIMEOUT')sbErr('загрузка выплат',pay.error);
+    else if(pay.error)toast('Не дождался выплат — попробуй обновить страницу','err','Сеть');
+    // Контрагенты — таблица из миграции 2026-04-26. Если ещё не накатана, скрываем фичи и показываем баннер.
+    if(ct.error&&(/relation .* does not exist/i.test(ct.error.message||'')||ct.error.code==='42P01')){
+      migrationApplied=false;
+      showMigrationBanner();
+    }else if(ct.error&&ct.error.code!=='TIMEOUT'){
+      sbErr('загрузка контрагентов',ct.error);
+    }else if(ct.error){
+      toast('Не дождался контрагентов — попробуй обновить страницу','err','Сеть');
+    }else if(!ct.error&&ct.data!==null){
+      // Только при подтверждённом ответе сервера — иначе банер мог стоять обоснованно (миграция не накатана)
+      migrationApplied=true;
+      hideMigrationBanner();
+    }
+  }finally{
+    S.projects=p.data||[];S.contracts=c.data||[];S.payments=pay.data||[];S.contacts=ct.data||[];
+    try{render()}catch(e){console.error('render failed',e);toast('Сбой рендера: '+(e?.message||e),'err','UI')}
+  }
 }
 
 function showMigrationBanner(){
@@ -1208,20 +1231,31 @@ function wireSearch(){
   const cls=document.getElementById('cl-proj');if(cls)cls.addEventListener('change',()=>{clProj=cls.value||null;rChecklists()});
 }
 
+let loadingInFlight=null;
 sb.auth.onAuthStateChange(async(event,session)=>{
-  if(session?.user){
-    U=session.user;
-    document.getElementById('user-email').textContent=U.email;
-    document.getElementById('auth-screen').style.display='none';
-    document.getElementById('app').classList.add('on');
-    wireSearch();
-    if(!dataLoaded)showSkeletons();
-    await loadData();
-    dataLoaded=true;
-  }else{
-    U=null;
-    document.getElementById('auth-screen').style.display='flex';
-    document.getElementById('app').classList.remove('on');
+  try{
+    if(session?.user){
+      U=session.user;
+      document.getElementById('user-email').textContent=U.email;
+      document.getElementById('auth-screen').style.display='none';
+      document.getElementById('app').classList.add('on');
+      wireSearch();
+      if(!dataLoaded)showSkeletons();
+      // Гард: TOKEN_REFRESHED и SIGNED_IN могут стрельнуть подряд — не запускаем loadData параллельно.
+      if(!loadingInFlight){
+        loadingInFlight=loadData().finally(()=>{loadingInFlight=null});
+      }
+      await loadingInFlight;
+      dataLoaded=true;
+    }else{
+      U=null;
+      loadingInFlight=null;
+      document.getElementById('auth-screen').style.display='flex';
+      document.getElementById('app').classList.remove('on');
+    }
+  }catch(e){
+    console.error('auth handler failed',e);
+    toast('Сбой загрузки: '+(e?.message||e),'err','Сеть');
   }
 });
 
