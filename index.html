@@ -1770,14 +1770,19 @@ function cwPopulateModels(){
   sel.innerHTML=CW_MODELS.map(m=>`<option value="${m.id}"${m.id===cwModel?' selected':''}>${esc(m.label)}</option>`).join('');
   sel.addEventListener('change',()=>{cwModel=sel.value;try{localStorage.setItem('pravoeb_cw_model',cwModel)}catch(_){}}); 
 }
-// Минимальный safe-markdown: escape → code-блоки → inline code → bold/italic → переводы строк.
+// Минимальный safe-markdown. Внутри ```code``` / `inline` не трогаем ни bold/italic, ни переводы строк —
+// для этого сначала вырезаем их в массив и заменяем на плейсхолдеры, потом обрабатываем остальное,
+// и в конце возвращаем куски обратно.
 function cwRenderMarkdown(txt){
   let s=esc(String(txt||''));
-  s=s.replace(/```([\s\S]+?)```/g,(_,c)=>`<pre><code>${c}</code></pre>`);
-  s=s.replace(/`([^`\n]+)`/g,'<code>$1</code>');
+  const holders=[];
+  const tok=(html)=>{holders.push(html);return `\u0000CB${holders.length-1}\u0000`};
+  s=s.replace(/```([\s\S]+?)```/g,(_,c)=>tok(`<pre><code>${c}</code></pre>`));
+  s=s.replace(/`([^`\n]+)`/g,(_,c)=>tok(`<code>${c}</code>`));
   s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
   s=s.replace(/(^|[\s(])\*([^*\n]+?)\*(?=[\s).,!?:;]|$)/g,'$1<em>$2</em>');
   s=s.replace(/\n/g,'<br>');
+  s=s.replace(/\u0000CB(\d+)\u0000/g,(_,i)=>holders[+i]||'');
   return s;
 }
 function cwToggle(){
@@ -1852,6 +1857,8 @@ async function cwSend(){
       const body=await res.json().catch(()=>({}));
       cwAiWaiting=false;
       if(!res.ok||!body.ok){
+        // Если вопрос успел записаться в БД — показываем его локально, чтобы юзер не дубликатил сообщение пока realtime догоняет.
+        if(body.user_row)cwAppend(body.user_row);
         cwRender();
         const err=body.hint||body.detail||body.error||('HTTP '+res.status);
         toast('AI не ответил: '+err,'err','Чат');

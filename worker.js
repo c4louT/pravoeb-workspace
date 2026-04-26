@@ -296,7 +296,8 @@ async function handleChatAi(request, env) {
   // 3) Запрос в OpenRouter
   const ai = await openrouterChat(env, model, messages);
   if (!ai.ok) {
-    return json({ ok: false, error: 'ai_failed', detail: ai.error }, 502);
+    // user_row уже в БД; возвращаем его клиенту чтобы UI не терял сообщение пока realtime догоняет.
+    return json({ ok: false, error: 'ai_failed', detail: ai.error, user_row: userIns.row || null }, 502);
   }
 
   // 4) Сохраняем ответ 'ai' через service-role (чтобы RLS не требовал auth.uid==user_id для записи 'ai')
