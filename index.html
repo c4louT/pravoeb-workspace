@@ -1664,6 +1664,7 @@ let cwOpen=false;
 let cwChannel=null;          // realtime-подписка
 let cwUnreadCnt=0;
 let profileAvailable=true;   // станет false, если таблица profiles/chat_messages ещё не создана миграцией
+let cwKeyWired=false;        // keydown-листенер #cw-text вешается один раз на жизнь страницы
 
 async function loadProfile(){
   if(!U?.id)return null;
@@ -1805,7 +1806,10 @@ async function cwBootstrap(){
   cwRenderNotice();
   await cwLoadHistory();
   cwSubscribe();
-  const ta=document.getElementById('cw-text');if(ta)ta.addEventListener('keydown',cwKey);
+  // Вешаем keydown-листенер ровно один раз — иначе после logout/login Enter шлёт сообщение N раз.
+  if(!cwKeyWired){
+    const ta=document.getElementById('cw-text');if(ta){ta.addEventListener('keydown',cwKey);cwKeyWired=true}
+  }
 }
 
 let loadingInFlight=null;
