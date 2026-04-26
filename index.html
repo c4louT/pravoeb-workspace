@@ -217,7 +217,54 @@ th.sortable.act .ar{opacity:1}
 .prv-body{height:70vh;background:#fff;border:1px solid var(--brd);border-radius:2px;overflow:hidden;margin-bottom:1.2rem}
 .prv-body iframe{width:100%;height:100%;border:none}
 .prv-body .prv-fall{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--bg-el);color:var(--ink-m);text-align:center;padding:2rem;gap:1rem;font-family:'JetBrains Mono',monospace;font-size:.8rem}
-@media(max-width:768px){header,nav,main,footer,.top-bar{padding-left:1.2rem;padding-right:1.2rem}.fr{grid-template-columns:1fr}.sv{font-size:2rem}.md{padding:1.5rem;max-height:96vh}.mo{padding:.5rem}.tb-select{max-width:100%;width:100%}.search-input{min-width:0;width:100%}.toolbar{flex-direction:column;align-items:stretch}.ct-row{grid-template-columns:1fr 50px;gap:.4rem}.ct-row .ct-meta,.ct-row .ct-cnt{display:none}.ct-head{display:none}.ch-wrap{height:220px;padding:.6rem}.md-wide{padding:1rem}.prv-body{height:60vh}.gn-row,.gn-head{grid-template-columns:100px 1fr}}
+/* Календарь */
+.cal-bar{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.cal-nav{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.cal-tools{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.cal-views{margin-bottom:0}
+.cal-label{font-family:'Instrument Serif',serif;font-size:1.5rem;color:var(--ink);margin-left:.6rem;text-transform:capitalize}
+.cal-legend{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--ink-m);letter-spacing:.06em;text-transform:uppercase}
+.cal-legend span{display:inline-flex;align-items:center;gap:.4rem}
+.lg{display:inline-block;width:10px;height:10px;border-radius:2px}
+.lg-shoot{background:var(--red)} .lg-prep{background:var(--amber)} .lg-contract{background:var(--acc)} .lg-payment{background:var(--green)} .lg-deadline{background:#8a6fc9}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--brd);border:1px solid var(--brd);border-radius:2px;overflow:hidden}
+.cal-dow{background:var(--bg-el);color:var(--ink-m);font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;text-align:center;padding:.6rem .3rem}
+.cal-cell{background:var(--bg);min-height:90px;padding:.4rem;display:flex;flex-direction:column;gap:.2rem;cursor:pointer;transition:background .15s}
+.cal-cell:hover{background:var(--bg-el)}
+.cal-cell.cal-out{opacity:.35}
+.cal-cell.cal-today{outline:1px solid var(--acc);outline-offset:-1px}
+.cal-cell.cal-today .cal-dn{color:var(--acc);font-weight:600}
+.cal-dn{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ink);align-self:flex-end}
+.cal-evs{display:flex;flex-direction:column;gap:2px;margin-top:.1rem;overflow:hidden}
+.cal-ev{font-family:'JetBrains Mono',monospace;font-size:.62rem;padding:1px 5px;border-radius:2px;color:var(--bg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-ev.e-shoot{background:var(--red)} .cal-ev.e-prep{background:var(--amber);color:var(--bg)} .cal-ev.e-contract{background:var(--acc)} .cal-ev.e-payment{background:var(--green)} .cal-ev.e-deadline{background:#8a6fc9}
+.cal-ev-more{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--ink-m);padding:1px 5px}
+/* Неделя */
+.cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:.6rem}
+.cal-wd{background:var(--bg-el);border:1px solid var(--brd);border-radius:2px;padding:.8rem;min-height:160px;display:flex;flex-direction:column;gap:.4rem}
+.cal-wd-h{font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--ink-m);letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--brd-s);padding-bottom:.4rem;margin-bottom:.2rem}
+.cal-wd.cal-today .cal-wd-h{color:var(--acc)}
+.cal-wd-ev{font-family:'JetBrains Mono',monospace;font-size:.66rem;padding:.3rem .5rem;border-radius:2px;color:var(--bg);cursor:pointer}
+.cal-wd-ev.e-shoot{background:var(--red)} .cal-wd-ev.e-prep{background:var(--amber)} .cal-wd-ev.e-contract{background:var(--acc)} .cal-wd-ev.e-payment{background:var(--green)} .cal-wd-ev.e-deadline{background:#8a6fc9}
+/* Список */
+.cal-list-day{padding:1rem;border-bottom:1px solid var(--brd);background:var(--bg-el)}
+.cal-list-day:last-child{border:none}
+.cal-list-h{display:flex;align-items:baseline;gap:.6rem;margin-bottom:.6rem}
+.cal-list-h .d{font-family:'Instrument Serif',serif;font-size:1.4rem;color:var(--ink)}
+.cal-list-h .dow{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ink-m);letter-spacing:.06em;text-transform:uppercase}
+.cal-list-h .today{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--bg);background:var(--acc);padding:1px 6px;border-radius:2px}
+.cal-list-row{display:flex;gap:.6rem;align-items:flex-start;padding:.4rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem}
+.cal-list-row .ic{width:8px;height:8px;border-radius:50%;margin-top:.4rem;flex-shrink:0}
+.cal-list-row .ic.e-shoot{background:var(--red)} .cal-list-row .ic.e-prep{background:var(--amber)} .cal-list-row .ic.e-contract{background:var(--acc)} .cal-list-row .ic.e-payment{background:var(--green)} .cal-list-row .ic.e-deadline{background:#8a6fc9}
+.cal-list-row .tt{color:var(--ink);flex:1}
+.cal-list-row .meta{color:var(--ink-m);font-size:.7rem}
+.dm-row{display:flex;gap:.6rem;align-items:flex-start;padding:.6rem 0;border-bottom:1px solid var(--brd-s);font-family:'JetBrains Mono',monospace;font-size:.78rem}
+.dm-row:last-child{border:none}
+.dm-row .ic{width:8px;height:8px;border-radius:50%;margin-top:.4rem;flex-shrink:0}
+.dm-row .ic.e-shoot{background:var(--red)} .dm-row .ic.e-prep{background:var(--amber)} .dm-row .ic.e-contract{background:var(--acc)} .dm-row .ic.e-payment{background:var(--green)} .dm-row .ic.e-deadline{background:#8a6fc9}
+.dm-row .tt{color:var(--ink);flex:1}
+.dm-row .meta{color:var(--ink-m);font-size:.7rem}
+@media(max-width:768px){header,nav,main,footer,.top-bar{padding-left:1.2rem;padding-right:1.2rem}.fr{grid-template-columns:1fr}.sv{font-size:2rem}.md{padding:1.5rem;max-height:96vh}.mo{padding:.5rem}.tb-select{max-width:100%;width:100%}.search-input{min-width:0;width:100%}.toolbar{flex-direction:column;align-items:stretch}.ct-row{grid-template-columns:1fr 50px;gap:.4rem}.ct-row .ct-meta,.ct-row .ct-cnt{display:none}.ct-head{display:none}.ch-wrap{height:220px;padding:.6rem}.md-wide{padding:1rem}.prv-body{height:60vh}.gn-row,.gn-head{grid-template-columns:100px 1fr}.cal-cell{min-height:60px;padding:.2rem}.cal-ev{font-size:.55rem;padding:0 3px}.cal-dn{font-size:.6rem}.cal-week{grid-template-columns:1fr;gap:.4rem}.cal-wd{min-height:0}.cal-bar{flex-direction:column;align-items:stretch}.cal-tools{justify-content:space-between}}
 </style>
 </head>
 <body>
@@ -267,6 +314,7 @@ th.sortable.act .ar{opacity:1}
     <span class="nav-tab" data-tab="contacts">Контрагенты</span>
     <span class="nav-tab" data-tab="checklists">Чеклисты</span>
     <span class="nav-tab" data-tab="analytics">Аналитика</span>
+    <span class="nav-tab" data-tab="calendar">Календарь</span>
     <span class="nav-tab" data-tab="timeline">Таймлайн</span>
   </nav>
   <main>
@@ -363,6 +411,32 @@ th.sortable.act .ar{opacity:1}
       <div class="ch-wrap"><canvas id="budget-chart"></canvas></div>
       <h3 class="st-h">Gantt — проекты по месяцам</h3>
       <div id="gantt-view"></div>
+    </section>
+    <section class="tv" id="calendar">
+      <div class="cal-bar">
+        <div class="cal-nav">
+          <button class="btn btn-s" id="cal-prev" aria-label="Предыдущий период">‹</button>
+          <button class="btn btn-s" id="cal-today">Сегодня</button>
+          <button class="btn btn-s" id="cal-next" aria-label="Следующий период">›</button>
+          <span class="cal-label" id="cal-label"></span>
+        </div>
+        <div class="cal-tools">
+          <select class="tb-select" id="cal-proj" aria-label="Фильтр по проекту"><option value="all">Все проекты</option></select>
+          <div class="fb cal-views" id="cal-views">
+            <span class="fc active" data-view="month">Месяц</span>
+            <span class="fc" data-view="week">Неделя</span>
+            <span class="fc" data-view="list">Список</span>
+          </div>
+        </div>
+      </div>
+      <div class="cal-legend">
+        <span><i class="lg lg-shoot"></i>Съёмочный период</span>
+        <span><i class="lg lg-prep"></i>Подготовка / разработка</span>
+        <span><i class="lg lg-contract"></i>Договор</span>
+        <span><i class="lg lg-payment"></i>Платёж</span>
+        <span><i class="lg lg-deadline"></i>Дедлайн проекта</span>
+      </div>
+      <div id="cal-view"></div>
     </section>
     <section class="tv" id="timeline">
       <h2 class="st">Таймлайн <span class="st-sub">хронология</span></h2>
@@ -474,6 +548,13 @@ th.sortable.act .ar{opacity:1}
   <div class="ma"><button class="btn" onclick="closeM('paym')">Отмена</button><button class="btn btn-p" onclick="savePay(event)">Добавить</button></div>
 </div></div>
 
+<!-- Модалка: События дня в календаре -->
+<div class="mo" id="dm"><div class="md">
+  <h3 class="mt" id="dm-title">События дня</h3><p class="ms" id="dm-sub"></p>
+  <div id="dm-body"></div>
+  <div class="ma"><button class="btn" onclick="closeM('dm')">Закрыть</button></div>
+</div></div>
+
 <!-- Модалка: Превью документа -->
 <div class="mo" id="prv"><div class="md md-wide">
   <h3 class="mt" id="prv-title">Документ</h3><p class="ms" id="prv-sub">Превью без скачивания</p>
@@ -508,6 +589,8 @@ let clProj=null;
 let migrationApplied=true; // contacts/contact_id/checklist_state — выставится в false при загрузке, если SQL ещё не накатан
 let anProj='all',anRange=12; // фильтры аналитики
 let chPay=null,chBudget=null; // экземпляры Chart.js (чтобы dispose'ить при перерисовке)
+let calCursor=new Date();calCursor.setHours(0,0,0,0);calCursor.setDate(1); // начало текущего видимого месяца/недели
+let calView='month',calProj='all'; // 'month' | 'week' | 'list'
 
 function fmt(n){return(n||0).toLocaleString('ru-RU')}
 function esc(s){return(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
@@ -533,7 +616,7 @@ function showSkeletons(){
 }
 function populateProjFilters(){
   const opts='<option value="all">Все проекты</option>'+S.projects.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
-  ['c-proj-filter','pay-proj-filter','t-proj-filter','an-proj'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML=opts;el.value=S.projects.find(p=>p.id===cur)?cur:'all'});
+  ['c-proj-filter','pay-proj-filter','t-proj-filter','an-proj','cal-proj'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML=opts;el.value=S.projects.find(p=>p.id===cur)?cur:'all'});
   const tEl=document.getElementById('c-type-filter');if(tEl){const cur=tEl.value;tEl.innerHTML='<option value="all">Все типы</option>'+Object.entries(TL).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('');tEl.value=TL[cur]?cur:'all'}
 }
 function rChips(){
@@ -915,7 +998,7 @@ function closeM(id){
 }
 
 // ============ RENDER ============
-function render(){populateProjFilters();rChips();rStats();rAlerts();rProgress();rDonut();rProjects();rContracts();rPayments();rContacts();rChecklists();rAnalytics();rTimeline();}
+function render(){populateProjFilters();rChips();rStats();rAlerts();rProgress();rDonut();rProjects();rContracts();rPayments();rContacts();rChecklists();rAnalytics();rCalendar();rTimeline();}
 
 function rStats(){
   const ap=S.projects.filter(p=>['production','pre-production','post-production'].includes(p.status)).length;
@@ -1101,6 +1184,144 @@ function rGantt(){
   }).join('');
   tgt.innerHTML=`<div class="gn-wrap"><div class="gn-table"><div class="gn-head"><div></div><div class="gn-head-mo">${head}</div></div>${rows}</div></div>`;
 }
+
+// ============ CALENDAR ============
+// Собираем все события в формат {date:'YYYY-MM-DD', endDate?, type, title, meta, projectId, ref}.
+// Периоды (съёмки/подготовка) разворачиваем по дням внутри ренджа в каждой ячейке отдельно — через перекрытие интервалов.
+function isoDate(d){const x=new Date(d);if(isNaN(x))return null;return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
+function parseISO(s){if(!s)return null;const[y,m,d]=String(s).slice(0,10).split('-').map(Number);if(!y||!m||!d)return null;return new Date(y,m-1,d)}
+function sameDay(a,b){return a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+function inRange(d,from,to){return d&&d>=from&&d<=to}
+function calStartOfWeek(d){const x=new Date(d);x.setHours(0,0,0,0);const dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);return x} // понедельник = 0
+function calEvents(){
+  const ev=[];
+  S.projects.forEach(p=>{
+    if(calProj!=='all'&&p.id!==calProj)return;
+    const ps=parseISO(p.start_date),pe=parseISO(p.end_date);
+    // период съёмок/подготовки — отдельный «span» с типом по статусу
+    if(ps||pe){
+      const t=p.status==='production'?'shoot':(p.status==='completed'?'shoot':'prep');
+      ev.push({type:t,kind:'span',start:ps||pe,end:pe||ps,title:p.name||'—',meta:PL[p.status]||p.status||'',projectId:p.id,ref:{kind:'project',id:p.id}});
+    }
+    if(pe)ev.push({type:'deadline',kind:'point',date:pe,title:'Окончание: '+(p.name||'—'),meta:PL[p.status]||'',projectId:p.id,ref:{kind:'project',id:p.id}});
+  });
+  S.contracts.forEach(c=>{
+    if(calProj!=='all'&&c.project_id!==calProj)return;
+    const d=parseISO(c.date);if(!d)return;
+    const pr=S.projects.find(x=>x.id===c.project_id);
+    ev.push({type:'contract',kind:'point',date:d,title:`${TL[c.type]||c.type||'—'} · ${c.person||'—'}`,meta:`${pr?.name||'—'} · ${SL[c.status]||c.status||''}`,projectId:c.project_id,ref:{kind:'contract',id:c.id}});
+  });
+  S.payments.forEach(p=>{
+    const c=S.contracts.find(x=>x.id===p.contract_id);if(!c)return;
+    if(calProj!=='all'&&c.project_id!==calProj)return;
+    const d=parseISO(p.date);if(!d)return;
+    const pr=S.projects.find(x=>x.id===c.project_id);
+    ev.push({type:'payment',kind:'point',date:d,title:`${fmt(p.amount)} ₽ · ${c.person||'—'}`,meta:`${pr?.name||'—'}${p.note?' · '+p.note:''}`,projectId:c.project_id,ref:{kind:'payment',id:p.id}});
+  });
+  return ev;
+}
+function eventsOnDay(ev,day){
+  return ev.filter(e=>{
+    if(e.kind==='span')return inRange(day,e.start,e.end);
+    return sameDay(e.date,day);
+  });
+}
+function rCalendar(){
+  const tgt=document.getElementById('cal-view');if(!tgt)return;
+  // обновляем title и привязываем кнопки переключения
+  const lbl=document.getElementById('cal-label');
+  if(lbl){
+    if(calView==='week'){const s=calStartOfWeek(calCursor),e=new Date(s);e.setDate(s.getDate()+6);lbl.textContent=isoDate(s).slice(5)+' — '+isoDate(e).slice(5)+' '+e.getFullYear()}
+    else{lbl.textContent=calCursor.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})}
+  }
+  document.querySelectorAll('#cal-views .fc').forEach(el=>{el.classList.toggle('active',el.dataset.view===calView);el.onclick=()=>{calView=el.dataset.view;rCalendar()}});
+  if(calView==='month')rCalMonth(tgt);
+  else if(calView==='week')rCalWeek(tgt);
+  else rCalList(tgt);
+}
+function rCalMonth(tgt){
+  const ev=calEvents();
+  const first=new Date(calCursor.getFullYear(),calCursor.getMonth(),1);
+  const startOffset=(first.getDay()+6)%7; // Monday=0
+  const gridStart=new Date(first);gridStart.setDate(1-startOffset);
+  const dows=['пн','вт','ср','чт','пт','сб','вс'];
+  const today=new Date();today.setHours(0,0,0,0);
+  let html='<div class="cal-grid">'+dows.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  for(let i=0;i<42;i++){
+    const day=new Date(gridStart);day.setDate(gridStart.getDate()+i);
+    const isOut=day.getMonth()!==first.getMonth();
+    const isToday=sameDay(day,today);
+    const dayEv=eventsOnDay(ev,day);
+    const top=dayEv.slice(0,3);
+    const more=dayEv.length-top.length;
+    const evHTML=top.map(e=>`<div class="cal-ev e-${e.type}" title="${esc(e.title)}">${esc(e.title)}</div>`).join('')+(more>0?`<div class="cal-ev-more">+${more}</div>`:'');
+    html+=`<div class="cal-cell${isOut?' cal-out':''}${isToday?' cal-today':''}" data-d="${esc(isoDate(day))}"><span class="cal-dn">${day.getDate()}</span><div class="cal-evs">${evHTML}</div></div>`;
+  }
+  html+='</div>';
+  tgt.innerHTML=html;
+  tgt.querySelectorAll('.cal-cell').forEach(el=>el.addEventListener('click',()=>openDayModal(el.dataset.d)));
+}
+function rCalWeek(tgt){
+  const ev=calEvents();
+  const start=calStartOfWeek(calCursor);
+  const today=new Date();today.setHours(0,0,0,0);
+  const dows=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+  let html='<div class="cal-week">';
+  for(let i=0;i<7;i++){
+    const day=new Date(start);day.setDate(start.getDate()+i);
+    const isToday=sameDay(day,today);
+    const dayEv=eventsOnDay(ev,day);
+    const evHTML=dayEv.length?dayEv.map(e=>`<div class="cal-wd-ev e-${e.type}" title="${esc(e.meta||'')}">${esc(e.title)}</div>`).join(''):'<div style="color:var(--ink-d);font-family:JetBrains Mono,monospace;font-size:.7rem">—</div>';
+    html+=`<div class="cal-wd${isToday?' cal-today':''}" data-d="${esc(isoDate(day))}"><div class="cal-wd-h">${dows[i]} · ${day.getDate()}.${String(day.getMonth()+1).padStart(2,'0')}</div>${evHTML}</div>`;
+  }
+  html+='</div>';
+  tgt.innerHTML=html;
+  tgt.querySelectorAll('.cal-wd').forEach(el=>el.addEventListener('click',()=>openDayModal(el.dataset.d)));
+}
+function rCalList(tgt){
+  const ev=calEvents();
+  // Берём диапазон ±60 дней от cursor, группируем по дню
+  const from=new Date(calCursor);from.setDate(from.getDate()-60);
+  const to=new Date(calCursor);to.setDate(to.getDate()+60);
+  const byDay=new Map();
+  for(let d=new Date(from);d<=to;d.setDate(d.getDate()+1)){
+    const items=eventsOnDay(ev,new Date(d));
+    if(items.length)byDay.set(isoDate(d),{day:new Date(d),items});
+  }
+  if(!byDay.size){tgt.innerHTML=emptyHTML('—','Пусто','В выбранном диапазоне (±60 дней) нет событий. Добавь договор/проект/выплату — он появится здесь.','');return}
+  const today=new Date();today.setHours(0,0,0,0);
+  const dows=['вс','пн','вт','ср','чт','пт','сб'];
+  let html='';
+  for(const[k,v]of byDay){
+    const isToday=sameDay(v.day,today);
+    html+=`<div class="cal-list-day"><div class="cal-list-h"><span class="d">${v.day.getDate()} ${v.day.toLocaleDateString('ru-RU',{month:'long'})}</span><span class="dow">${dows[v.day.getDay()]}</span>${isToday?'<span class="today">Сегодня</span>':''}</div>`;
+    html+=v.items.map(e=>`<div class="cal-list-row"><span class="ic e-${e.type}"></span><div class="tt">${esc(e.title)}<div class="meta">${esc(e.meta||'')}</div></div></div>`).join('');
+    html+='</div>';
+  }
+  tgt.innerHTML=html;
+}
+function openDayModal(dIso){
+  const day=parseISO(dIso);if(!day)return;
+  const items=eventsOnDay(calEvents(),day);
+  document.getElementById('dm-title').textContent=day.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('dm-sub').textContent=items.length?`${items.length} соб.`:'нет событий';
+  const body=document.getElementById('dm-body');
+  if(!items.length){body.innerHTML='<div style="color:var(--ink-m);font-family:JetBrains Mono,monospace;font-size:.78rem;padding:1rem 0">В этот день ничего не запланировано.</div>'}
+  else{body.innerHTML=items.map(e=>{
+    let act='';
+    if(e.ref?.kind==='project')act=`<button class="btn btn-s" onclick="closeM('dm');document.querySelector('.nav-tab[data-tab=projects]').click();">К проекту →</button>`;
+    else if(e.ref?.kind==='contract')act=`<button class="btn btn-s" onclick="closeM('dm');document.querySelector('.nav-tab[data-tab=contracts]').click();">К договору →</button>`;
+    else if(e.ref?.kind==='payment')act=`<button class="btn btn-s" onclick="closeM('dm');document.querySelector('.nav-tab[data-tab=payments]').click();">К выплате →</button>`;
+    return`<div class="dm-row"><span class="ic e-${e.type}"></span><div class="tt">${esc(e.title)}<div class="meta">${esc(e.meta||'')}</div></div>${act}</div>`;
+  }).join('')}
+  document.getElementById('dm').classList.add('on');
+}
+function calNav(dir){
+  if(calView==='week'){const d=new Date(calCursor);d.setDate(d.getDate()+7*dir);calCursor=d}
+  else{calCursor=new Date(calCursor.getFullYear(),calCursor.getMonth()+dir,1)}
+  rCalendar();
+}
+function calToday(){const d=new Date();d.setHours(0,0,0,0);calCursor=calView==='week'?d:new Date(d.getFullYear(),d.getMonth(),1);rCalendar()}
 
 function rTimeline(){
   const tgt=document.getElementById('tl-view');if(!tgt)return;
@@ -1365,6 +1586,10 @@ function wireSearch(){
   const cls=document.getElementById('cl-proj');if(cls)cls.addEventListener('change',()=>{clProj=cls.value||null;rChecklists()});
   const anP=document.getElementById('an-proj');if(anP)anP.addEventListener('change',()=>{anProj=anP.value;rAnalytics()});
   const anR=document.getElementById('an-range');if(anR)anR.addEventListener('change',()=>{anRange=Number(anR.value)||12;rAnalytics()});
+  const cP=document.getElementById('cal-prev');if(cP)cP.addEventListener('click',()=>calNav(-1));
+  const cN=document.getElementById('cal-next');if(cN)cN.addEventListener('click',()=>calNav(1));
+  const cT=document.getElementById('cal-today');if(cT)cT.addEventListener('click',calToday);
+  const cPj=document.getElementById('cal-proj');if(cPj)cPj.addEventListener('change',()=>{calProj=cPj.value;rCalendar()});
 }
 
 let loadingInFlight=null;
