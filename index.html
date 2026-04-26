@@ -1701,6 +1701,7 @@ const CW_MODELS=[
   {id:'deepseek/deepseek-chat',label:'DeepSeek V3 ($)'},
 ];
 let cwModel=localStorage.getItem('pravoeb_cw_model')||CW_MODELS[0].id;
+if(!CW_MODELS.some(m=>m.id===cwModel))cwModel=CW_MODELS[0].id;
 
 async function loadProfile(){
   if(!U?.id)return null;
