@@ -1877,10 +1877,16 @@ async function cwSend(){
         toast('AI не ответил: '+err,'err','Чат');
         return;
       }
-      // Оба сообщения ('out' и 'ai') уже в БД Worker-ом. Подстрахуемся локальным append с настоящими UUID (dedupe по id совпадёт с realtime).
-      // Фоллбэк на синтетический id не делаем: если row не вернулся, realtime всё равно доставит запись из БД.
+      // Оба сообщения уже в БД (ai_row с настоящим UUID совпадёт с realtime-доставкой по id — dedupe сработает).
       if(body.user_row)cwAppend(body.user_row);
-      if(body.ai_row)cwAppend(body.ai_row);
+      if(body.ai_row){
+        cwAppend(body.ai_row);
+      }else if(body.text){
+        // DB-insert ответа не удался, но сам ответ получен — показываем юзеру с синтетическим id.
+        // Realtime ничего не доставит (записи нет), так что дубля не будет.
+        const fallbackId=(crypto&&crypto.randomUUID)?crypto.randomUUID():'ai-'+Date.now();
+        cwAppend({id:fallbackId,direction:'ai',text:body.text,model:body.model,created_at:new Date().toISOString()});
+      }
     }else{
       const res=await fetch('/api/chat/send',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+jwt},body:JSON.stringify({text})});
       const body=await res.json().catch(()=>({}));
