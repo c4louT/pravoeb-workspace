@@ -14,3 +14,10 @@ tools/.venv/
 # Данные дашборда (хранятся в браузере, не в файлах)
 *.sqlite
 *.db
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
