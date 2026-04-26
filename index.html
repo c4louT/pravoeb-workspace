@@ -1817,7 +1817,7 @@ function cwAppend(row){
   cwHistory.push(row);
   if(cwHistory.length>200)cwHistory=cwHistory.slice(-200);
   cwRender();
-  if(row.direction==='in'&&!cwOpen){
+  if((row.direction==='in'||row.direction==='ai')&&!cwOpen){
     cwUnreadCnt++;
     document.getElementById('cw-dot')?.classList.add('on');
   }
@@ -1851,14 +1851,27 @@ async function cwSend(){
     const jwt=session?.access_token;
     if(!jwt){toast('Токен истёк, перелогинься','err','Auth');return}
     if(cwMode==='ai'){
+      const savedText=text;
       ta.value='';
       cwAiWaiting=true;cwRender();
-      const res=await fetch('/api/chat/ai',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+jwt},body:JSON.stringify({text,model:cwModel})});
-      const body=await res.json().catch(()=>({}));
+      let res,body;
+      try{
+        res=await fetch('/api/chat/ai',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+jwt},body:JSON.stringify({text,model:cwModel})});
+        body=await res.json().catch(()=>({}));
+      }catch(netErr){
+        cwAiWaiting=false;cwRender();
+        ta.value=savedText;  // сеть упала — возвращаем текст юзеру чтобы он мог отправить повторно
+        throw netErr;
+      }
       cwAiWaiting=false;
       if(!res.ok||!body.ok){
-        // Если вопрос успел записаться в БД — показываем его локально, чтобы юзер не дубликатил сообщение пока realtime догоняет.
-        if(body.user_row)cwAppend(body.user_row);
+        if(body.user_row){
+          // Вопрос успел записаться в БД → показываем его локально и textarea не трогаем (чистый был).
+          cwAppend(body.user_row);
+        }else{
+          // Ничего не записалось → возвращаем текст чтобы юзер мог переотправить.
+          ta.value=savedText;
+        }
         cwRender();
         const err=body.hint||body.detail||body.error||('HTTP '+res.status);
         toast('AI не ответил: '+err,'err','Чат');
