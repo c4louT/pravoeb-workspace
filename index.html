@@ -567,7 +567,7 @@ async function logout(){
 // Вспомогательное: одиночный запрос с таймаутом, чтобы Promise.all не залипал бесконечно
 function withTimeout(promise,ms,label){
   return Promise.race([
-    promise,
+    Promise.resolve(promise).catch(e=>({data:null,error:{message:e?.message||String(e),code:'FETCH_ERROR'}})),
     new Promise(res=>setTimeout(()=>res({data:null,error:{message:`Timeout ${ms}ms: ${label}`,code:'TIMEOUT'}}),ms))
   ]);
 }
@@ -598,6 +598,8 @@ async function loadData(){
       showMigrationBanner();
     }else if(ct.error&&ct.error.code!=='TIMEOUT'){
       sbErr('загрузка контрагентов',ct.error);
+    }else if(ct.error){
+      toast('Не дождался контрагентов — попробуй обновить страницу','err','Сеть');
     }else if(!ct.error&&ct.data!==null){
       // Только при подтверждённом ответе сервера — иначе банер мог стоять обоснованно (миграция не накатана)
       migrationApplied=true;
