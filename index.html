@@ -1686,6 +1686,7 @@ let cwChannel=null;          // realtime-подписка
 let cwUnreadCnt=0;
 let profileAvailable=true;   // станет false, если таблица profiles/chat_messages ещё не создана миграцией
 let cwKeyWired=false;        // keydown-листенер #cw-text вешается один раз на жизнь страницы
+let cwModelsWired=false;     // change-листенер #cw-model тоже однократно
 let cwMode='ai';             // 'ai' | 'tg' — куда улетает следующее сообщение
 let cwAiWaiting=false;       // показываем индикатор «печатает…»
 const CW_MODELS=[
@@ -1768,7 +1769,10 @@ function cwSetMode(m){
 function cwPopulateModels(){
   const sel=document.getElementById('cw-model');if(!sel)return;
   sel.innerHTML=CW_MODELS.map(m=>`<option value="${m.id}"${m.id===cwModel?' selected':''}>${esc(m.label)}</option>`).join('');
-  sel.addEventListener('change',()=>{cwModel=sel.value;try{localStorage.setItem('pravoeb_cw_model',cwModel)}catch(_){}}); 
+  if(!cwModelsWired){
+    sel.addEventListener('change',()=>{cwModel=sel.value;try{localStorage.setItem('pravoeb_cw_model',cwModel)}catch(_){}}); 
+    cwModelsWired=true;
+  }
 }
 // Минимальный safe-markdown. Внутри ```code``` / `inline` не трогаем ни bold/italic, ни переводы строк —
 // для этого сначала вырезаем их в массив и заменяем на плейсхолдеры, потом обрабатываем остальное,
