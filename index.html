@@ -264,6 +264,36 @@ th.sortable.act .ar{opacity:1}
 .dm-row .ic.e-shoot{background:var(--red)} .dm-row .ic.e-prep{background:var(--amber)} .dm-row .ic.e-contract{background:var(--acc)} .dm-row .ic.e-payment{background:var(--green)} .dm-row .ic.e-deadline{background:#8a6fc9}
 .dm-row .tt{color:var(--ink);flex:1}
 .dm-row .meta{color:var(--ink-m);font-size:.7rem}
+/* Чат-виджет */
+#cw-root{position:fixed;right:1.2rem;bottom:1.2rem;z-index:500;font-family:'JetBrains Mono',monospace}
+#cw-fab{width:52px;height:52px;border-radius:50%;background:var(--acc);color:var(--bg);border:none;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.5);font-size:1.4rem;display:flex;align-items:center;justify-content:center;transition:transform .2s;position:relative}
+#cw-fab:hover{transform:scale(1.06)}
+#cw-fab .dot{position:absolute;top:4px;right:4px;width:10px;height:10px;border-radius:50%;background:var(--red);border:2px solid var(--bg-el);display:none}
+#cw-fab .dot.on{display:block}
+#cw-panel{display:none;flex-direction:column;position:absolute;right:0;bottom:64px;width:min(360px,calc(100vw - 2.4rem));height:min(520px,calc(100vh - 8rem));background:var(--bg-el);border:1px solid var(--brd);border-radius:4px;box-shadow:0 10px 40px rgba(0,0,0,.6);overflow:hidden}
+#cw-panel.on{display:flex}
+.cw-head{display:flex;align-items:center;justify-content:space-between;padding:.7rem .9rem;border-bottom:1px solid var(--brd);background:var(--bg)}
+.cw-title{font-size:.72rem;color:var(--ink);letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:.5rem}
+.cw-title .sub{font-family:'Fraunces',serif;font-size:.7rem;color:var(--ink-m);text-transform:none;letter-spacing:0}
+.cw-x{background:transparent;border:none;color:var(--ink-m);font-size:1.2rem;cursor:pointer;padding:0 .2rem}
+.cw-x:hover{color:var(--red)}
+.cw-notice{padding:.7rem .9rem;background:rgba(212,168,83,.1);border-bottom:1px solid var(--brd-s);font-size:.7rem;color:var(--ink);line-height:1.5}
+.cw-notice a,.cw-notice button.lnk{color:var(--acc);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline;font:inherit}
+.cw-history{flex:1;overflow-y:auto;padding:.7rem;display:flex;flex-direction:column;gap:.5rem;background:var(--bg)}
+.cw-empty{color:var(--ink-m);font-size:.75rem;text-align:center;padding:2rem .5rem;font-family:'Fraunces',serif;font-style:italic}
+.cw-msg{max-width:82%;padding:.5rem .75rem;border-radius:10px;font-size:.78rem;font-family:'Fraunces',serif;line-height:1.35;white-space:pre-wrap;word-wrap:break-word}
+.cw-msg.out{align-self:flex-end;background:var(--acc);color:var(--bg);border-bottom-right-radius:2px}
+.cw-msg.in{align-self:flex-start;background:var(--bg-el);border:1px solid var(--brd);color:var(--ink);border-bottom-left-radius:2px}
+.cw-msg .ts{font-size:.6rem;font-family:'JetBrains Mono',monospace;opacity:.7;margin-top:.25rem;letter-spacing:.04em}
+.cw-input{display:flex;gap:.4rem;padding:.6rem;border-top:1px solid var(--brd);background:var(--bg-el)}
+.cw-input textarea{flex:1;resize:none;background:var(--bg);border:1px solid var(--brd);color:var(--ink);padding:.5rem .6rem;font-family:'Fraunces',serif;font-size:.85rem;border-radius:2px;max-height:120px}
+.cw-input textarea:focus{outline:none;border-color:var(--acc)}
+.cw-input button{background:var(--acc);color:var(--bg);border:none;padding:0 .9rem;border-radius:2px;cursor:pointer;font-size:1rem;font-weight:600}
+.cw-input button:disabled{opacity:.45;cursor:not-allowed}
+.cw-sending{opacity:.55}
+/* Кнопка Профиль в top-bar */
+.prof-btn{background:transparent;border:1px solid var(--brd);color:var(--ink-m);padding:.3rem .8rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s;margin-right:.4rem}
+.prof-btn:hover{border-color:var(--acc);color:var(--acc)}
 @media(max-width:768px){header,nav,main,footer,.top-bar{padding-left:1.2rem;padding-right:1.2rem}.fr{grid-template-columns:1fr}.sv{font-size:2rem}.md{padding:1.5rem;max-height:96vh}.mo{padding:.5rem}.tb-select{max-width:100%;width:100%}.search-input{min-width:0;width:100%}.toolbar{flex-direction:column;align-items:stretch}.ct-row{grid-template-columns:1fr 50px;gap:.4rem}.ct-row .ct-meta,.ct-row .ct-cnt{display:none}.ct-head{display:none}.ch-wrap{height:220px;padding:.6rem}.md-wide{padding:1rem}.prv-body{height:60vh}.gn-row,.gn-head{grid-template-columns:100px 1fr}.cal-cell{min-height:60px;padding:.2rem}.cal-ev{font-size:.55rem;padding:0 3px}.cal-dn{font-size:.6rem}.cal-week{grid-template-columns:1fr;gap:.4rem}.cal-wd{min-height:0}.cal-bar{flex-direction:column;align-items:stretch}.cal-tools{justify-content:space-between}}
 </style>
 </head>
@@ -298,7 +328,10 @@ th.sortable.act .ar{opacity:1}
 <div class="app" id="app">
   <div class="top-bar">
     <span>⚖️ Правоеб · <span id="user-email"></span></span>
-    <button class="logout-btn" onclick="logout()">Выйти</button>
+    <span style="display:flex;gap:.4rem;align-items:center">
+      <button class="prof-btn" onclick="openProfile()">Профиль</button>
+      <button class="logout-btn" onclick="logout()">Выйти</button>
+    </span>
   </div>
   <header>
     <div class="brand">
@@ -561,6 +594,37 @@ th.sortable.act .ar{opacity:1}
   <div id="prv-body" class="prv-body"></div>
   <div class="ma"><button class="btn" onclick="closeM('prv')">Закрыть</button><a class="btn btn-p" id="prv-dl" target="_blank" rel="noopener">Скачать</a></div>
 </div></div>
+
+<!-- Модалка: Профиль (Telegram ID) -->
+<div class="mo" id="prfm"><div class="md">
+  <h3 class="mt">Профиль</h3><p class="ms">Привязка к Telegram-боту</p>
+  <div class="form-group"><label class="form-label">Имя (для шапки сообщений)</label><input class="form-input" id="prf-name" placeholder="Артемий"></div>
+  <div class="form-group"><label class="form-label">Telegram chat_id</label><input class="form-input" type="text" id="prf-tgid" placeholder="849267213" inputmode="numeric" pattern="[0-9-]*"></div>
+  <p class="ms" style="margin-top:-.4rem;line-height:1.5">
+    Открой бота <b id="prf-botlink">@PravoeBot</b> в Telegram, напиши <code>/start</code> — он пришлёт твой chat_id. Вставь сюда.
+  </p>
+  <div class="ma">
+    <button class="btn" onclick="closeM('prfm')">Закрыть</button>
+    <button class="btn btn-p" onclick="saveProfile()">Сохранить</button>
+  </div>
+</div></div>
+
+<!-- Чат-виджет (live-чат с Telegram-ботом) -->
+<div id="cw-root" style="display:none">
+  <button id="cw-fab" title="Чат с ботом" onclick="cwToggle()">💬<span class="dot" id="cw-dot"></span></button>
+  <div id="cw-panel">
+    <div class="cw-head">
+      <span class="cw-title">Чат <span class="sub">↔ Telegram</span></span>
+      <button class="cw-x" onclick="cwToggle()" aria-label="Закрыть">×</button>
+    </div>
+    <div class="cw-notice" id="cw-notice" style="display:none"></div>
+    <div class="cw-history" id="cw-history"></div>
+    <div class="cw-input">
+      <textarea id="cw-text" placeholder="Напиши сообщение боту…" rows="2"></textarea>
+      <button id="cw-send" onclick="cwSend()" aria-label="Отправить">↑</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const SB_URL='https://vcjwzkbsivgiivgvibjo.supabase.co';
@@ -1592,6 +1656,162 @@ function wireSearch(){
   const cPj=document.getElementById('cal-proj');if(cPj)cPj.addEventListener('change',()=>{calProj=cPj.value;rCalendar()});
 }
 
+// ============ CHAT WIDGET + PROFILE (Phase 4.2) ============
+const BOT_USERNAME='PravoeBot';
+let profile=null;            // {user_id, telegram_chat_id, display_name}
+let cwHistory=[];            // последние 50 сообщений
+let cwOpen=false;
+let cwChannel=null;          // realtime-подписка
+let cwUnreadCnt=0;
+let profileAvailable=true;   // станет false, если таблица profiles/chat_messages ещё не создана миграцией
+let cwKeyWired=false;        // keydown-листенер #cw-text вешается один раз на жизнь страницы
+
+async function loadProfile(){
+  if(!U?.id)return null;
+  const{data,error}=await sb.from('profiles').select('*').eq('user_id',U.id).maybeSingle();
+  if(error){
+    if(/relation .* does not exist/i.test(error.message||'')||error.code==='42P01'){
+      profileAvailable=false;return null;
+    }
+    console.warn('profile load failed',error);return null;
+  }
+  profileAvailable=true;
+  return data;
+}
+async function openProfile(){
+  if(!U?.id){toast('Нет сессии','err','Auth');return}
+  if(!profileAvailable){toast('Нужна SQL-миграция 2026-04-27_chat_tg.sql','err','Профиль');return}
+  document.getElementById('prf-name').value=profile?.display_name||'';
+  document.getElementById('prf-tgid').value=profile?.telegram_chat_id||'';
+  document.getElementById('prf-botlink').textContent='@'+BOT_USERNAME;
+  document.getElementById('prfm').classList.add('on');
+}
+async function saveProfile(){
+  if(!U?.id)return;
+  if(!profileAvailable){toast('Сначала запусти SQL-миграцию','err','Профиль');return}
+  const name=(document.getElementById('prf-name').value.trim()||'').slice(0,80)||null;
+  const raw=document.getElementById('prf-tgid').value.trim();
+  let tgId=null;
+  if(raw){
+    if(!/^-?\d+$/.test(raw)){toast('Telegram chat_id — это целое число. Напиши /start боту, он пришлёт ID.','err','Профиль');return}
+    tgId=Number(raw);
+  }
+  const row={user_id:U.id,display_name:name,telegram_chat_id:tgId,updated_at:new Date().toISOString()};
+  const{error}=await sb.from('profiles').upsert(row,{onConflict:'user_id'});
+  if(sbErr('сохранение профиля',error))return;
+  profile={...(profile||{}),...row};
+  closeM('prfm');
+  toast('Профиль сохранён','ok');
+  cwRenderNotice();
+}
+
+function cwRenderNotice(){
+  const n=document.getElementById('cw-notice');if(!n)return;
+  if(!profileAvailable){
+    n.style.display='block';
+    n.innerHTML='⚠ Нужна SQL-миграция <code>2026-04-27_chat_tg.sql</code> для чата (см. инструкции в PR #9).';
+    return;
+  }
+  if(!profile?.telegram_chat_id){
+    n.style.display='block';
+    n.innerHTML=`Укажи свой Telegram chat_id, чтобы бот знал кому отвечать. <button class="lnk" onclick="openProfile()">Настроить профиль →</button>`;
+    return;
+  }
+  n.style.display='none';
+}
+function cwToggle(){
+  cwOpen=!cwOpen;
+  const p=document.getElementById('cw-panel');if(!p)return;
+  p.classList.toggle('on',cwOpen);
+  if(cwOpen){
+    cwUnreadCnt=0;
+    document.getElementById('cw-dot')?.classList.remove('on');
+    setTimeout(()=>document.getElementById('cw-text')?.focus(),50);
+    cwScrollBottom();
+  }
+}
+function cwTimeFmt(ts){const d=new Date(ts);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function cwRender(){
+  const h=document.getElementById('cw-history');if(!h)return;
+  if(!cwHistory.length){h.innerHTML='<div class="cw-empty">Сообщений ещё нет. Напиши боту — он ответит в Telegram, а ответ вернётся сюда.</div>';return}
+  h.innerHTML=cwHistory.map(m=>`<div class="cw-msg ${m.direction==='out'?'out':'in'}">${esc(m.text)}<div class="ts">${cwTimeFmt(m.created_at)}</div></div>`).join('');
+  cwScrollBottom();
+}
+function cwScrollBottom(){const h=document.getElementById('cw-history');if(h)h.scrollTop=h.scrollHeight}
+function cwAppend(row){
+  if(!row||cwHistory.some(m=>m.id===row.id))return;
+  cwHistory.push(row);
+  if(cwHistory.length>200)cwHistory=cwHistory.slice(-200);
+  cwRender();
+  if(row.direction==='in'&&!cwOpen){
+    cwUnreadCnt++;
+    document.getElementById('cw-dot')?.classList.add('on');
+  }
+}
+async function cwLoadHistory(){
+  if(!U?.id||!profileAvailable)return;
+  const{data,error}=await sb.from('chat_messages').select('*').eq('user_id',U.id).order('created_at',{ascending:false}).limit(50);
+  if(error){
+    if(/relation .* does not exist/i.test(error.message||'')||error.code==='42P01'){profileAvailable=false;cwRenderNotice();return}
+    console.warn('chat history failed',error);return;
+  }
+  cwHistory=(data||[]).slice().reverse();
+  cwRender();
+}
+function cwSubscribe(){
+  if(!U?.id||!profileAvailable)return;
+  if(cwChannel){try{sb.removeChannel(cwChannel)}catch(_){}}
+  cwChannel=sb.channel('chat:'+U.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages',filter:`user_id=eq.${U.id}`},(payload)=>cwAppend(payload.new))
+    .subscribe();
+}
+async function cwSend(){
+  const ta=document.getElementById('cw-text');const btn=document.getElementById('cw-send');
+  const text=(ta?.value||'').trim();
+  if(!text)return;
+  if(!U?.id){toast('Нет сессии','err','Чат');return}
+  if(!profile?.telegram_chat_id){toast('Сначала укажи Telegram chat_id в профиле','err','Чат');openProfile();return}
+  btn.disabled=true;ta.classList.add('cw-sending');
+  try{
+    const{data:{session}}=await sb.auth.getSession();
+    const jwt=session?.access_token;
+    if(!jwt){toast('Токен истёк, перелогинься','err','Auth');return}
+    const res=await fetch('/api/chat/send',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+jwt},body:JSON.stringify({text})});
+    const body=await res.json().catch(()=>({}));
+    if(!res.ok||!body.ok){
+      const err=body.hint||body.error||body.detail||('HTTP '+res.status);
+      toast('Не отправилось: '+err,'err','Чат');return;
+    }
+    ta.value='';
+    // INSERT в Supabase уже случился внутри /api/chat/send → realtime подхватит. Но если realtime лаганёт, подстрахуем optimistic append:
+    if(body.row)cwAppend(body.row);
+  }catch(e){
+    console.error('cwSend failed',e);
+    toast('Сбой сети: '+(e?.message||e),'err','Чат');
+  }finally{
+    btn.disabled=false;ta.classList.remove('cw-sending');ta.focus();
+  }
+}
+function cwKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();cwSend()}}
+function cwShow(on){const r=document.getElementById('cw-root');if(r)r.style.display=on?'block':'none'}
+function cwTeardown(){
+  cwShow(false);cwOpen=false;cwHistory=[];profile=null;profileAvailable=true;cwUnreadCnt=0;
+  const p=document.getElementById('cw-panel');if(p)p.classList.remove('on');
+  const d=document.getElementById('cw-dot');if(d)d.classList.remove('on');
+  if(cwChannel){try{sb.removeChannel(cwChannel)}catch(_){}cwChannel=null}
+}
+async function cwBootstrap(){
+  profile=await loadProfile();
+  cwShow(true);
+  cwRenderNotice();
+  await cwLoadHistory();
+  cwSubscribe();
+  // Вешаем keydown-листенер ровно один раз — иначе после logout/login Enter шлёт сообщение N раз.
+  if(!cwKeyWired){
+    const ta=document.getElementById('cw-text');if(ta){ta.addEventListener('keydown',cwKey);cwKeyWired=true}
+  }
+}
+
 let loadingInFlight=null;
 sb.auth.onAuthStateChange(async(event,session)=>{
   try{
@@ -1608,9 +1828,14 @@ sb.auth.onAuthStateChange(async(event,session)=>{
       }
       await loadingInFlight;
       dataLoaded=true;
+      // Чат-виджет инициализируем один раз после первого SIGNED_IN/INITIAL_SESSION.
+      if(event==='INITIAL_SESSION'||event==='SIGNED_IN'){
+        cwBootstrap().catch(e=>console.warn('chat bootstrap failed',e));
+      }
     }else{
       U=null;
       loadingInFlight=null;
+      cwTeardown();
       document.getElementById('auth-screen').style.display='flex';
       document.getElementById('app').classList.remove('on');
     }
