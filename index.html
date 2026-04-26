@@ -1075,7 +1075,8 @@ function rBudgetChart(){
 }
 function chartOpts(showSingle,stacked){
   const ink='#e8e4dc',inkM='#8a857a',brd='rgba(255,255,255,.06)';
-  return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:!showSingle,labels:{color:ink,font:{family:'JetBrains Mono',size:10}}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.parsed.y||c.parsed||0).toLocaleString('ru-RU')+' ₽'}}},scales:{x:{stacked:!!stacked,ticks:{color:inkM,font:{family:'JetBrains Mono',size:10}},grid:{color:brd}},y:{stacked:!!stacked,ticks:{color:inkM,font:{family:'JetBrains Mono',size:10},callback:v=>v.toLocaleString('ru-RU')},grid:{color:brd}}}};
+  // ?? а не ||: в Chart.js c.parsed это объект {x,y}, и при y===0 || проваливалось в сам объект → tooltip показывал "[object Object]".
+  return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:!showSingle,labels:{color:ink,font:{family:'JetBrains Mono',size:10}}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.parsed?.y??c.parsed??0).toLocaleString('ru-RU')+' ₽'}}},scales:{x:{stacked:!!stacked,ticks:{color:inkM,font:{family:'JetBrains Mono',size:10}},grid:{color:brd}},y:{stacked:!!stacked,ticks:{color:inkM,font:{family:'JetBrains Mono',size:10},callback:v=>v.toLocaleString('ru-RU')},grid:{color:brd}}}};
 }
 function rGantt(){
   const tgt=document.getElementById('gantt-view');if(!tgt)return;
