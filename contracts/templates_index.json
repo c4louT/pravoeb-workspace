@@ -720,7 +720,7 @@
       "category": "договор",
       "role_group": "Актёрский цех",
       "tax_form": "ФЛ",
-      "filename_template": "Договор_актер_{lastName}_{yearMonth}",
+      "filename_template": "Договор_актер_КШ_{lastName}_{yearMonth}",
       "fields": [
         {
           "key": "[Номер договора]",
