@@ -2029,7 +2029,7 @@ function dgMdToHtml(md){
   // Подсветить незаполненные плейсхолдеры — и старые [квадрат], и новые {фигурные} ключи Phase 5d.
   // esc() выше превращает '<' в '&lt;', '"' в '&quot;', но { и [ — не трогает, так что регэксы работают как обычно.
   s=s.replace(/\[[^\]\n]+\]/g,m=>`<span class="dg-missing">${m}</span>`);
-  s=s.replace(/\{[A-Za-zА-Яа-я_][\w_]*\}/g,m=>`<span class="dg-missing">${m}</span>`);
+  s=s.replace(/\{[A-Za-zА-Яа-яёЁ_][A-Za-zА-Яа-яёЁ0-9_]*\}/g,m=>`<span class="dg-missing">${m}</span>`);
   // Переносы строк
   s=s.replace(/\n/g,'<br>');
   return s;
