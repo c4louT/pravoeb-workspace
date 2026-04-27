@@ -2,9 +2,9 @@ name = "pravoeb-workspace"
 compatibility_date = "2026-04-25"
 main = "worker.js"
 
-# Сборка статики: копируем index.html и _headers в dist/, чтобы Workers Builds CI ничего не валилось.
+# Сборка статики: копируем index.html, _headers и contracts/ (шаблоны+индекс для Phase 5) в dist/.
 [build]
-command = "mkdir -p dist && cp index.html dist/ && cp _headers dist/_headers"
+command = "mkdir -p dist && cp index.html dist/ && cp _headers dist/_headers && cp -R contracts dist/contracts"
 
 # Статика отдаётся через Assets-биндинг: worker.js проксирует всё кроме /api/* в env.ASSETS.
 [assets]
