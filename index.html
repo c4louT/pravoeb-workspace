@@ -1797,7 +1797,8 @@ function dgDocxToText(arrBuf){
   xml=xml.replace(/<w:p[^>]*\/>/g,'\n').replace(/<\/w:p>/g,'\n').replace(/<w:br\s*\/?>/g,'\n').replace(/<w:tab\s*\/?>/g,'\t');
   // Снимаем XML-разметку
   let s=xml.replace(/<[^>]+>/g,'');
-  s=s.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'");
+  // &amp; — последним, иначе двойное кодирование (&amp;lt;) превратится в '<' вместо '&lt;'
+  s=s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
   // Чистим лишние пустые строки
   s=s.replace(/\n{3,}/g,'\n\n').replace(/[ \t]+\n/g,'\n');
   return s.trim();
