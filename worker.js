@@ -246,12 +246,28 @@ async function openrouterChat(env, model, messages) {
     body: JSON.stringify({ model, messages, temperature: 0.3, max_tokens: 1500 }),
   });
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const msg = body?.error?.message || `openrouter_${res.status}`;
-    return { ok: false, error: msg };
+  // OpenRouter иногда возвращает HTTP 200 с inline error-объектом вместо choices, когда free-провайдер упал.
+  // Собираем всю доступную диагностику: сообщение + raw upstream + код провайдера, чтобы тост в UI был осмысленный.
+  const inlineErr = body?.error;
+  if (!res.ok || inlineErr) {
+    const baseMsg = inlineErr?.message || `openrouter_${res.status}`;
+    const rawMeta = inlineErr?.metadata?.raw;
+    const provider = inlineErr?.metadata?.provider_name;
+    const code = inlineErr?.code;
+    let detail = baseMsg;
+    if (provider) detail += ` [${provider}]`;
+    if (code) detail += ` (code=${code})`;
+    if (rawMeta && typeof rawMeta === 'string' && rawMeta !== baseMsg) {
+      detail += ` — ${rawMeta.slice(0, 300)}`;
+    }
+    console.error('openrouter call failed', { model, status: res.status, body });
+    return { ok: false, error: detail };
   }
   const text = body?.choices?.[0]?.message?.content?.trim();
-  if (!text) return { ok: false, error: 'empty_response' };
+  if (!text) {
+    console.error('openrouter empty response', { model, body });
+    return { ok: false, error: 'empty_response (модель не вернула текст — попробуй другую)' };
+  }
   return { ok: true, text, model: body?.model || model, usage: body?.usage || null };
 }
 
