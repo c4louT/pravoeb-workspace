@@ -184,9 +184,12 @@
         {"key": "[адрес]",                  "label": "Адрес регистрации", "type": "text", "autofill": "contact.address"},
         {"key": "[роль]",                   "label": "Роль (имя персонажа)", "type": "text", "required": true},
         {"key": "[фильм]",                  "label": "Название фильма", "type": "text", "autofill": "project.name", "required": true},
+        {"key": "[жанр]",                   "label": "Жанр", "type": "text", "autofill": "project.genre"},
+        {"key": "[N]",                      "label": "Хронометраж, мин.", "type": "text", "autofill": "project.duration"},
         {"key": "[дата]",                   "label": "Дата начала съёмок", "type": "date", "autofill": "project.start_date"},
         {"key": "[сумма]",                  "label": "Вознаграждение, руб.", "type": "number"},
-        {"key": "[прописью]",               "label": "Сумма прописью", "type": "text"}
+        {"key": "[прописью]",               "label": "Сумма прописью", "type": "text"},
+        {"key": "[5]",                      "label": "Срок выплаты, рабочих дней", "type": "number", "default": 5}
       ]
     }
   ]
