@@ -8,14 +8,54 @@
       "category": "договор",
       "filename_template": "Договор_актер_{lastName}_{yearMonth}",
       "fields": [
-        {"key": "[ФИО Продюсера]", "label": "ФИО Продюсера", "type": "text", "required": true},
-        {"key": "[ФИО Актёра]",    "label": "ФИО Актёра",    "type": "text", "autofill": "contact.name", "required": true},
-        {"key": "[роль]",           "label": "Роль (имя персонажа)", "type": "text", "required": true},
-        {"key": "[фильм]",          "label": "Название фильма", "type": "text", "autofill": "project.name", "required": true},
-        {"key": "[дата]",           "label": "Дата начала съёмок", "type": "date", "autofill": "project.start_date"},
-        {"key": "[сумма]",          "label": "Вознаграждение, руб.", "type": "number"},
-        {"key": "[прописью]",       "label": "Сумма прописью", "type": "text"},
-        {"key": "[аванс X% при подписании; остаток по завершении съёмок]", "label": "Порядок выплат", "type": "textarea", "default": "аванс 30% при подписании; остаток 70% по завершении съёмок"}
+        {
+          "key": "[ФИО Продюсера]",
+          "label": "ФИО Продюсера",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "[ФИО Актёра]",
+          "label": "ФИО Актёра",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[роль]",
+          "label": "Роль (имя персонажа)",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "[фильм]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[дата]",
+          "label": "Дата начала съёмок",
+          "type": "date",
+          "autofill": "project.start_date"
+        },
+        {
+          "key": "[сумма]",
+          "label": "Вознаграждение, руб.",
+          "type": "number"
+        },
+        {
+          "key": "[прописью]",
+          "label": "Сумма прописью",
+          "type": "text"
+        },
+        {
+          "key": "[аванс X% при подписании; остаток по завершении съёмок]",
+          "label": "Порядок выплат",
+          "type": "textarea",
+          "default": "аванс 30% при подписании; остаток 70% по завершении съёмок"
+        }
       ]
     },
     {
@@ -25,16 +65,66 @@
       "category": "договор",
       "filename_template": "Договор_режиссер_{lastName}_{yearMonth}",
       "fields": [
-        {"key": "[ФИО Продюсера]",  "label": "ФИО Продюсера", "type": "text", "required": true},
-        {"key": "[ФИО Режиссёра]",  "label": "ФИО Режиссёра", "type": "text", "autofill": "contact.name", "required": true},
-        {"key": "[фильм]",          "label": "Название фильма", "type": "text", "autofill": "project.name", "required": true},
-        {"key": "[хронометраж]",    "label": "Хронометраж (мин.)", "type": "text", "autofill": "project.duration"},
-        {"key": "[дата]",           "label": "Дата начала работ", "type": "date", "autofill": "project.start_date"},
-        {"key": "[сумма]",          "label": "Вознаграждение, руб.", "type": "number"},
-        {"key": "[прописью]",       "label": "Сумма прописью", "type": "text"},
-        {"key": "[X]",              "label": "Аванс, %", "type": "number", "default": 30},
-        {"key": "[Y]",              "label": "По завершении съёмок, %", "type": "number", "default": 40},
-        {"key": "[Z]",              "label": "По сдаче финальной версии, %", "type": "number", "default": 30}
+        {
+          "key": "[ФИО Продюсера]",
+          "label": "ФИО Продюсера",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "[ФИО Режиссёра]",
+          "label": "ФИО Режиссёра",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[фильм]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[хронометраж]",
+          "label": "Хронометраж (мин.)",
+          "type": "text",
+          "autofill": "project.duration"
+        },
+        {
+          "key": "[дата]",
+          "label": "Дата начала работ",
+          "type": "date",
+          "autofill": "project.start_date"
+        },
+        {
+          "key": "[сумма]",
+          "label": "Вознаграждение, руб.",
+          "type": "number"
+        },
+        {
+          "key": "[прописью]",
+          "label": "Сумма прописью",
+          "type": "text"
+        },
+        {
+          "key": "[X]",
+          "label": "Аванс, %",
+          "type": "number",
+          "default": 30
+        },
+        {
+          "key": "[Y]",
+          "label": "По завершении съёмок, %",
+          "type": "number",
+          "default": 40
+        },
+        {
+          "key": "[Z]",
+          "label": "По сдаче финальной версии, %",
+          "type": "number",
+          "default": 30
+        }
       ]
     },
     {
@@ -44,16 +134,68 @@
       "category": "договор",
       "filename_template": "Договор_авт_заказ_{lastName}_{yearMonth}",
       "fields": [
-        {"key": "[ФИО Продюсера]",  "label": "ФИО Продюсера / Заказчика", "type": "text", "required": true},
-        {"key": "[ФИО Автора]",     "label": "ФИО Автора", "type": "text", "autofill": "contact.name", "required": true},
-        {"key": "[вид: литературный сценарий / музыкальное произведение / иное]", "label": "Вид произведения", "type": "select", "options": ["литературный сценарий", "музыкальное произведение", "режиссёрский сценарий", "иное"]},
-        {"key": "[название]",       "label": "Название произведения", "type": "text"},
-        {"key": "[дата]",           "label": "Срок передачи произведения", "type": "date"},
-        {"key": "[сумма]",          "label": "Вознаграждение, руб.", "type": "number"},
-        {"key": "[прописью]",       "label": "Сумма прописью", "type": "text"},
-        {"key": "[X]",              "label": "Аванс, %", "type": "number", "default": 50},
-        {"key": "[Y]",              "label": "По сдаче, %", "type": "number", "default": 50},
-        {"key": "[10]",             "label": "Срок приёмки заказчиком, рабочих дней", "type": "number", "default": 10}
+        {
+          "key": "[ФИО Продюсера]",
+          "label": "ФИО Продюсера / Заказчика",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "[ФИО Автора]",
+          "label": "ФИО Автора",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[вид: литературный сценарий / музыкальное произведение / иное]",
+          "label": "Вид произведения",
+          "type": "select",
+          "options": [
+            "литературный сценарий",
+            "музыкальное произведение",
+            "режиссёрский сценарий",
+            "иное"
+          ]
+        },
+        {
+          "key": "[название]",
+          "label": "Название произведения",
+          "type": "text"
+        },
+        {
+          "key": "[дата]",
+          "label": "Срок передачи произведения",
+          "type": "date"
+        },
+        {
+          "key": "[сумма]",
+          "label": "Вознаграждение, руб.",
+          "type": "number"
+        },
+        {
+          "key": "[прописью]",
+          "label": "Сумма прописью",
+          "type": "text"
+        },
+        {
+          "key": "[X]",
+          "label": "Аванс, %",
+          "type": "number",
+          "default": 50
+        },
+        {
+          "key": "[Y]",
+          "label": "По сдаче, %",
+          "type": "number",
+          "default": 50
+        },
+        {
+          "key": "[10]",
+          "label": "Срок приёмки заказчиком, рабочих дней",
+          "type": "number",
+          "default": 10
+        }
       ]
     },
     {
@@ -63,16 +205,68 @@
       "category": "договор",
       "filename_template": "Договор_отчуждение_{lastName}_{yearMonth}",
       "fields": [
-        {"key": "[ФИО Продюсера]",       "label": "ФИО Продюсера / Приобретателя", "type": "text", "required": true},
-        {"key": "[ФИО Правообладателя]", "label": "ФИО Правообладателя", "type": "text", "autofill": "contact.name", "required": true},
-        {"key": "[вид]",                 "label": "Вид произведения", "type": "text", "default": "сценарий"},
-        {"key": "[название]",            "label": "Название произведения", "type": "text"},
-        {"key": "[год]",                 "label": "Год создания", "type": "text"},
-        {"key": "[способ]",              "label": "Способ передачи произведения", "type": "select", "options": ["электронный файл формата .pdf", "электронный файл формата .docx", "бумажный носитель", "иное"]},
-        {"key": "[сумма]",               "label": "Вознаграждение, руб.", "type": "number"},
-        {"key": "[прописью]",            "label": "Сумма прописью", "type": "text"},
-        {"key": "[3]",                   "label": "Срок передачи произведения, рабочих дней", "type": "number", "default": 3},
-        {"key": "[5]",                   "label": "Срок выплаты, рабочих дней", "type": "number", "default": 5}
+        {
+          "key": "[ФИО Продюсера]",
+          "label": "ФИО Продюсера / Приобретателя",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "[ФИО Правообладателя]",
+          "label": "ФИО Правообладателя",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[вид]",
+          "label": "Вид произведения",
+          "type": "text",
+          "default": "сценарий"
+        },
+        {
+          "key": "[название]",
+          "label": "Название произведения",
+          "type": "text"
+        },
+        {
+          "key": "[год]",
+          "label": "Год создания",
+          "type": "text"
+        },
+        {
+          "key": "[способ]",
+          "label": "Способ передачи произведения",
+          "type": "select",
+          "options": [
+            "электронный файл формата .pdf",
+            "электронный файл формата .docx",
+            "бумажный носитель",
+            "иное"
+          ]
+        },
+        {
+          "key": "[сумма]",
+          "label": "Вознаграждение, руб.",
+          "type": "number"
+        },
+        {
+          "key": "[прописью]",
+          "label": "Сумма прописью",
+          "type": "text"
+        },
+        {
+          "key": "[3]",
+          "label": "Срок передачи произведения, рабочих дней",
+          "type": "number",
+          "default": 3
+        },
+        {
+          "key": "[5]",
+          "label": "Срок выплаты, рабочих дней",
+          "type": "number",
+          "default": 5
+        }
       ]
     },
     {
@@ -82,16 +276,68 @@
       "category": "договор",
       "filename_template": "Лицензионный_договор_{lastName}_{yearMonth}",
       "fields": [
-        {"key": "[ФИО Продюсера]",  "label": "ФИО Лицензиата (Продюсера)", "type": "text", "required": true},
-        {"key": "[ФИО Лицензиара]", "label": "ФИО Лицензиара", "type": "text", "autofill": "contact.name", "required": true},
-        {"key": "[вид]",            "label": "Вид произведения", "type": "text"},
-        {"key": "[название]",       "label": "Название произведения", "type": "text"},
-        {"key": "[способ]",         "label": "Способ передачи произведения", "type": "select", "options": ["электронный файл формата .pdf", "электронный файл формата .docx", "бумажный носитель", "иное"]},
-        {"key": "[сумма]",          "label": "Лицензионное вознаграждение, руб.", "type": "number"},
-        {"key": "[прописью]",       "label": "Сумма прописью", "type": "text"},
-        {"key": "[N]",              "label": "Срок лицензии, лет", "type": "number", "default": 5},
-        {"key": "[3]",              "label": "Срок передачи произведения, рабочих дней", "type": "number", "default": 3},
-        {"key": "[5]",              "label": "Срок выплаты, рабочих дней", "type": "number", "default": 5}
+        {
+          "key": "[ФИО Продюсера]",
+          "label": "ФИО Лицензиата (Продюсера)",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "[ФИО Лицензиара]",
+          "label": "ФИО Лицензиара",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[вид]",
+          "label": "Вид произведения",
+          "type": "text"
+        },
+        {
+          "key": "[название]",
+          "label": "Название произведения",
+          "type": "text"
+        },
+        {
+          "key": "[способ]",
+          "label": "Способ передачи произведения",
+          "type": "select",
+          "options": [
+            "электронный файл формата .pdf",
+            "электронный файл формата .docx",
+            "бумажный носитель",
+            "иное"
+          ]
+        },
+        {
+          "key": "[сумма]",
+          "label": "Лицензионное вознаграждение, руб.",
+          "type": "number"
+        },
+        {
+          "key": "[прописью]",
+          "label": "Сумма прописью",
+          "type": "text"
+        },
+        {
+          "key": "[N]",
+          "label": "Срок лицензии, лет",
+          "type": "number",
+          "default": 5
+        },
+        {
+          "key": "[3]",
+          "label": "Срок передачи произведения, рабочих дней",
+          "type": "number",
+          "default": 3
+        },
+        {
+          "key": "[5]",
+          "label": "Срок выплаты, рабочих дней",
+          "type": "number",
+          "default": 5
+        }
       ]
     },
     {
@@ -101,9 +347,26 @@
       "category": "согласие",
       "filename_template": "Согласие_съемка_{lastName}_{yearMonth}",
       "fields": [
-        {"key": "[ФИО Продюсера]", "label": "ФИО Продюсера", "type": "text", "required": true},
-        {"key": "[ФИО участника]", "label": "ФИО участника", "type": "text", "autofill": "contact.name", "required": true},
-        {"key": "[фильм]",         "label": "Название фильма", "type": "text", "autofill": "project.name", "required": true}
+        {
+          "key": "[ФИО Продюсера]",
+          "label": "ФИО Продюсера",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "[ФИО участника]",
+          "label": "ФИО участника",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[фильм]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        }
       ]
     },
     {
@@ -113,17 +376,71 @@
       "category": "договор",
       "filename_template": "Договор_оператор_{lastName}_{yearMonth}",
       "fields": [
-        {"key": "[ФИО Продюсера]", "label": "ФИО Продюсера", "type": "text", "required": true},
-        {"key": "[ФИО Оператора]", "label": "ФИО Оператора", "type": "text", "autofill": "contact.name", "required": true},
-        {"key": "[фильм]",         "label": "Название фильма", "type": "text", "autofill": "project.name", "required": true},
-        {"key": "[жанр]",          "label": "Жанр", "type": "text", "autofill": "project.genre"},
-        {"key": "[дата]",          "label": "Дата начала съёмок", "type": "date", "autofill": "project.start_date"},
-        {"key": "[сумма]",         "label": "Вознаграждение, руб.", "type": "number"},
-        {"key": "[прописью]",      "label": "Сумма прописью", "type": "text"},
-        {"key": "[N]",             "label": "Дней съёмочного периода", "type": "number"},
-        {"key": "[X]",             "label": "Аванс, %", "type": "number", "default": 30},
-        {"key": "[Y]",             "label": "По завершении съёмок, %", "type": "number", "default": 50},
-        {"key": "[Z]",             "label": "По сдаче финальной версии, %", "type": "number", "default": 20}
+        {
+          "key": "[ФИО Продюсера]",
+          "label": "ФИО Продюсера",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "[ФИО Оператора]",
+          "label": "ФИО Оператора",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[фильм]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[жанр]",
+          "label": "Жанр",
+          "type": "text",
+          "autofill": "project.genre"
+        },
+        {
+          "key": "[дата]",
+          "label": "Дата начала съёмок",
+          "type": "date",
+          "autofill": "project.start_date"
+        },
+        {
+          "key": "[сумма]",
+          "label": "Вознаграждение, руб.",
+          "type": "number"
+        },
+        {
+          "key": "[прописью]",
+          "label": "Сумма прописью",
+          "type": "text"
+        },
+        {
+          "key": "[N]",
+          "label": "Дней съёмочного периода",
+          "type": "number"
+        },
+        {
+          "key": "[X]",
+          "label": "Аванс, %",
+          "type": "number",
+          "default": 30
+        },
+        {
+          "key": "[Y]",
+          "label": "По завершении съёмок, %",
+          "type": "number",
+          "default": 50
+        },
+        {
+          "key": "[Z]",
+          "label": "По сдаче финальной версии, %",
+          "type": "number",
+          "default": 20
+        }
       ]
     },
     {
@@ -133,17 +450,70 @@
       "category": "соглашение",
       "filename_template": "НДА_{lastName}_{yearMonth}",
       "fields": [
-        {"key": "[ФИО Продюсера / ООО «Название»]", "label": "Сторона 1 (раскрывающая)", "type": "text", "required": true},
-        {"key": "[ФИО / ООО]",                       "label": "Сторона 2 (получатель)", "type": "text", "autofill": "contact.name", "required": true},
-        {"key": "[название фильма]",                 "label": "Название фильма / проекта", "type": "text", "autofill": "project.name"},
-        {"key": "[описание цели]",                   "label": "Цель раскрытия информации", "type": "textarea"},
-        {"key": "[адрес]",                           "label": "Адрес физлица", "type": "text", "autofill": "contact.address"},
-        {"key": "[Юридический адрес]",               "label": "Юридический адрес юрлица", "type": "text"},
-        {"key": "[ОГРН / ИНН — если юрлицо]",        "label": "ОГРН / ИНН", "type": "text", "autofill": "contact.inn"},
-        {"key": "[Расчётный счёт, Банк, БИК]",       "label": "Банковские реквизиты", "type": "textarea"},
-        {"key": "[кем, когда]",                      "label": "Паспорт: кем выдан, когда", "type": "text", "autofill": "contact.passport"},
-        {"key": "[сумма]",                           "label": "Штраф за разглашение, руб.", "type": "number", "default": 500000},
-        {"key": "[5 (пять)]",                        "label": "Срок действия после расторжения, лет", "type": "text", "default": "5 (пять)"}
+        {
+          "key": "[ФИО Продюсера / ООО «Название»]",
+          "label": "Сторона 1 (раскрывающая)",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "[ФИО / ООО]",
+          "label": "Сторона 2 (получатель)",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[название фильма]",
+          "label": "Название фильма / проекта",
+          "type": "text",
+          "autofill": "project.name"
+        },
+        {
+          "key": "[описание цели]",
+          "label": "Цель раскрытия информации",
+          "type": "textarea"
+        },
+        {
+          "key": "[адрес]",
+          "label": "Адрес физлица",
+          "type": "text",
+          "autofill": "contact.address"
+        },
+        {
+          "key": "[Юридический адрес]",
+          "label": "Юридический адрес юрлица",
+          "type": "text"
+        },
+        {
+          "key": "[ОГРН / ИНН — если юрлицо]",
+          "label": "ОГРН / ИНН",
+          "type": "text",
+          "autofill": "contact.inn"
+        },
+        {
+          "key": "[Расчётный счёт, Банк, БИК]",
+          "label": "Банковские реквизиты",
+          "type": "textarea"
+        },
+        {
+          "key": "[кем, когда]",
+          "label": "Паспорт: кем выдан, когда",
+          "type": "text",
+          "autofill": "contact.passport"
+        },
+        {
+          "key": "[сумма]",
+          "label": "Штраф за разглашение, руб.",
+          "type": "number",
+          "default": 500000
+        },
+        {
+          "key": "[5 (пять)]",
+          "label": "Срок действия после расторжения, лет",
+          "type": "text",
+          "default": "5 (пять)"
+        }
       ]
     },
     {
@@ -153,18 +523,87 @@
       "category": "акт",
       "filename_template": "Акт_приема_передачи_{lastName}_{yearMonth}",
       "fields": [
-        {"key": "[Заказчик / Приобретатель]",       "label": "Заказчик / Приобретатель", "type": "text", "required": true},
-        {"key": "[Заказчик]",                       "label": "Заказчик (краткая роль)", "type": "text", "default": "Заказчик"},
-        {"key": "[Заказчику / Приобретателю]",      "label": "Заказчику / Приобретателю (дательный)", "type": "text"},
-        {"key": "[Автор / Правообладатель]",        "label": "Автор / Правообладатель", "type": "text", "autofill": "contact.name", "required": true},
-        {"key": "[ФИО Заказчика / Приобретателя]",  "label": "ФИО Заказчика", "type": "text"},
-        {"key": "[ФИО Автора / Правообладателя]",   "label": "ФИО Автора", "type": "text", "autofill": "contact.name"},
-        {"key": "[произведения / исключительного права на произведение]", "label": "Что передаётся", "type": "select", "options": ["произведения", "исключительного права на произведение"]},
-        {"key": "[вид произведения]",               "label": "Вид произведения", "type": "text"},
-        {"key": "[название]",                       "label": "Название произведения", "type": "text"},
-        {"key": "[описание: жанр, объём, формат]",  "label": "Описание (жанр, объём, формат)", "type": "textarea"},
-        {"key": "[электронный файл формата ___ / бумажный носитель / иное]", "label": "Способ передачи", "type": "select", "options": ["электронный файл формата .pdf", "электронный файл формата .docx", "бумажный носитель", "иное"]},
-        {"key": "[тип]",                            "label": "Тип акта (для имени файла)", "type": "select", "options": ["приема", "отчуждение", "лицензия"], "default": "приема"}
+        {
+          "key": "[Заказчик / Приобретатель]",
+          "label": "Заказчик / Приобретатель",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "[Заказчик]",
+          "label": "Заказчик (краткая роль)",
+          "type": "text",
+          "default": "Заказчик"
+        },
+        {
+          "key": "[Заказчику / Приобретателю]",
+          "label": "Заказчику / Приобретателю (дательный)",
+          "type": "text"
+        },
+        {
+          "key": "[Автор / Правообладатель]",
+          "label": "Автор / Правообладатель",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[ФИО Заказчика / Приобретателя]",
+          "label": "ФИО Заказчика",
+          "type": "text"
+        },
+        {
+          "key": "[ФИО Автора / Правообладателя]",
+          "label": "ФИО Автора",
+          "type": "text",
+          "autofill": "contact.name"
+        },
+        {
+          "key": "[произведения / исключительного права на произведение]",
+          "label": "Что передаётся",
+          "type": "select",
+          "options": [
+            "произведения",
+            "исключительного права на произведение"
+          ]
+        },
+        {
+          "key": "[вид произведения]",
+          "label": "Вид произведения",
+          "type": "text"
+        },
+        {
+          "key": "[название]",
+          "label": "Название произведения",
+          "type": "text"
+        },
+        {
+          "key": "[описание: жанр, объём, формат]",
+          "label": "Описание (жанр, объём, формат)",
+          "type": "textarea"
+        },
+        {
+          "key": "[электронный файл формата ___ / бумажный носитель / иное]",
+          "label": "Способ передачи",
+          "type": "select",
+          "options": [
+            "электронный файл формата .pdf",
+            "электронный файл формата .docx",
+            "бумажный носитель",
+            "иное"
+          ]
+        },
+        {
+          "key": "[тип]",
+          "label": "Тип акта (для имени файла)",
+          "type": "select",
+          "options": [
+            "приема",
+            "отчуждение",
+            "лицензия"
+          ],
+          "default": "приема"
+        }
       ]
     },
     {
@@ -174,23 +613,2863 @@
       "category": "договор",
       "filename_template": "Договор_несовершеннолетний_{lastName}_{yearMonth}",
       "fields": [
-        {"key": "[ФИО Продюсера]",          "label": "ФИО Продюсера", "type": "text", "required": true},
-        {"key": "[ФИО представителя]",      "label": "ФИО законного представителя", "type": "text", "autofill": "contact.name", "required": true},
-        {"key": "[отец / мать / опекун]",   "label": "Кто представитель", "type": "select", "options": ["отец", "мать", "опекун"]},
-        {"key": "[ФИО несовершеннолетнего]","label": "ФИО несовершеннолетнего актёра", "type": "text", "required": true},
-        {"key": "[дата рождения]",          "label": "Дата рождения ребёнка", "type": "date"},
-        {"key": "[тип и номер]",            "label": "Тип и номер документа ребёнка", "type": "text", "default": "свидетельство о рождении"},
-        {"key": "[кем, когда]",             "label": "Кем и когда выдан документ ребёнка", "type": "text"},
-        {"key": "[адрес]",                  "label": "Адрес регистрации", "type": "text", "autofill": "contact.address"},
-        {"key": "[роль]",                   "label": "Роль (имя персонажа)", "type": "text", "required": true},
-        {"key": "[фильм]",                  "label": "Название фильма", "type": "text", "autofill": "project.name", "required": true},
-        {"key": "[жанр]",                   "label": "Жанр", "type": "text", "autofill": "project.genre"},
-        {"key": "[N]",                      "label": "Хронометраж, мин.", "type": "text", "autofill": "project.duration"},
-        {"key": "[дата]",                   "label": "Дата начала съёмок", "type": "date", "autofill": "project.start_date"},
-        {"key": "[сумма]",                  "label": "Вознаграждение, руб.", "type": "number"},
-        {"key": "[прописью]",               "label": "Сумма прописью", "type": "text"},
-        {"key": "[5]",                      "label": "Срок выплаты, рабочих дней", "type": "number", "default": 5}
+        {
+          "key": "[ФИО Продюсера]",
+          "label": "ФИО Продюсера",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "[ФИО представителя]",
+          "label": "ФИО законного представителя",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[отец / мать / опекун]",
+          "label": "Кто представитель",
+          "type": "select",
+          "options": [
+            "отец",
+            "мать",
+            "опекун"
+          ]
+        },
+        {
+          "key": "[ФИО несовершеннолетнего]",
+          "label": "ФИО несовершеннолетнего актёра",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "[дата рождения]",
+          "label": "Дата рождения ребёнка",
+          "type": "date"
+        },
+        {
+          "key": "[тип и номер]",
+          "label": "Тип и номер документа ребёнка",
+          "type": "text",
+          "default": "свидетельство о рождении"
+        },
+        {
+          "key": "[кем, когда]",
+          "label": "Кем и когда выдан документ ребёнка",
+          "type": "text"
+        },
+        {
+          "key": "[адрес]",
+          "label": "Адрес регистрации",
+          "type": "text",
+          "autofill": "contact.address"
+        },
+        {
+          "key": "[роль]",
+          "label": "Роль (имя персонажа)",
+          "type": "text",
+          "required": true
+        },
+        {
+          "key": "[фильм]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[жанр]",
+          "label": "Жанр",
+          "type": "text",
+          "autofill": "project.genre"
+        },
+        {
+          "key": "[N]",
+          "label": "Хронометраж, мин.",
+          "type": "text",
+          "autofill": "project.duration"
+        },
+        {
+          "key": "[дата]",
+          "label": "Дата начала съёмок",
+          "type": "date",
+          "autofill": "project.start_date"
+        },
+        {
+          "key": "[сумма]",
+          "label": "Вознаграждение, руб.",
+          "type": "number"
+        },
+        {
+          "key": "[прописью]",
+          "label": "Сумма прописью",
+          "type": "text"
+        },
+        {
+          "key": "[5]",
+          "label": "Срок выплаты, рабочих дней",
+          "type": "number",
+          "default": 5
+        }
+      ]
+    },
+    {
+      "id": "actor_school",
+      "file": "actor_school.md",
+      "label": "Актёр (взрослый ФЛ, версия Киношколы)",
+      "category": "договор",
+      "role_group": "Актёрский цех",
+      "tax_form": "ФЛ",
+      "filename_template": "Договор_актер_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        },
+        {
+          "key": "[Дата рождения]",
+          "label": "Дата рождения",
+          "type": "date"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[СНИЛС]",
+          "label": "СНИЛС",
+          "type": "text"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт серия]",
+          "label": "Паспорт: серия",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт номер]",
+          "label": "Паспорт: номер",
+          "type": "text"
+        },
+        {
+          "key": "[Кем выдан]",
+          "label": "Паспорт: кем выдан",
+          "type": "text"
+        },
+        {
+          "key": "[Дата выдачи паспорта]",
+          "label": "Паспорт: дата выдачи",
+          "type": "date"
+        },
+        {
+          "key": "[КПП]",
+          "label": "КПП",
+          "type": "text"
+        },
+        {
+          "key": "[Расчётный счёт]",
+          "label": "Расчётный счёт",
+          "type": "text"
+        },
+        {
+          "key": "[Банк]",
+          "label": "Банк",
+          "type": "text"
+        },
+        {
+          "key": "[Корсчёт]",
+          "label": "Корсчёт",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        },
+        {
+          "key": "[Телефон]",
+          "label": "Телефон контрагента",
+          "type": "text",
+          "autofill": "contact.phone"
+        },
+        {
+          "key": "[Email]",
+          "label": "Email контрагента",
+          "type": "text",
+          "autofill": "contact.email"
+        }
+      ]
+    },
+    {
+      "id": "actor_minor_under14_school",
+      "file": "actor_minor_under14_school.md",
+      "label": "Актёр-ребёнок до 14 лет (Киношкола)",
+      "category": "договор",
+      "role_group": "Актёрский цех",
+      "tax_form": "ФЛ",
+      "filename_template": "Договор_актер_до14_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        },
+        {
+          "key": "[Дата рождения]",
+          "label": "Дата рождения",
+          "type": "date"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Расчётный счёт]",
+          "label": "Расчётный счёт",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "id": "actor_minor_14_17_school",
+      "file": "actor_minor_14_17_school.md",
+      "label": "Актёр-подросток 14-17 лет (Киношкола)",
+      "category": "договор",
+      "role_group": "Актёрский цех",
+      "tax_form": "ФЛ",
+      "filename_template": "Договор_актер_14_17_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        },
+        {
+          "key": "[Дата рождения]",
+          "label": "Дата рождения",
+          "type": "date"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Расчётный счёт]",
+          "label": "Расчётный счёт",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "id": "director_main_ip",
+      "file": "director_main_ip.md",
+      "label": "Режиссёр-постановщик (ИП)",
+      "category": "договор",
+      "role_group": "Режиссёрский цех",
+      "tax_form": "ИП",
+      "filename_template": "Договор_режиссер_ИП_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Режиссёр-постановщик]",
+          "label": "Режиссёр-постановщик",
+          "type": "text"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        }
+      ]
+    },
+    {
+      "id": "director_main_fl",
+      "file": "director_main_fl.md",
+      "label": "Режиссёр-постановщик (ФЛ, рамочный)",
+      "category": "договор",
+      "role_group": "Режиссёрский цех",
+      "tax_form": "ФЛ",
+      "filename_template": "Договор_режиссер_ФЛ_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[КПП]",
+          "label": "КПП",
+          "type": "text"
+        },
+        {
+          "key": "[Дата рождения]",
+          "label": "Дата рождения",
+          "type": "date"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[СНИЛС]",
+          "label": "СНИЛС",
+          "type": "text"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт серия]",
+          "label": "Паспорт: серия",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт номер]",
+          "label": "Паспорт: номер",
+          "type": "text"
+        },
+        {
+          "key": "[Кем выдан]",
+          "label": "Паспорт: кем выдан",
+          "type": "text"
+        },
+        {
+          "key": "[Дата выдачи паспорта]",
+          "label": "Паспорт: дата выдачи",
+          "type": "date"
+        },
+        {
+          "key": "[Расчётный счёт]",
+          "label": "Расчётный счёт",
+          "type": "text"
+        },
+        {
+          "key": "[Банк]",
+          "label": "Банк",
+          "type": "text"
+        },
+        {
+          "key": "[Корсчёт]",
+          "label": "Корсчёт",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        },
+        {
+          "key": "[Телефон]",
+          "label": "Телефон контрагента",
+          "type": "text",
+          "autofill": "contact.phone"
+        },
+        {
+          "key": "[Email]",
+          "label": "Email контрагента",
+          "type": "text",
+          "autofill": "contact.email"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        },
+        {
+          "key": "[Дата заключения]",
+          "label": "Дата заключения",
+          "type": "date",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "director_main_sz",
+      "file": "director_main_sz.md",
+      "label": "Режиссёр-постановщик (Самозанятый)",
+      "category": "договор",
+      "role_group": "Режиссёрский цех",
+      "tax_form": "СЗ",
+      "filename_template": "Договор_режиссер_СЗ_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[КПП]",
+          "label": "КПП",
+          "type": "text"
+        },
+        {
+          "key": "[Email Изготовителя]",
+          "label": "Email Заказчика",
+          "type": "text",
+          "default": "info@bondarchuk.com"
+        },
+        {
+          "key": "[Дата рождения]",
+          "label": "Дата рождения",
+          "type": "date"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[СНИЛС]",
+          "label": "СНИЛС",
+          "type": "text"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт серия]",
+          "label": "Паспорт: серия",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт номер]",
+          "label": "Паспорт: номер",
+          "type": "text"
+        },
+        {
+          "key": "[Кем выдан]",
+          "label": "Паспорт: кем выдан",
+          "type": "text"
+        },
+        {
+          "key": "[Дата выдачи паспорта]",
+          "label": "Паспорт: дата выдачи",
+          "type": "date"
+        },
+        {
+          "key": "[Расчётный счёт]",
+          "label": "Расчётный счёт",
+          "type": "text"
+        },
+        {
+          "key": "[Банк]",
+          "label": "Банк",
+          "type": "text"
+        },
+        {
+          "key": "[Корсчёт]",
+          "label": "Корсчёт",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        },
+        {
+          "key": "[Телефон]",
+          "label": "Телефон контрагента",
+          "type": "text",
+          "autofill": "contact.phone"
+        },
+        {
+          "key": "[Email]",
+          "label": "Email контрагента",
+          "type": "text",
+          "autofill": "contact.email"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        },
+        {
+          "key": "[Дата заключения]",
+          "label": "Дата заключения",
+          "type": "date",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "second_director_ip",
+      "file": "second_director_ip.md",
+      "label": "Второй режиссёр (ИП)",
+      "category": "договор",
+      "role_group": "Режиссёрский цех",
+      "tax_form": "ИП",
+      "filename_template": "Договор_2режиссер_ИП_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Название фильма]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[Автор сценария]",
+          "label": "Автор сценария",
+          "type": "text"
+        },
+        {
+          "key": "[Дата начала]",
+          "label": "Дата начала работ",
+          "type": "date",
+          "autofill": "project.start_date"
+        },
+        {
+          "key": "[Дата окончания]",
+          "label": "Дата окончания работ",
+          "type": "date",
+          "autofill": "project.end_date"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[ОГРНИП]",
+          "label": "ОГРНИП",
+          "type": "text"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт серия]",
+          "label": "Паспорт: серия",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт номер]",
+          "label": "Паспорт: номер",
+          "type": "text"
+        },
+        {
+          "key": "[Кем выдан]",
+          "label": "Паспорт: кем выдан",
+          "type": "text"
+        },
+        {
+          "key": "[Дата выдачи паспорта]",
+          "label": "Паспорт: дата выдачи",
+          "type": "date"
+        },
+        {
+          "key": "[КПП]",
+          "label": "КПП",
+          "type": "text"
+        },
+        {
+          "key": "[Расчётный счёт]",
+          "label": "Расчётный счёт",
+          "type": "text"
+        },
+        {
+          "key": "[Банк]",
+          "label": "Банк",
+          "type": "text"
+        },
+        {
+          "key": "[Корсчёт]",
+          "label": "Корсчёт",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        },
+        {
+          "key": "[Телефон]",
+          "label": "Телефон контрагента",
+          "type": "text",
+          "autofill": "contact.phone"
+        },
+        {
+          "key": "[Email]",
+          "label": "Email контрагента",
+          "type": "text",
+          "autofill": "contact.email"
+        }
+      ]
+    },
+    {
+      "id": "asst_director_ip_fl",
+      "file": "asst_director_ip_fl.md",
+      "label": "Ассистент режиссёра (ФЛ или ИП)",
+      "category": "договор",
+      "role_group": "Режиссёрский цех",
+      "tax_form": "ФЛ/ИП",
+      "filename_template": "Договор_ассрежиссер_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Название фильма]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[Автор сценария]",
+          "label": "Автор сценария",
+          "type": "text"
+        },
+        {
+          "key": "[Дата заключения]",
+          "label": "Дата заключения",
+          "type": "date",
+          "required": true
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        }
+      ]
+    },
+    {
+      "id": "editor_ip",
+      "file": "editor_ip.md",
+      "label": "Режиссёр монтажа (ИП)",
+      "category": "договор",
+      "role_group": "Режиссёрский цех",
+      "tax_form": "ИП",
+      "filename_template": "Договор_монтажер_ИП_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Название фильма]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[Автор сценария]",
+          "label": "Автор сценария",
+          "type": "text"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        }
+      ]
+    },
+    {
+      "id": "exec_producer_ip",
+      "file": "exec_producer_ip.md",
+      "label": "Исполнительный продюсер (ИП)",
+      "category": "договор",
+      "role_group": "Продюсерская группа",
+      "tax_form": "ИП",
+      "filename_template": "Договор_испродюсер_ИП_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Название фильма]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[Режиссёр-постановщик]",
+          "label": "Режиссёр-постановщик",
+          "type": "text"
+        },
+        {
+          "key": "[Автор сценария]",
+          "label": "Автор сценария",
+          "type": "text"
+        },
+        {
+          "key": "[Дата начала]",
+          "label": "Дата начала работ",
+          "type": "date",
+          "autofill": "project.start_date"
+        },
+        {
+          "key": "[Дата окончания]",
+          "label": "Дата окончания работ",
+          "type": "date",
+          "autofill": "project.end_date"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[ОГРНИП]",
+          "label": "ОГРНИП",
+          "type": "text"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт серия]",
+          "label": "Паспорт: серия",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт номер]",
+          "label": "Паспорт: номер",
+          "type": "text"
+        },
+        {
+          "key": "[Кем выдан]",
+          "label": "Паспорт: кем выдан",
+          "type": "text"
+        },
+        {
+          "key": "[Дата выдачи паспорта]",
+          "label": "Паспорт: дата выдачи",
+          "type": "date"
+        },
+        {
+          "key": "[КПП]",
+          "label": "КПП",
+          "type": "text"
+        },
+        {
+          "key": "[Расчётный счёт]",
+          "label": "Расчётный счёт",
+          "type": "text"
+        },
+        {
+          "key": "[Банк]",
+          "label": "Банк",
+          "type": "text"
+        },
+        {
+          "key": "[Корсчёт]",
+          "label": "Корсчёт",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        },
+        {
+          "key": "[Телефон]",
+          "label": "Телефон контрагента",
+          "type": "text",
+          "autofill": "contact.phone"
+        },
+        {
+          "key": "[Email]",
+          "label": "Email контрагента",
+          "type": "text",
+          "autofill": "contact.email"
+        }
+      ]
+    },
+    {
+      "id": "dop_ip",
+      "file": "dop_ip.md",
+      "label": "Оператор-постановщик (ИП)",
+      "category": "договор",
+      "role_group": "Операторский цех",
+      "tax_form": "ИП",
+      "filename_template": "Договор_оператор_ИП_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Срок цифрой]",
+          "label": "Срок (число дней)",
+          "type": "text"
+        },
+        {
+          "key": "[Дата рождения]",
+          "label": "Дата рождения",
+          "type": "date"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт серия]",
+          "label": "Паспорт: серия",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт номер]",
+          "label": "Паспорт: номер",
+          "type": "text"
+        },
+        {
+          "key": "[Кем выдан]",
+          "label": "Паспорт: кем выдан",
+          "type": "text"
+        },
+        {
+          "key": "[Дата выдачи паспорта]",
+          "label": "Паспорт: дата выдачи",
+          "type": "date"
+        },
+        {
+          "key": "[КПП]",
+          "label": "КПП",
+          "type": "text"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[СНИЛС]",
+          "label": "СНИЛС",
+          "type": "text"
+        },
+        {
+          "key": "[Расчётный счёт]",
+          "label": "Расчётный счёт",
+          "type": "text"
+        },
+        {
+          "key": "[Банк]",
+          "label": "Банк",
+          "type": "text"
+        },
+        {
+          "key": "[Корсчёт]",
+          "label": "Корсчёт",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "id": "backstage_op",
+      "file": "backstage_op.md",
+      "label": "Оператор бэкстейджа",
+      "category": "договор",
+      "role_group": "Операторский цех",
+      "tax_form": "?",
+      "filename_template": "Договор_бэкстейдж_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Название фильма]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[Срок цифрой]",
+          "label": "Срок (число дней)",
+          "type": "text"
+        },
+        {
+          "key": "[Дата рождения]",
+          "label": "Дата рождения",
+          "type": "date"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт серия]",
+          "label": "Паспорт: серия",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт номер]",
+          "label": "Паспорт: номер",
+          "type": "text"
+        },
+        {
+          "key": "[Кем выдан]",
+          "label": "Паспорт: кем выдан",
+          "type": "text"
+        },
+        {
+          "key": "[Дата выдачи паспорта]",
+          "label": "Паспорт: дата выдачи",
+          "type": "date"
+        },
+        {
+          "key": "[КПП]",
+          "label": "КПП",
+          "type": "text"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[СНИЛС]",
+          "label": "СНИЛС",
+          "type": "text"
+        },
+        {
+          "key": "[Расчётный счёт]",
+          "label": "Расчётный счёт",
+          "type": "text"
+        },
+        {
+          "key": "[Банк]",
+          "label": "Банк",
+          "type": "text"
+        },
+        {
+          "key": "[Корсчёт]",
+          "label": "Корсчёт",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "id": "steadicam_op_ip",
+      "file": "steadicam_op_ip.md",
+      "label": "Оператор стедикама (ИП)",
+      "category": "договор",
+      "role_group": "Операторский цех",
+      "tax_form": "ИП",
+      "filename_template": "Договор_стедикам_ИП_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[Название фильма]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[Автор сценария]",
+          "label": "Автор сценария",
+          "type": "text"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[ОГРНИП]",
+          "label": "ОГРНИП",
+          "type": "text"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт серия]",
+          "label": "Паспорт: серия",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт номер]",
+          "label": "Паспорт: номер",
+          "type": "text"
+        },
+        {
+          "key": "[Кем выдан]",
+          "label": "Паспорт: кем выдан",
+          "type": "text"
+        },
+        {
+          "key": "[Дата выдачи паспорта]",
+          "label": "Паспорт: дата выдачи",
+          "type": "date"
+        },
+        {
+          "key": "[КПП]",
+          "label": "КПП",
+          "type": "text"
+        },
+        {
+          "key": "[Расчётный счёт]",
+          "label": "Расчётный счёт",
+          "type": "text"
+        },
+        {
+          "key": "[Банк]",
+          "label": "Банк",
+          "type": "text"
+        },
+        {
+          "key": "[Корсчёт]",
+          "label": "Корсчёт",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        },
+        {
+          "key": "[Телефон]",
+          "label": "Телефон контрагента",
+          "type": "text",
+          "autofill": "contact.phone"
+        },
+        {
+          "key": "[Email]",
+          "label": "Email контрагента",
+          "type": "text",
+          "autofill": "contact.email"
+        }
+      ]
+    },
+    {
+      "id": "sound_engineer_ip",
+      "file": "sound_engineer_ip.md",
+      "label": "Звукорежиссёр (ИП)",
+      "category": "договор",
+      "role_group": "Звукоцех",
+      "tax_form": "ИП",
+      "filename_template": "Договор_звукреж_ИП_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Название фильма]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[Автор сценария]",
+          "label": "Автор сценария",
+          "type": "text"
+        },
+        {
+          "key": "[Дата начала]",
+          "label": "Дата начала работ",
+          "type": "date",
+          "autofill": "project.start_date"
+        },
+        {
+          "key": "[Дата окончания]",
+          "label": "Дата окончания работ",
+          "type": "date",
+          "autofill": "project.end_date"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        }
+      ]
+    },
+    {
+      "id": "composer_sz",
+      "file": "composer_sz.md",
+      "label": "Композитор (Самозанятый)",
+      "category": "договор",
+      "role_group": "Звукоцех",
+      "tax_form": "СЗ",
+      "filename_template": "Договор_композитор_СЗ_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Название фильма]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[Автор сценария]",
+          "label": "Автор сценария",
+          "type": "text"
+        },
+        {
+          "key": "[Дата рождения]",
+          "label": "Дата рождения",
+          "type": "date"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[СНИЛС]",
+          "label": "СНИЛС",
+          "type": "text"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт серия]",
+          "label": "Паспорт: серия",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт номер]",
+          "label": "Паспорт: номер",
+          "type": "text"
+        },
+        {
+          "key": "[Кем выдан]",
+          "label": "Паспорт: кем выдан",
+          "type": "text"
+        },
+        {
+          "key": "[Дата выдачи паспорта]",
+          "label": "Паспорт: дата выдачи",
+          "type": "date"
+        },
+        {
+          "key": "[КПП]",
+          "label": "КПП",
+          "type": "text"
+        },
+        {
+          "key": "[Расчётный счёт]",
+          "label": "Расчётный счёт",
+          "type": "text"
+        },
+        {
+          "key": "[Банк]",
+          "label": "Банк",
+          "type": "text"
+        },
+        {
+          "key": "[Корсчёт]",
+          "label": "Корсчёт",
+          "type": "text"
+        },
+        {
+          "key": "[Email]",
+          "label": "Email контрагента",
+          "type": "text",
+          "autofill": "contact.email"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        },
+        {
+          "key": "[Телефон]",
+          "label": "Телефон контрагента",
+          "type": "text",
+          "autofill": "contact.phone"
+        }
+      ]
+    },
+    {
+      "id": "voiceover_sz",
+      "file": "voiceover_sz.md",
+      "label": "Закадровое озвучивание (Самозанятый)",
+      "category": "договор",
+      "role_group": "Звукоцех",
+      "tax_form": "СЗ",
+      "filename_template": "Договор_закадр_СЗ_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Паспорт серия]",
+          "label": "Паспорт: серия",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт номер]",
+          "label": "Паспорт: номер",
+          "type": "text"
+        },
+        {
+          "key": "[Кем выдан]",
+          "label": "Паспорт: кем выдан",
+          "type": "text"
+        },
+        {
+          "key": "[Дата выдачи паспорта]",
+          "label": "Паспорт: дата выдачи",
+          "type": "date"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Email Изготовителя]",
+          "label": "Email Заказчика",
+          "type": "text",
+          "default": "info@bondarchuk.com"
+        },
+        {
+          "key": "[Дата рождения]",
+          "label": "Дата рождения",
+          "type": "date"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[СНИЛС]",
+          "label": "СНИЛС",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        },
+        {
+          "key": "[Телефон]",
+          "label": "Телефон контрагента",
+          "type": "text",
+          "autofill": "contact.phone"
+        }
+      ]
+    },
+    {
+      "id": "production_designer_ip",
+      "file": "production_designer_ip.md",
+      "label": "Художник-постановщик (ИП)",
+      "category": "договор",
+      "role_group": "Художественный цех",
+      "tax_form": "ИП",
+      "filename_template": "Договор_худпост_ИП_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Название фильма]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[Автор сценария]",
+          "label": "Автор сценария",
+          "type": "text"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[ОГРНИП]",
+          "label": "ОГРНИП",
+          "type": "text"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт серия]",
+          "label": "Паспорт: серия",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт номер]",
+          "label": "Паспорт: номер",
+          "type": "text"
+        },
+        {
+          "key": "[Кем выдан]",
+          "label": "Паспорт: кем выдан",
+          "type": "text"
+        },
+        {
+          "key": "[Дата выдачи паспорта]",
+          "label": "Паспорт: дата выдачи",
+          "type": "date"
+        },
+        {
+          "key": "[КПП]",
+          "label": "КПП",
+          "type": "text"
+        },
+        {
+          "key": "[Расчётный счёт]",
+          "label": "Расчётный счёт",
+          "type": "text"
+        },
+        {
+          "key": "[Банк]",
+          "label": "Банк",
+          "type": "text"
+        },
+        {
+          "key": "[Корсчёт]",
+          "label": "Корсчёт",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        },
+        {
+          "key": "[Телефон]",
+          "label": "Телефон контрагента",
+          "type": "text",
+          "autofill": "contact.phone"
+        },
+        {
+          "key": "[Email]",
+          "label": "Email контрагента",
+          "type": "text",
+          "autofill": "contact.email"
+        }
+      ]
+    },
+    {
+      "id": "costume_designer_ip",
+      "file": "costume_designer_ip.md",
+      "label": "Художник по костюмам (ИП)",
+      "category": "договор",
+      "role_group": "Художественный цех",
+      "tax_form": "ИП",
+      "filename_template": "Договор_худкост_ИП_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Название фильма]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[Автор сценария]",
+          "label": "Автор сценария",
+          "type": "text"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[ОГРНИП]",
+          "label": "ОГРНИП",
+          "type": "text"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт серия]",
+          "label": "Паспорт: серия",
+          "type": "text"
+        },
+        {
+          "key": "[Паспорт номер]",
+          "label": "Паспорт: номер",
+          "type": "text"
+        },
+        {
+          "key": "[Кем выдан]",
+          "label": "Паспорт: кем выдан",
+          "type": "text"
+        },
+        {
+          "key": "[Дата выдачи паспорта]",
+          "label": "Паспорт: дата выдачи",
+          "type": "date"
+        },
+        {
+          "key": "[КПП]",
+          "label": "КПП",
+          "type": "text"
+        },
+        {
+          "key": "[Расчётный счёт]",
+          "label": "Расчётный счёт",
+          "type": "text"
+        },
+        {
+          "key": "[Банк]",
+          "label": "Банк",
+          "type": "text"
+        },
+        {
+          "key": "[Корсчёт]",
+          "label": "Корсчёт",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        },
+        {
+          "key": "[Телефон]",
+          "label": "Телефон контрагента",
+          "type": "text",
+          "autofill": "contact.phone"
+        },
+        {
+          "key": "[Email]",
+          "label": "Email контрагента",
+          "type": "text",
+          "autofill": "contact.email"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        }
+      ]
+    },
+    {
+      "id": "makeup_artist_ip",
+      "file": "makeup_artist_ip.md",
+      "label": "Художник по гриму (ИП)",
+      "category": "договор",
+      "role_group": "Художественный цех",
+      "tax_form": "ИП",
+      "filename_template": "Договор_худгрим_ИП_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Название фильма]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[Автор сценария]",
+          "label": "Автор сценария",
+          "type": "text"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        }
+      ]
+    },
+    {
+      "id": "choreographer_ip",
+      "file": "choreographer_ip.md",
+      "label": "Хореограф (ИП)",
+      "category": "договор",
+      "role_group": "Постановочная группа",
+      "tax_form": "ИП",
+      "filename_template": "Договор_хореограф_ИП_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Название фильма]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[Автор сценария]",
+          "label": "Автор сценария",
+          "type": "text"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        }
+      ]
+    },
+    {
+      "id": "screenplay_alienation_fl",
+      "file": "screenplay_alienation_fl.md",
+      "label": "Отчуждение прав на сценарий (ФЛ)",
+      "category": "договор",
+      "role_group": "Авторские права",
+      "tax_form": "ФЛ",
+      "filename_template": "Договор_отчуждение_сценарий_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[Номер договора]",
+          "label": "Номер договора",
+          "type": "text",
+          "required": true,
+          "placeholder": "напр. КШ-2026-001"
+        },
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        },
+        {
+          "key": "[СНИЛС]",
+          "label": "СНИЛС",
+          "type": "text"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[Банк]",
+          "label": "Банк",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        },
+        {
+          "key": "[Телефон]",
+          "label": "Телефон контрагента",
+          "type": "text",
+          "autofill": "contact.phone"
+        }
+      ]
+    },
+    {
+      "id": "license_avp_ip",
+      "file": "license_avp_ip.md",
+      "label": "Лицензионный договор на произведение в АВП (ИП)",
+      "category": "договор",
+      "role_group": "Авторские права",
+      "tax_form": "ИП",
+      "filename_template": "Договор_лицензия_АВП_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[ФИО контрагента]",
+          "label": "ФИО контрагента",
+          "type": "text",
+          "autofill": "contact.name",
+          "required": true
+        },
+        {
+          "key": "[ОГРНИП]",
+          "label": "ОГРНИП",
+          "type": "text"
+        },
+        {
+          "key": "[Представитель Изготовителя]",
+          "label": "Представитель Заказчика (Изготовителя)",
+          "type": "text",
+          "required": true,
+          "autofill": "school.rep"
+        },
+        {
+          "key": "[Основание полномочий]",
+          "label": "Основание полномочий",
+          "type": "text",
+          "required": true,
+          "default": "Устава"
+        },
+        {
+          "key": "[Сумма цифрами]",
+          "label": "Сумма (цифрами)",
+          "type": "text",
+          "required": true,
+          "placeholder": "100 000"
+        },
+        {
+          "key": "[Сумма прописью]",
+          "label": "Сумма (прописью)",
+          "type": "text",
+          "required": true,
+          "placeholder": "Сто тысяч"
+        },
+        {
+          "key": "[Дата рождения]",
+          "label": "Дата рождения",
+          "type": "date"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        },
+        {
+          "key": "[ИНН контрагента]",
+          "label": "ИНН контрагента",
+          "type": "text"
+        },
+        {
+          "key": "[БИК]",
+          "label": "БИК",
+          "type": "text"
+        },
+        {
+          "key": "[Телефон]",
+          "label": "Телефон контрагента",
+          "type": "text",
+          "autofill": "contact.phone"
+        }
+      ]
+    },
+    {
+      "id": "image_consent_extra",
+      "file": "image_consent_extra.md",
+      "label": "Согласие на изображение + передача прав на РИД (массовка)",
+      "category": "согласие",
+      "role_group": "Согласия",
+      "tax_form": "ФЛ",
+      "filename_template": "Согласие_изображение_{lastName}_{yearMonth}",
+      "fields": [
+        {
+          "key": "[День]",
+          "label": "День заключения (число)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Месяц]",
+          "label": "Месяц заключения",
+          "type": "text",
+          "required": true,
+          "placeholder": "апреля"
+        },
+        {
+          "key": "[Год]",
+          "label": "Год заключения (последние 2 цифры)",
+          "type": "text",
+          "required": true,
+          "placeholder": "26"
+        },
+        {
+          "key": "[Название фильма]",
+          "label": "Название фильма",
+          "type": "text",
+          "autofill": "project.name",
+          "required": true
+        },
+        {
+          "key": "[Дата рождения]",
+          "label": "Дата рождения",
+          "type": "date"
+        },
+        {
+          "key": "[Дата выдачи паспорта]",
+          "label": "Паспорт: дата выдачи",
+          "type": "date"
+        },
+        {
+          "key": "[Кем выдан]",
+          "label": "Паспорт: кем выдан",
+          "type": "text"
+        },
+        {
+          "key": "[Адрес регистрации]",
+          "label": "Адрес регистрации",
+          "type": "text"
+        }
       ]
     }
-  ]
+  ],
+  "defaults": {
+    "school": {
+      "name": "ООО «Киношкола имени Сергея Фёдоровича Бондарчука»",
+      "short_name": "Киношкола",
+      "inn": "9701057530",
+      "kpp": "770901001",
+      "ogrn": "5167746408660",
+      "address": "г. Москва",
+      "rep": "",
+      "rep_basis": "Устава"
+    }
+  }
 }

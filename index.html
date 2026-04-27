@@ -1834,9 +1834,25 @@ async function openDocGen(opts){
   if(!tpls.length){toast('Индекс шаблонов пуст. Проверь contracts/templates_index.json','err','Документы');return}
   // Сброс / инициализация состояния
   dgState={tplId:opts.tplId||tpls[0].id,projId:opts.projectId||'',contactId:opts.contactId||'',values:{},editingId:opts.editingId||null,touched:new Set()};
-  // Заполнить селекты
+  // Заполнить селекты — группируем по role_group / category для иерархии
   const tplSel=document.getElementById('dg-tpl');
-  tplSel.innerHTML=tpls.map(t=>`<option value="${esc(t.id)}">${esc(t.label)}</option>`).join('');
+  const groups={};
+  tpls.forEach(t=>{
+    const g=t.role_group||(t.category==='согласие'?'Согласия':'Базовые шаблоны');
+    (groups[g]||(groups[g]=[])).push(t);
+  });
+  const groupOrder=['Базовые шаблоны','Актёрский цех','Режиссёрский цех','Продюсерская группа','Операторский цех','Звукоцех','Художественный цех','Постановочная группа','Авторские права','Согласия'];
+  const sortedGroups=Object.keys(groups).sort((a,b)=>{
+    const ai=groupOrder.indexOf(a),bi=groupOrder.indexOf(b);
+    return (ai<0?99:ai)-(bi<0?99:bi);
+  });
+  tplSel.innerHTML=sortedGroups.map(g=>{
+    const opts=groups[g].map(t=>{
+      const tax=t.tax_form&&t.tax_form!=='?'?` · ${t.tax_form}`:'';
+      return `<option value="${esc(t.id)}">${esc(t.label)}${esc(tax)}</option>`;
+    }).join('');
+    return `<optgroup label="${esc(g)}">${opts}</optgroup>`;
+  }).join('');
   tplSel.value=dgState.tplId;
   const projSel=document.getElementById('dg-proj');
   projSel.innerHTML='<option value="">— без проекта —</option>'+S.projects.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
@@ -1918,6 +1934,7 @@ function dgAutofill(){
   dgState.contactId=document.getElementById('dg-contact').value||'';
   const proj=S.projects.find(p=>p.id===dgState.projId);
   const ct=S.contacts.find(c=>c.id===dgState.contactId);
+  const school=DG_TPLS?.defaults?.school||{};
   tpl.fields.forEach(f=>{
     if(!f.autofill)return;
     if(dgState.touched.has(f.key))return; // не трогаем то, что юзер сам ввёл
@@ -1925,6 +1942,7 @@ function dgAutofill(){
     const [src,fld]=String(f.autofill).split('.');
     if(src==='project'&&proj)v=proj[fld];
     if(src==='contact'&&ct)v=ct[fld];
+    if(src==='school')v=school[fld];
     if(src==='contract'){/* зарезервировано */}
     if(v==null||v==='')return;
     if(f.type==='date')v=String(v).slice(0,10);
@@ -1973,13 +1991,13 @@ function dgMdToHtml(md){
 }
 
 function dgStripHeader(md){
-  // Удаляем верхние комментарии-метаданные шаблона: «# ШАБЛОН:», «# Файл на выходе:», «# Правовая основа:».
+  // Удаляем верхние комментарии-метаданные шаблона: «# ШАБЛОН:», «# Файл на выходе:», «# Правовая основа:», «# Категория:».
   // Они нужны редактору, но не должны попадать в финальный документ.
   const lines=String(md||'').split(/\r?\n/);
   let i=0;
   while(i<lines.length){
     const t=lines[i].trim();
-    if(t===''||/^# (ШАБЛОН|Файл на выходе|Правовая основа)/i.test(t))i++;
+    if(t===''||/^# (ШАБЛОН|Файл на выходе|Правовая основа|Категория)/i.test(t))i++;
     else break;
   }
   return lines.slice(i).join('\n');
