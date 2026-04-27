@@ -196,17 +196,23 @@ async function handleTgWebhook(request, env) {
 // /api/chat/ai — запрос к OpenRouter с историей переписки как контекстом.
 // =========================================================================
 
-const DEFAULT_MODEL = 'google/gemini-2.0-flash-exp:free';
+// По состоянию на 2026-04: free-варианты Gemini 2.0 Flash exp и DeepSeek v3-0324 были убраны с OpenRouter,
+// заменили на актуальные. Список моделей на сегодня в виджете и worker-е должны совпадать.
+const DEFAULT_MODEL = 'openai/gpt-oss-120b:free';
 const ALLOWED_MODELS = new Set([
-  'anthropic/claude-3.5-sonnet',
-  'anthropic/claude-sonnet-4',
-  'openai/gpt-4o',
-  'openai/gpt-4o-mini',
-  'google/gemini-2.0-flash-exp:free',
-  'google/gemini-2.0-flash-001',
-  'deepseek/deepseek-chat-v3-0324:free',
-  'deepseek/deepseek-chat',
-  'meta-llama/llama-3.3-70b-instruct:free',
+  // free
+  'openai/gpt-oss-120b:free',
+  'qwen/qwen3-next-80b-a3b-instruct:free',
+  'nousresearch/hermes-3-llama-3.1-405b:free',
+  'google/gemma-4-31b-it:free',
+  // paid 2026
+  'anthropic/claude-sonnet-4.6',
+  'anthropic/claude-opus-4.6',
+  'openai/gpt-5',
+  'openai/gpt-5-mini',
+  'google/gemini-2.5-pro',
+  'google/gemini-2.5-flash',
+  'deepseek/deepseek-v3.2',
 ]);
 
 const SYSTEM_PROMPT = `Ты — AI-помощник юриста в сфере кинопроизводства и ТВ в Российской Федерации.

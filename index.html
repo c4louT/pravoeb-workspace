@@ -1690,15 +1690,19 @@ let cwModelsWired=false;     // change-листенер #cw-model тоже од�
 let cwMode='ai';             // 'ai' | 'tg' — куда улетает следующее сообщение
 let cwAiWaiting=false;       // показываем индикатор «печатает…»
 const CW_MODELS=[
-  {id:'google/gemini-2.0-flash-exp:free',label:'Gemini 2.0 Flash (free)'},
-  {id:'deepseek/deepseek-chat-v3-0324:free',label:'DeepSeek V3 (free)'},
-  {id:'meta-llama/llama-3.3-70b-instruct:free',label:'Llama 3.3 70B (free)'},
-  {id:'anthropic/claude-3.5-sonnet',label:'Claude 3.5 Sonnet ($)'},
-  {id:'anthropic/claude-sonnet-4',label:'Claude Sonnet 4 ($)'},
-  {id:'openai/gpt-4o',label:'GPT-4o ($)'},
-  {id:'openai/gpt-4o-mini',label:'GPT-4o mini ($)'},
-  {id:'google/gemini-2.0-flash-001',label:'Gemini 2.0 Flash ($)'},
-  {id:'deepseek/deepseek-chat',label:'DeepSeek V3 ($)'},
+  // free (2026-04: Gemini 2.0 Flash exp и DeepSeek v3-0324 убрали с OpenRouter — заменили актуальными)
+  {id:'openai/gpt-oss-120b:free',label:'GPT-OSS 120B (free)'},
+  {id:'qwen/qwen3-next-80b-a3b-instruct:free',label:'Qwen 3 Next 80B (free)'},
+  {id:'nousresearch/hermes-3-llama-3.1-405b:free',label:'Hermes 3 / Llama 405B (free)'},
+  {id:'google/gemma-4-31b-it:free',label:'Gemma 4 31B (free)'},
+  // paid
+  {id:'anthropic/claude-sonnet-4.6',label:'Claude Sonnet 4.6 ($)'},
+  {id:'anthropic/claude-opus-4.6',label:'Claude Opus 4.6 ($$)'},
+  {id:'openai/gpt-5',label:'GPT-5 ($$)'},
+  {id:'openai/gpt-5-mini',label:'GPT-5 mini ($)'},
+  {id:'google/gemini-2.5-pro',label:'Gemini 2.5 Pro ($)'},
+  {id:'google/gemini-2.5-flash',label:'Gemini 2.5 Flash ($)'},
+  {id:'deepseek/deepseek-v3.2',label:'DeepSeek V3.2 ($)'},
 ];
 let cwModel=localStorage.getItem('pravoeb_cw_model')||CW_MODELS[0].id;
 if(!CW_MODELS.some(m=>m.id===cwModel))cwModel=CW_MODELS[0].id;
