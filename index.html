@@ -324,12 +324,16 @@ th.sortable.act .ar{opacity:1}
 .cw-input textarea:focus{outline:none;border-color:var(--acc)}
 .cw-input button{background:var(--acc);color:var(--bg);border:none;padding:0 .9rem;border-radius:2px;cursor:pointer;font-size:1rem;font-weight:600}
 .cw-input button:disabled{opacity:.45;cursor:not-allowed}
+/* docxtemplater + pizzip — для подстановки в оригинальные .docx с сохранением форматирования */
 .cw-sending{opacity:.55}
 /* Кнопка Профиль в top-bar */
 .prof-btn{background:transparent;border:1px solid var(--brd);color:var(--ink-m);padding:.3rem .8rem;font-family:'JetBrains Mono',monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .2s;margin-right:.4rem}
 .prof-btn:hover{border-color:var(--acc);color:var(--acc)}
 @media(max-width:768px){header,nav,main,footer,.top-bar{padding-left:1.2rem;padding-right:1.2rem}.fr{grid-template-columns:1fr}.sv{font-size:2rem}.md{padding:1.5rem;max-height:96vh}.mo{padding:.5rem}.tb-select{max-width:100%;width:100%}.search-input{min-width:0;width:100%}.toolbar{flex-direction:column;align-items:stretch}.ct-row{grid-template-columns:1fr 50px;gap:.4rem}.ct-row .ct-meta,.ct-row .ct-cnt{display:none}.ct-head{display:none}.ch-wrap{height:220px;padding:.6rem}.md-wide{padding:1rem}.prv-body{height:60vh}.gn-row,.gn-head{grid-template-columns:100px 1fr}.cal-cell{min-height:60px;padding:.2rem}.cal-ev{font-size:.55rem;padding:0 3px}.cal-dn{font-size:.6rem}.cal-week{grid-template-columns:1fr;gap:.4rem}.cal-wd{min-height:0}.cal-bar{flex-direction:column;align-items:stretch}.cal-tools{justify-content:space-between}}
 </style>
+<!-- Phase 5d: docxtemplater + pizzip для подстановки в оригинальные .docx с сохранением формата -->
+<script src="https://unpkg.com/pizzip@3.1.6/dist/pizzip.js"></script>
+<script src="https://unpkg.com/docxtemplater@3.50.0/build/docxtemplater.js"></script>
 </head>
 <body>
 
@@ -1773,11 +1777,49 @@ async function dgEnsureIndex(){
 }
 async function dgLoadBody(file){
   if(DG_TPL_BODIES[file])return DG_TPL_BODIES[file];
-  const r=await fetch('contracts/templates/'+encodeURIComponent(file),{cache:'no-store'});
+  const isDocx=file.toLowerCase().endsWith('.docx');
+  const path=isDocx?('contracts/templates_docx/'+encodeURIComponent(file)):('contracts/templates/'+encodeURIComponent(file));
+  const r=await fetch(path,{cache:'no-store'});
   if(!r.ok)throw new Error('HTTP '+r.status+' for '+file);
-  const text=await r.text();
-  DG_TPL_BODIES[file]=text;
-  return text;
+  const data=isDocx?(await r.arrayBuffer()):(await r.text());
+  DG_TPL_BODIES[file]=data;
+  return data;
+}
+function dgIsDocxTpl(tpl){return!!(tpl&&tpl.file&&tpl.file.toLowerCase().endsWith('.docx'))}
+// Извлекает плоский текст из .docx (ArrayBuffer) для предпросмотра / сохранения в БД
+function dgDocxToText(arrBuf){
+  if(typeof PizZip==='undefined')throw new Error('PizZip не загрузился (CDN недоступен?)');
+  const zip=new PizZip(arrBuf);
+  const xmlFile=zip.file('word/document.xml');
+  if(!xmlFile)throw new Error('В .docx нет word/document.xml');
+  let xml=xmlFile.asText();
+  // Сохраняем переносы строк из абзацев и табуляции
+  xml=xml.replace(/<w:p[^>]*\/>/g,'\n').replace(/<\/w:p>/g,'\n').replace(/<w:br\s*\/?>/g,'\n').replace(/<w:tab\s*\/?>/g,'\t');
+  // Снимаем XML-разметку
+  let s=xml.replace(/<[^>]+>/g,'');
+  s=s.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'");
+  // Чистим лишние пустые строки
+  s=s.replace(/\n{3,}/g,'\n\n').replace(/[ \t]+\n/g,'\n');
+  return s.trim();
+}
+// Подставляет значения в .docx через docxtemplater и возвращает Blob готового файла
+function dgRenderDocxBlob(arrBuf,tpl){
+  if(typeof window.docxtemplater==='undefined'&&typeof window.Docxtemplater==='undefined')throw new Error('Docxtemplater не загрузился (CDN недоступен?)');
+  const Docx=window.docxtemplater||window.Docxtemplater;
+  const zip=new PizZip(arrBuf);
+  // Собираем словарь значений: ключи без фигурных скобок
+  const data={};
+  (tpl.fields||[]).forEach(f=>{
+    const stripped=String(f.key).replace(/^\{/,'').replace(/\}$/,'');
+    let v=dgState.values[f.key];
+    if(v==null||v==='')v=f.default??'';
+    if(v&&f.type==='date')v=dgFmtRuDate(String(v));
+    // Если поле не заполнено — оставляем сам ключ в фигурных скобках (видно в Word'е что заполнить)
+    data[stripped]=(v==null||v==='')?String(f.key):String(v);
+  });
+  const doc=new Docx(zip,{paragraphLoop:true,linebreaks:true,delimiters:{start:'{',end:'}'},nullGetter:function(part){return'{'+part.value+'}'}});
+  doc.render(data);
+  return doc.getZip().generate({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
 }
 function dgGetTpl(id){return(DG_TPLS?.templates||[]).find(t=>t.id===id)}
 function dgKeyId(key){return 'dgf-'+btoa(unescape(encodeURIComponent(key))).replace(/[^a-zA-Z0-9]/g,'')}
@@ -1841,7 +1883,7 @@ async function openDocGen(opts){
     const g=t.role_group||(t.category==='согласие'?'Согласия':'Базовые шаблоны');
     (groups[g]||(groups[g]=[])).push(t);
   });
-  const groupOrder=['Базовые шаблоны','Актёрский цех','Режиссёрский цех','Продюсерская группа','Операторский цех','Звукоцех','Художественный цех','Постановочная группа','Авторские права','Согласия'];
+  const groupOrder=['Базовые шаблоны','Производство','Сценарий/Литература','Актёрский цех','Режиссёрский цех','Продюсерская группа','Продюсерский цех','Операторский цех','Звукоцех','Художественный цех','Световой цех','Постановочная группа','Постпродакшн','Авторские права','Согласия','Прочее'];
   const sortedGroups=Object.keys(groups).sort((a,b)=>{
     const ai=groupOrder.indexOf(a),bi=groupOrder.indexOf(b);
     return (ai<0?99:ai)-(bi<0?99:bi);
@@ -2008,9 +2050,18 @@ async function dgRender(){
   if(!tpl||!view)return;
   try{
     const raw=await dgLoadBody(tpl.file);
-    const body=dgStripHeader(raw);
+    let body;
+    if(dgIsDocxTpl(tpl))body=dgDocxToText(raw);
+    else body=dgStripHeader(raw);
     const{text}=dgSubstitute(body);
     view.innerHTML=dgMdToHtml(text);
+    if(dgIsDocxTpl(tpl)){
+      // Маленькая подсказка про формат — реальный экспорт сохранит шрифты/таблицы
+      const tip=document.createElement('div');
+      tip.style.cssText='font-size:.7rem;color:var(--ink-d);margin-bottom:.6rem;padding:.4rem;border-left:2px solid var(--acc);background:var(--bg-el)';
+      tip.textContent='ⓘ Это текстовый предпросмотр. При экспорте DOCX сохранится оригинальный формат (шрифт, поля, таблицы).';
+      view.insertBefore(tip,view.firstChild);
+    }
   }catch(e){
     console.error('dgRender failed',e);
     view.innerHTML=`<p class="dg-missing">Не удалось загрузить шаблон: ${esc(e?.message||e)}</p>`;
@@ -2041,7 +2092,7 @@ function dgComputeFilename(){
 async function dgGetRenderedHtml(){
   const tpl=dgGetTpl(dgState.tplId);if(!tpl)return{html:'',text:'',missing:[]};
   const raw=await dgLoadBody(tpl.file);
-  const body=dgStripHeader(raw);
+  const body=dgIsDocxTpl(tpl)?dgDocxToText(raw):dgStripHeader(raw);
   const{text,missing}=dgSubstitute(body);
   return{html:dgMdToHtml(text),text,missing};
 }
@@ -2069,12 +2120,36 @@ function dgDocxBlob(html,filename){
 }
 
 async function dgExportDocx(){
+  const tpl=dgGetTpl(dgState.tplId);
+  if(!tpl){toast('Шаблон не выбран','err','Документы');return}
+  const filename=dgComputeFilename();
+  if(dgIsDocxTpl(tpl)){
+    // Phase 5d: подстановка прямо в оригинальный .docx через docxtemplater — сохраняет шрифт, отступы, таблицы.
+    try{
+      const buf=await dgLoadBody(tpl.file);
+      // Проверяем сколько полей не заполнено (для предупреждения)
+      const unfilled=(tpl.fields||[]).filter(f=>{const v=dgState.values[f.key];return v==null||v===''}).length;
+      if(unfilled){
+        const ok=confirm(`Не заполнено ${unfilled} полей. Скачать всё равно? (Незаполненные останутся как {ключи} в документе)`);
+        if(!ok)return;
+      }
+      const blob=dgRenderDocxBlob(buf,tpl);
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;a.download=filename+'.docx';a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1500);
+    }catch(e){
+      console.error('docx render failed',e);
+      toast('Ошибка сборки .docx: '+(e?.message||e),'err','Документы');
+    }
+    return;
+  }
+  // Старый путь для .md шаблонов (Phase 5a/b совместимость)
   const{html,missing}=await dgGetRenderedHtml();
   if(missing&&missing.length){
     const ok=confirm(`В документе ${missing.length} незаполненных плейсхолдеров (например ${missing.slice(0,2).join(', ')}). Скачать всё равно?`);
     if(!ok)return;
   }
-  const filename=dgComputeFilename();
   const blob=dgDocxBlob(html,filename);
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
