@@ -2132,7 +2132,7 @@ async function dgExportDocx(){
     try{
       const buf=await dgLoadBody(tpl.file);
       // Проверяем сколько полей не заполнено (для предупреждения)
-      const unfilled=(tpl.fields||[]).filter(f=>{const v=dgState.values[f.key];return v==null||v===''}).length;
+      const unfilled=(tpl.fields||[]).filter(f=>{const v=dgState.values[f.key];return(v==null||v==='')&&!(f.default)}).length;
       if(unfilled){
         const ok=confirm(`Не заполнено ${unfilled} полей. Скачать всё равно? (Незаполненные останутся как {ключи} в документе)`);
         if(!ok)return;
