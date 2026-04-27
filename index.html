@@ -1794,7 +1794,8 @@ function dgDocxToText(arrBuf){
   if(!xmlFile)throw new Error('В .docx нет word/document.xml');
   let xml=xmlFile.asText();
   // Сохраняем переносы строк из абзацев и табуляции
-  xml=xml.replace(/<w:p[^>]*\/>/g,'\n').replace(/<\/w:p>/g,'\n').replace(/<w:br\s*\/?>/g,'\n').replace(/<w:tab\s*\/?>/g,'\t');
+  // Negative lookahead исключает <w:pStyle/>, <w:pgMar/>, <w:pgSz/> и пр. — иначе ~67 ложных совпадений на шаблон.
+  xml=xml.replace(/<w:p(?![a-zA-Z])[^>]*\/>/g,'\n').replace(/<\/w:p>/g,'\n').replace(/<w:br\s*\/?>/g,'\n').replace(/<w:tab\s*\/?>/g,'\t');
   // Снимаем XML-разметку
   let s=xml.replace(/<[^>]+>/g,'');
   // &amp; — последним, иначе двойное кодирование (&amp;lt;) превратится в '<' вместо '&lt;'
