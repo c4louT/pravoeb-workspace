@@ -217,6 +217,24 @@ th.sortable.act .ar{opacity:1}
 .prv-body{height:70vh;background:#fff;border:1px solid var(--brd);border-radius:2px;overflow:hidden;margin-bottom:1.2rem}
 .prv-body iframe{width:100%;height:100%;border:none}
 .prv-body .prv-fall{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--bg-el);color:var(--ink-m);text-align:center;padding:2rem;gap:1rem;font-family:'JetBrains Mono',monospace;font-size:.8rem}
+/* Документы (Phase 5) */
+.dg-layout{display:grid;grid-template-columns:1fr 1.1fr;gap:1.2rem;margin:.6rem 0 1rem}
+.dg-left{display:flex;flex-direction:column;gap:.5rem;max-height:62vh;overflow-y:auto;padding-right:.4rem}
+.dg-right{display:flex;flex-direction:column;gap:.4rem;min-height:0}
+.dg-preview-head{display:flex;justify-content:space-between;align-items:center;gap:.6rem}
+.dg-preview-title{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--ink-d);text-transform:uppercase;letter-spacing:.05em}
+.dg-preview{flex:1;min-height:62vh;max-height:62vh;overflow-y:auto;background:#fff;color:#111;padding:1.5rem 1.6rem;border:1px solid var(--brd);border-radius:2px;font-family:'Times New Roman',serif;font-size:13px;line-height:1.5;white-space:pre-wrap}
+.dg-preview h1,.dg-preview h2,.dg-preview h3{font-family:'Times New Roman',serif;font-weight:700;color:#000;margin:.6em 0 .3em}
+.dg-preview .dg-missing{background:#ffeb99;color:#000;padding:0 .15em;border-radius:2px;font-style:italic}
+.dg-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem .8rem}
+.dg-row .form-group{margin-bottom:.4rem}
+.dg-list-row{display:grid;grid-template-columns:1.2fr 1fr 1fr 110px;gap:.6rem;padding:.6rem .8rem;border-bottom:1px solid var(--brd);align-items:center}
+.dg-list-row.dg-head{background:var(--bg-el);font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--ink-d);text-transform:uppercase;letter-spacing:.05em}
+.dg-list-row .dg-name{font-weight:600}
+.dg-list-row .dg-meta{color:var(--ink-m);font-size:.78rem}
+.dg-list-row .dg-actions{text-align:right;display:flex;gap:.3rem;justify-content:flex-end;flex-wrap:wrap}
+@media(max-width:900px){.dg-layout{grid-template-columns:1fr}.dg-left{max-height:none}.dg-preview{min-height:40vh;max-height:40vh}.dg-list-row{grid-template-columns:1fr}.dg-list-row.dg-head{display:none}.dg-list-row .dg-actions{justify-content:flex-start}}
+@media print{body *{visibility:hidden}#dg-print-area,#dg-print-area *{visibility:visible}#dg-print-area{position:absolute;left:0;top:0;width:100%;padding:1.6cm 2cm;font-family:'Times New Roman',serif;font-size:12pt;line-height:1.4;color:#000;background:#fff}#dg-print-area h1,#dg-print-area h2,#dg-print-area h3{font-family:'Times New Roman',serif}}
 /* Календарь */
 .cal-bar{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
 .cal-nav{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
@@ -362,6 +380,7 @@ th.sortable.act .ar{opacity:1}
     <span class="nav-tab" data-tab="payments">Выплаты</span>
     <span class="nav-tab" data-tab="contacts">Контрагенты</span>
     <span class="nav-tab" data-tab="checklists">Чеклисты</span>
+    <span class="nav-tab" data-tab="documents">Документы</span>
     <span class="nav-tab" data-tab="analytics">Аналитика</span>
     <span class="nav-tab" data-tab="calendar">Календарь</span>
     <span class="nav-tab" data-tab="timeline">Таймлайн</span>
@@ -487,6 +506,15 @@ th.sortable.act .ar{opacity:1}
       </div>
       <div id="cal-view"></div>
     </section>
+    <section class="tv" id="documents">
+      <div class="ab"><h2 class="st" style="margin-bottom:0">Документы <span class="st-sub">генерация договоров из шаблонов</span></h2><button class="btn btn-p" onclick="openDocGen()">+ Сгенерировать</button></div>
+      <div class="toolbar">
+        <input class="search-input" id="dg-search" placeholder="Поиск: название, шаблон, контрагент" autocomplete="off">
+        <select class="tb-select" id="dg-proj-filter" aria-label="Фильтр по проекту"><option value="all">Все проекты</option></select>
+        <select class="tb-select" id="dg-tpl-filter" aria-label="Фильтр по шаблону"><option value="all">Все типы</option></select>
+      </div>
+      <div id="documents-list"></div>
+    </section>
     <section class="tv" id="timeline">
       <h2 class="st">Таймлайн <span class="st-sub">хронология</span></h2>
       <div class="toolbar">
@@ -611,6 +639,37 @@ th.sortable.act .ar{opacity:1}
   <div class="ma"><button class="btn" onclick="closeM('prv')">Закрыть</button><a class="btn btn-p" id="prv-dl" target="_blank" rel="noopener">Скачать</a></div>
 </div></div>
 
+<!-- Модалка: Генератор документа (шаблон → форма → preview → PDF/DOCX) -->
+<div class="mo" id="dgm"><div class="md md-wide" style="max-width:1100px">
+  <h3 class="mt" id="dgm-title">Генерация документа</h3><p class="ms" id="dgm-sub">Выбери шаблон, заполни поля — получишь Markdown + PDF + DOCX</p>
+  <div class="dg-layout">
+    <div class="dg-left">
+      <div class="form-group">
+        <label class="form-label">Шаблон</label>
+        <select class="form-select" id="dg-tpl" onchange="dgOnTplChange()"></select>
+      </div>
+      <div class="fr">
+        <div class="form-group"><label class="form-label">Проект (для автозаполнения)</label><select class="form-select" id="dg-proj" onchange="dgAutofill()"><option value="">— без проекта —</option></select></div>
+        <div class="form-group"><label class="form-label">Контрагент (для автозаполнения)</label><select class="form-select" id="dg-contact" onchange="dgAutofill()"><option value="">— без контрагента —</option></select></div>
+      </div>
+      <div id="dg-fields"></div>
+    </div>
+    <div class="dg-right">
+      <div class="dg-preview-head">
+        <span class="dg-preview-title">Предпросмотр</span>
+        <button class="btn btn-s" id="dg-refresh" type="button" onclick="dgRender()">Обновить</button>
+      </div>
+      <div id="dg-preview" class="dg-preview"></div>
+    </div>
+  </div>
+  <div class="ma" style="flex-wrap:wrap;gap:.5rem">
+    <button class="btn" onclick="closeM('dgm')">Закрыть</button>
+    <button class="btn btn-s" onclick="dgExportPdf()" id="dg-pdf-btn">📄 PDF (печать)</button>
+    <button class="btn btn-s" onclick="dgExportDocx()" id="dg-docx-btn">⬇ DOCX</button>
+    <button class="btn btn-p" onclick="dgSave(event)" id="dg-save-btn">Сохранить в БД</button>
+  </div>
+</div></div>
+
 <!-- Модалка: Профиль (Telegram ID) -->
 <div class="mo" id="prfm"><div class="md">
   <h3 class="mt">Профиль</h3><p class="ms">Привязка к Telegram-боту</p>
@@ -663,7 +722,11 @@ const TL={'actor':'Актёр','actor-minor':'Актёр (несов.)','directo
 const SL={'signed':'Подписан','pending':'В работе','missing':'Не подписан','draft':'Черновик'};
 const PL={'development':'Разработка','pre-production':'Подготовка','production':'Съёмки','post-production':'МТП','completed':'Завершён'};
 
-let S={projects:[],contracts:[],payments:[],contacts:[]};
+let S={projects:[],contracts:[],payments:[],contacts:[],documents:[]};
+let DG_TPLS=null; // {templates:[...]} индекс шаблонов
+const DG_TPL_BODIES={}; // кэш {file: 'markdown текст шаблона'}
+let dgState={tplId:null,projId:'',contactId:'',values:{},editingId:null,touched:new Set()};
+let dgFiltersWired=false;
 let U=null,eP=null,eC=null,eCT=null,aPay=null,cF='all',tF='all';
 let selectedFile=null;
 // Поиск/фильтры/сортировка
@@ -701,7 +764,7 @@ function showSkeletons(){
 }
 function populateProjFilters(){
   const opts='<option value="all">Все проекты</option>'+S.projects.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
-  ['c-proj-filter','pay-proj-filter','t-proj-filter','an-proj','cal-proj'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML=opts;el.value=S.projects.find(p=>p.id===cur)?cur:'all'});
+  ['c-proj-filter','pay-proj-filter','t-proj-filter','an-proj','cal-proj','dg-proj-filter'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML=opts;el.value=S.projects.find(p=>p.id===cur)?cur:'all'});
   const tEl=document.getElementById('c-type-filter');if(tEl){const cur=tEl.value;tEl.innerHTML='<option value="all">Все типы</option>'+Object.entries(TL).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join('');tEl.value=TL[cur]?cur:'all'}
 }
 function rChips(){
@@ -776,7 +839,7 @@ async function register(){
 
 async function logout(){
   await sb.auth.signOut();
-  U=null;S={projects:[],contracts:[],payments:[],contacts:[]};dataLoaded=false;loadingInFlight=null;
+  U=null;S={projects:[],contracts:[],payments:[],contacts:[],documents:[]};dataLoaded=false;loadingInFlight=null;
   document.getElementById('app').classList.remove('on');
   document.getElementById('auth-screen').style.display='flex';
 }
@@ -824,6 +887,20 @@ async function loadData(){
     }
   }finally{
     S.projects=p.data||[];S.contracts=c.data||[];S.payments=pay.data||[];S.contacts=ct.data||[];
+    // Документы — таблица из миграции 2026-04-27c. Если не накатана, тихо пропускаем (баннер общий с контрагентами).
+    try{
+      const docsRes=await withTimeout(sb.from('documents').select('*').order('created_at',{ascending:false}),10000,'documents');
+      if(docsRes.error){
+        if(/relation .* does not exist/i.test(docsRes.error.message||'')||docsRes.error.code==='42P01'){
+          S.documents=[];
+        }else if(docsRes.error.code!=='TIMEOUT'){
+          sbErr('загрузка документов',docsRes.error);
+          S.documents=[];
+        }else{S.documents=[]}
+      }else{
+        S.documents=docsRes.data||[];
+      }
+    }catch(e){S.documents=[]}
     try{render()}catch(e){console.error('render failed',e);toast('Сбой рендера: '+(e?.message||e),'err','UI')}
   }
 }
@@ -1083,7 +1160,7 @@ function closeM(id){
 }
 
 // ============ RENDER ============
-function render(){populateProjFilters();rChips();rStats();rAlerts();rProgress();rDonut();rProjects();rContracts();rPayments();rContacts();rChecklists();rAnalytics();rCalendar();rTimeline();}
+function render(){populateProjFilters();rChips();rStats();rAlerts();rProgress();rDonut();rProjects();rContracts();rPayments();rContacts();rChecklists();rAnalytics();rCalendar();rTimeline();rDocuments();}
 
 function rStats(){
   const ap=S.projects.filter(p=>['production','pre-production','post-production'].includes(p.status)).length;
@@ -1149,7 +1226,7 @@ function rProjects(){
     return '';
   });
   if(!rows.length){tgt.innerHTML=emptyHTML('?','Ничего не найдено','По запросу/фильтрам не нашлось проектов.','Сбросить фильтры',`onclick="resetFilters('p')"`);return}
-  tgt.innerHTML=`<div class="tw"><table><thead><tr>${thSort('p','name','Название')}<th>Жанр</th>${thSort('p','status','Статус')}${thSort('p','start_date','Период')}${thSort('p','budget','Бюджет')}${thSort('p','contracts','Договоры')}<th></th></tr></thead><tbody>${rows.map(p=>{const cs=S.contracts.filter(c=>c.project_id===p.id);return`<tr><td class="tp">${esc(p.name)}</td><td class="tm">${esc(p.genre||'—')}${p.duration?' · '+p.duration+' мин':''}</td><td>${esc(PL[p.status]||p.status||'—')}</td><td class="tm">${esc(p.start_date||'—')} → ${esc(p.end_date||'—')}</td><td class="money">${p.budget?fmt(p.budget)+' ₽':'—'}</td><td class="tm">${cs.filter(c=>c.status==='signed').length}/${cs.length}</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openPM('${esc(p.id)}')">✎</button> <button class="btn btn-s btn-d" onclick="delP('${esc(p.id)}')">×</button></td></tr>`}).join('')}</tbody></table></div>`;
+  tgt.innerHTML=`<div class="tw"><table><thead><tr>${thSort('p','name','Название')}<th>Жанр</th>${thSort('p','status','Статус')}${thSort('p','start_date','Период')}${thSort('p','budget','Бюджет')}${thSort('p','contracts','Договоры')}<th></th></tr></thead><tbody>${rows.map(p=>{const cs=S.contracts.filter(c=>c.project_id===p.id);return`<tr><td class="tp">${esc(p.name)}</td><td class="tm">${esc(p.genre||'—')}${p.duration?' · '+p.duration+' мин':''}</td><td>${esc(PL[p.status]||p.status||'—')}</td><td class="tm">${esc(p.start_date||'—')} → ${esc(p.end_date||'—')}</td><td class="money">${p.budget?fmt(p.budget)+' ₽':'—'}</td><td class="tm">${cs.filter(c=>c.status==='signed').length}/${cs.length}</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openDocGen({projectId:'${esc(p.id)}'})" title="Сгенерировать документ для проекта">📄</button> <button class="btn btn-s" onclick="openPM('${esc(p.id)}')">✎</button> <button class="btn btn-s btn-d" onclick="delP('${esc(p.id)}')">×</button></td></tr>`}).join('')}</tbody></table></div>`;
 }
 
 function rContracts(){
@@ -1447,7 +1524,7 @@ function rContacts(){
     const contact=[c.phone,c.email].filter(Boolean).join(' · ')||'—';
     const id=[c.inn?'ИНН '+c.inn:'',c.passport].filter(Boolean).join(' · ')||'—';
     const kindLabel=c.kind==='org'?'юр. лицо':'физ. лицо';
-    return`<div class="ct-row"><div class="ct-name">${esc(c.name)}${c.notes?`<div class="ct-meta">${esc(c.notes)}</div>`:''}</div><div class="ct-meta">${esc(kindLabel)}</div><div class="ct-meta">${esc(contact)}</div><div class="ct-meta">${esc(id)}</div><div class="ct-cnt">${cnt}</div><div style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openCT('${esc(c.id)}')">✎</button> <button class="btn btn-s btn-d" onclick="delCT('${esc(c.id)}')">×</button></div></div>`;
+    return`<div class="ct-row"><div class="ct-name">${esc(c.name)}${c.notes?`<div class="ct-meta">${esc(c.notes)}</div>`:''}</div><div class="ct-meta">${esc(kindLabel)}</div><div class="ct-meta">${esc(contact)}</div><div class="ct-meta">${esc(id)}</div><div class="ct-cnt">${cnt}</div><div style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openDocGen({contactId:'${esc(c.id)}'})" title="Сгенерировать документ с контрагентом">📄</button> <button class="btn btn-s" onclick="openCT('${esc(c.id)}')">✎</button> <button class="btn btn-s btn-d" onclick="delCT('${esc(c.id)}')">×</button></div></div>`;
   }).join('');
   tgt.innerHTML=`<div style="border:1px solid var(--brd);border-radius:2px;overflow:hidden">${head}${body}</div>`;
 }
@@ -1668,6 +1745,9 @@ function wireSearch(){
   re('t-proj-filter',()=>{Q.tProj=document.getElementById('t-proj-filter').value;rTimeline()},false);
   re('ct-search',()=>{Q.ct=document.getElementById('ct-search').value;rContacts()});
   re('ct-kind-filter',()=>{Q.ctKind=document.getElementById('ct-kind-filter').value;rContacts()},false);
+  re('dg-search',()=>rDocuments());
+  re('dg-proj-filter',()=>rDocuments(),false);
+  re('dg-tpl-filter',()=>rDocuments(),false);
   const cls=document.getElementById('cl-proj');if(cls)cls.addEventListener('change',()=>{clProj=cls.value||null;rChecklists()});
   const anP=document.getElementById('an-proj');if(anP)anP.addEventListener('change',()=>{anProj=anP.value;rAnalytics()});
   const anR=document.getElementById('an-range');if(anR)anR.addEventListener('change',()=>{anRange=Number(anR.value)||12;rAnalytics()});
@@ -1675,6 +1755,364 @@ function wireSearch(){
   const cN=document.getElementById('cal-next');if(cN)cN.addEventListener('click',()=>calNav(1));
   const cT=document.getElementById('cal-today');if(cT)cT.addEventListener('click',calToday);
   const cPj=document.getElementById('cal-proj');if(cPj)cPj.addEventListener('change',()=>{calProj=cPj.value;rCalendar()});
+}
+
+// ============ DOCUMENTS / ГЕНЕРАЦИЯ ДОГОВОРОВ (Phase 5a) ============
+async function dgEnsureIndex(){
+  if(DG_TPLS)return DG_TPLS;
+  try{
+    const r=await fetch('contracts/templates_index.json',{cache:'no-store'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    DG_TPLS=await r.json();
+  }catch(e){
+    console.error('templates_index fetch failed',e);
+    toast('Не удалось загрузить индекс шаблонов: '+(e?.message||e),'err','Документы');
+    DG_TPLS={templates:[]};
+  }
+  return DG_TPLS;
+}
+async function dgLoadBody(file){
+  if(DG_TPL_BODIES[file])return DG_TPL_BODIES[file];
+  const r=await fetch('contracts/templates/'+encodeURIComponent(file),{cache:'no-store'});
+  if(!r.ok)throw new Error('HTTP '+r.status+' for '+file);
+  const text=await r.text();
+  DG_TPL_BODIES[file]=text;
+  return text;
+}
+function dgGetTpl(id){return(DG_TPLS?.templates||[]).find(t=>t.id===id)}
+function dgKeyId(key){return 'dgf-'+btoa(unescape(encodeURIComponent(key))).replace(/[^a-zA-Z0-9]/g,'')}
+
+function rDocuments(){
+  const tgt=document.getElementById('documents-list');if(!tgt)return;
+  // Заполнить фильтр шаблонов один раз
+  const tplFilter=document.getElementById('dg-tpl-filter');
+  if(tplFilter&&!dgFiltersWired){
+    dgFiltersWired=true;
+    dgEnsureIndex().then(()=>{
+      const cur=tplFilter.value;
+      tplFilter.innerHTML='<option value="all">Все типы</option>'+(DG_TPLS.templates||[]).map(t=>`<option value="${esc(t.id)}">${esc(t.label)}</option>`).join('');
+      tplFilter.value=cur||'all';
+    });
+  }
+  const search=(document.getElementById('dg-search')?.value||'').toLowerCase().trim();
+  const projF=document.getElementById('dg-proj-filter')?.value||'all';
+  const tplF=document.getElementById('dg-tpl-filter')?.value||'all';
+  let rows=(S.documents||[]).filter(d=>{
+    if(projF!=='all'&&d.project_id!==projF)return false;
+    if(tplF!=='all'&&d.template_id!==tplF)return false;
+    if(search){
+      const proj=S.projects.find(p=>p.id===d.project_id);
+      const ct=S.contacts.find(c=>c.id===d.contact_id);
+      const blob=[d.title,d.template_label,d.template_id,proj?.name,ct?.name].filter(Boolean).join(' ').toLowerCase();
+      if(!blob.includes(search))return false;
+    }
+    return true;
+  });
+  if(!(S.documents||[]).length){
+    tgt.innerHTML=emptyHTML('§','Ещё нет сгенерированных документов','Нажми «+ Сгенерировать», выбери шаблон (договор с актёром, режиссёром, лицензия, НДА…), заполни поля — получишь готовый markdown с кнопками PDF и DOCX.','+ Сгенерировать',`onclick="openDocGen()"`);
+    return;
+  }
+  if(!rows.length){
+    tgt.innerHTML=emptyHTML('?','Ничего не найдено','По текущим фильтрам документов нет.','Сбросить',`onclick="document.getElementById('dg-search').value='';document.getElementById('dg-proj-filter').value='all';document.getElementById('dg-tpl-filter').value='all';rDocuments()"`);
+    return;
+  }
+  const head=`<div class="dg-list-row dg-head"><div>Документ</div><div>Шаблон</div><div>Проект / контрагент</div><div></div></div>`;
+  const body=rows.map(d=>{
+    const proj=S.projects.find(p=>p.id===d.project_id);
+    const ct=S.contacts.find(c=>c.id===d.contact_id);
+    const dt=d.created_at?new Date(d.created_at).toLocaleDateString('ru-RU'):'';
+    const tpl=dgGetTpl(d.template_id);
+    return`<div class="dg-list-row"><div class="dg-name">${esc(d.title||'(без имени)')}<div class="dg-meta">${esc(dt)}</div></div><div class="dg-meta">${esc(d.template_label||tpl?.label||d.template_id)}</div><div class="dg-meta">${esc([proj?.name,ct?.name].filter(Boolean).join(' · ')||'—')}</div><div class="dg-actions"><button class="btn btn-s" onclick="dgOpenSaved('${esc(d.id)}')" title="Открыть и пересобрать">✎</button><button class="btn btn-s btn-d" onclick="dgDelete('${esc(d.id)}')" title="Удалить">×</button></div></div>`;
+  }).join('');
+  tgt.innerHTML=`<div style="border:1px solid var(--brd);border-radius:2px;overflow:hidden">${head}${body}</div>`;
+}
+
+async function openDocGen(opts){
+  opts=opts||{};
+  await dgEnsureIndex();
+  const tpls=DG_TPLS.templates||[];
+  if(!tpls.length){toast('Индекс шаблонов пуст. Проверь contracts/templates_index.json','err','Документы');return}
+  // Сброс / инициализация состояния
+  dgState={tplId:opts.tplId||tpls[0].id,projId:opts.projectId||'',contactId:opts.contactId||'',values:{},editingId:opts.editingId||null,touched:new Set()};
+  // Заполнить селекты
+  const tplSel=document.getElementById('dg-tpl');
+  tplSel.innerHTML=tpls.map(t=>`<option value="${esc(t.id)}">${esc(t.label)}</option>`).join('');
+  tplSel.value=dgState.tplId;
+  const projSel=document.getElementById('dg-proj');
+  projSel.innerHTML='<option value="">— без проекта —</option>'+S.projects.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  projSel.value=dgState.projId;
+  const ctSel=document.getElementById('dg-contact');
+  ctSel.innerHTML='<option value="">— без контрагента —</option>'+S.contacts.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}${c.kind==='org'?' (юр)':''}</option>`).join('');
+  ctSel.value=dgState.contactId;
+  // Если редактируем существующий — загрузим его сохранённые значения
+  if(opts.editingId){
+    const d=S.documents.find(x=>x.id===opts.editingId);
+    if(d){
+      dgState.tplId=d.template_id;
+      tplSel.value=d.template_id;
+      dgState.projId=d.project_id||'';projSel.value=dgState.projId;
+      dgState.contactId=d.contact_id||'';ctSel.value=dgState.contactId;
+      dgState.values=Object.assign({},d.placeholders||{});
+      // все ключи считаются «тронутыми» — автозаполнение их не перетрёт
+      Object.keys(dgState.values).forEach(k=>dgState.touched.add(k));
+    }
+  }
+  dgBuildForm();
+  dgAutofill();
+  dgRender();
+  document.getElementById('dgm').classList.add('on');
+}
+
+function dgOnTplChange(){
+  const v=document.getElementById('dg-tpl').value;
+  dgState.tplId=v;
+  dgState.values={};
+  dgState.touched=new Set();
+  dgBuildForm();
+  dgAutofill();
+  dgRender();
+}
+
+function dgBuildForm(){
+  const tpl=dgGetTpl(dgState.tplId);
+  const wrap=document.getElementById('dg-fields');
+  if(!tpl){wrap.innerHTML='<p class="ms">Шаблон не найден</p>';return}
+  const inputs=tpl.fields.map(f=>{
+    const id=dgKeyId(f.key);
+    const v=dgState.values[f.key]??f.default??'';
+    const req=f.required?' <span style="color:var(--bad)">*</span>':'';
+    let ctrl='';
+    if(f.type==='textarea'){
+      ctrl=`<textarea class="form-input" id="${id}" rows="2" onchange="dgFieldChange('${esc(f.key)}',this.value)" oninput="dgFieldChange('${esc(f.key)}',this.value)">${esc(v)}</textarea>`;
+    }else if(f.type==='select'){
+      const opts=(f.options||[]).map(o=>`<option value="${esc(o)}"${String(v)===String(o)?' selected':''}>${esc(o)}</option>`).join('');
+      ctrl=`<select class="form-select" id="${id}" onchange="dgFieldChange('${esc(f.key)}',this.value)"><option value=""></option>${opts}</select>`;
+    }else if(f.type==='date'){
+      ctrl=`<input class="form-input" type="date" id="${id}" value="${esc(v)}" onchange="dgFieldChange('${esc(f.key)}',this.value)">`;
+    }else if(f.type==='number'){
+      ctrl=`<input class="form-input" type="number" id="${id}" value="${esc(v)}" onchange="dgFieldChange('${esc(f.key)}',this.value)" oninput="dgFieldChange('${esc(f.key)}',this.value)">`;
+    }else{
+      ctrl=`<input class="form-input" type="text" id="${id}" value="${esc(v)}" onchange="dgFieldChange('${esc(f.key)}',this.value)" oninput="dgFieldChange('${esc(f.key)}',this.value)">`;
+    }
+    return`<div class="form-group"><label class="form-label">${esc(f.label)}${req}<span style="color:var(--ink-d);font-weight:400;font-size:.7rem;margin-left:.4rem">${esc(f.key)}</span></label>${ctrl}</div>`;
+  }).join('');
+  wrap.innerHTML=`<div class="dg-row">${inputs}</div>`;
+}
+
+function dgFieldChange(key,val){
+  dgState.values[key]=val;
+  dgState.touched.add(key);
+  dgRender();
+}
+
+function dgFmtRuDate(s){
+  if(!s)return '';
+  const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m)return s;
+  return `${m[3]}.${m[2]}.${m[1]}`;
+}
+
+function dgAutofill(){
+  const tpl=dgGetTpl(dgState.tplId);if(!tpl)return;
+  dgState.projId=document.getElementById('dg-proj').value||'';
+  dgState.contactId=document.getElementById('dg-contact').value||'';
+  const proj=S.projects.find(p=>p.id===dgState.projId);
+  const ct=S.contacts.find(c=>c.id===dgState.contactId);
+  tpl.fields.forEach(f=>{
+    if(!f.autofill)return;
+    if(dgState.touched.has(f.key))return; // не трогаем то, что юзер сам ввёл
+    let v=null;
+    const [src,fld]=String(f.autofill).split('.');
+    if(src==='project'&&proj)v=proj[fld];
+    if(src==='contact'&&ct)v=ct[fld];
+    if(src==='contract'){/* зарезервировано */}
+    if(v==null||v==='')return;
+    if(f.type==='date')v=String(v).slice(0,10);
+    dgState.values[f.key]=String(v);
+    const el=document.getElementById(dgKeyId(f.key));
+    if(el)el.value=String(v);
+  });
+  dgRender();
+}
+
+function dgSubstitute(body){
+  const tpl=dgGetTpl(dgState.tplId);if(!tpl)return body;
+  let out=body;
+  // Сначала самые длинные ключи — иначе [ФИО] съест часть [ФИО Актёра]
+  const keys=tpl.fields.map(f=>f.key).sort((a,b)=>b.length-a.length);
+  const missing=[];
+  keys.forEach(k=>{
+    const f=tpl.fields.find(x=>x.key===k);
+    let v=dgState.values[k];
+    if(v==null||v==='')v=f?.default??'';
+    let display=String(v);
+    if(f?.type==='date')display=dgFmtRuDate(display);
+    if(!display){missing.push(k);display=k}
+    // глобальная замена
+    out=out.split(k).join(display);
+  });
+  return{text:out,missing};
+}
+
+function dgMdToHtml(md){
+  // Простой markdown-рендер: # заголовки, **жирный**, *курсив*, списки, переносы.
+  // Используем плейсхолдер-токены, чтобы не задеть HTML-метасимволами.
+  let s=esc(String(md||''));
+  // Заголовки
+  s=s.replace(/^# (.+)$/gm,'<h2>$1</h2>');
+  s=s.replace(/^## (.+)$/gm,'<h3>$1</h3>');
+  s=s.replace(/^### (.+)$/gm,'<h4>$1</h4>');
+  // Жирный/курсив
+  s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/(^|[\s(])\*([^*\n]+?)\*(?=[\s).,!?:;]|$)/g,'$1<em>$2</em>');
+  // Подсветить незаполненные плейсхолдеры
+  s=s.replace(/\[[^\]\n]+\]/g,m=>`<span class="dg-missing">${m}</span>`);
+  // Переносы строк
+  s=s.replace(/\n/g,'<br>');
+  return s;
+}
+
+function dgStripHeader(md){
+  // Удаляем верхние комментарии-метаданные шаблона: «# ШАБЛОН:», «# Файл на выходе:», «# Правовая основа:».
+  // Они нужны редактору, но не должны попадать в финальный документ.
+  const lines=String(md||'').split(/\r?\n/);
+  let i=0;
+  while(i<lines.length){
+    const t=lines[i].trim();
+    if(t===''||/^# (ШАБЛОН|Файл на выходе|Правовая основа)/i.test(t))i++;
+    else break;
+  }
+  return lines.slice(i).join('\n');
+}
+async function dgRender(){
+  const tpl=dgGetTpl(dgState.tplId);
+  const view=document.getElementById('dg-preview');
+  if(!tpl||!view)return;
+  try{
+    const raw=await dgLoadBody(tpl.file);
+    const body=dgStripHeader(raw);
+    const{text}=dgSubstitute(body);
+    view.innerHTML=dgMdToHtml(text);
+  }catch(e){
+    console.error('dgRender failed',e);
+    view.innerHTML=`<p class="dg-missing">Не удалось загрузить шаблон: ${esc(e?.message||e)}</p>`;
+  }
+}
+
+function dgGuessLastName(){
+  const tpl=dgGetTpl(dgState.tplId);
+  if(!tpl)return 'Документ';
+  // Ищем поле, привязанное к contact.name (это и есть «Фамилия» по логике CONTRACTS.md)
+  const nameField=tpl.fields.find(f=>f.autofill==='contact.name');
+  const raw=String(dgState.values[nameField?.key]||'').trim();
+  if(!raw)return 'без_имени';
+  const last=raw.split(/\s+/)[0]||'';
+  return last.replace(/[^А-Яа-яA-Za-zёЁ-]/g,'')||'без_имени';
+}
+
+function dgComputeFilename(){
+  const tpl=dgGetTpl(dgState.tplId);if(!tpl)return 'Документ';
+  const lastName=dgGuessLastName();
+  const d=new Date();
+  const yearMonth=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  let name=tpl.filename_template||'{label}_{lastName}_{yearMonth}';
+  name=name.replace('{lastName}',lastName).replace('{yearMonth}',yearMonth).replace('{label}',tpl.label.replace(/\s+/g,'_').slice(0,30));
+  return name;
+}
+
+async function dgGetRenderedHtml(){
+  const tpl=dgGetTpl(dgState.tplId);if(!tpl)return{html:'',text:'',missing:[]};
+  const raw=await dgLoadBody(tpl.file);
+  const body=dgStripHeader(raw);
+  const{text,missing}=dgSubstitute(body);
+  return{html:dgMdToHtml(text),text,missing};
+}
+
+async function dgExportPdf(){
+  const{html}=await dgGetRenderedHtml();
+  // Открываем новое окно с минимальной разметкой и вызываем print.
+  const w=window.open('','_blank','width=820,height=900');
+  if(!w){toast('Браузер заблокировал всплывающее окно. Разреши popups для этого сайта.','err','PDF');return}
+  const filename=dgComputeFilename();
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(filename)}</title><style>
+    body{font-family:'Times New Roman',serif;font-size:12pt;line-height:1.4;color:#000;background:#fff;margin:1.6cm 2cm}
+    h1,h2,h3,h4{font-family:'Times New Roman',serif;color:#000;margin:.6em 0 .3em}
+    .dg-missing{background:#ffeb99;font-style:italic;padding:0 .15em}
+    @media print{.dg-missing{background:transparent;font-style:normal}}
+  </style></head><body>${html}<script>window.onload=()=>{setTimeout(()=>window.print(),200)}<\/script></body></html>`);
+  w.document.close();
+}
+
+function dgDocxBlob(html,filename){
+  // Microsoft Word успешно открывает HTML с правильным MIME и MS Office namespaces.
+  // Это не «честный» OOXML, но Word/LibreOffice интерпретируют его и сохраняют как .docx без проблем.
+  const wrapped=`<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>${esc(filename)}</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]--><style>body{font-family:'Times New Roman',serif;font-size:12pt;color:#000;line-height:1.4}h1,h2,h3,h4{font-family:'Times New Roman',serif;color:#000}@page{size:A4;margin:1.6cm 2cm}</style></head><body>${html}</body></html>`;
+  return new Blob(['\ufeff'+wrapped],{type:'application/msword'});
+}
+
+async function dgExportDocx(){
+  const{html,missing}=await dgGetRenderedHtml();
+  if(missing&&missing.length){
+    const ok=confirm(`В документе ${missing.length} незаполненных плейсхолдеров (например ${missing.slice(0,2).join(', ')}). Скачать всё равно?`);
+    if(!ok)return;
+  }
+  const filename=dgComputeFilename();
+  const blob=dgDocxBlob(html,filename);
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=filename+'.doc';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+async function dgSave(ev){
+  const btn=ev?.target;
+  if(!U?.id){toast('Нет активной сессии','err','Auth');return}
+  const tpl=dgGetTpl(dgState.tplId);if(!tpl){toast('Шаблон не выбран','err','Документы');return}
+  let text='',missing=[];
+  try{const r=await dgGetRenderedHtml();text=r.text;missing=r.missing||[]}catch(e){toast('Не удалось собрать документ: '+(e?.message||e),'err','Документы');return}
+  if(!text){toast('Нечего сохранять','err','Документы');return}
+  if(missing&&missing.length){
+    const proceed=confirm(`Не заполнено ${missing.length} полей. Сохранить как черновик?`);
+    if(!proceed)return;
+  }
+  const restore=startBtn(btn,'Сохранение…');
+  try{
+    const title=dgComputeFilename();
+    const payload={
+      user_id:U.id,
+      template_id:tpl.id,
+      template_label:tpl.label,
+      title,
+      body_md:text,
+      placeholders:dgState.values,
+      project_id:dgState.projId||null,
+      contact_id:dgState.contactId||null
+    };
+    let res;
+    if(dgState.editingId){
+      res=await sb.from('documents').update({...payload,updated_at:new Date().toISOString()}).eq('id',dgState.editingId).select().single();
+    }else{
+      res=await sb.from('documents').insert(payload).select().single();
+    }
+    if(sbErr(dgState.editingId?'обновление документа':'сохранение документа',res.error))return;
+    if(!dgState.editingId&&res.data?.id)dgState.editingId=res.data.id;
+    toast('Документ сохранён','ok','Документы');
+    await loadData();
+  }finally{restore()}
+}
+
+async function dgDelete(id){
+  if(!confirm('Удалить документ?'))return;
+  const{error}=await sb.from('documents').delete().eq('id',id);
+  if(sbErr('удаление документа',error))return;
+  toast('Документ удалён','ok');
+  await loadData();
+}
+
+async function dgOpenSaved(id){
+  const d=S.documents.find(x=>x.id===id);
+  if(!d){toast('Документ не найден','err','Документы');return}
+  await openDocGen({editingId:id,tplId:d.template_id,projectId:d.project_id||'',contactId:d.contact_id||''});
 }
 
 // ============ CHAT WIDGET + PROFILE (Phase 4.2) ============

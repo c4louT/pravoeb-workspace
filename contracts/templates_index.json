@@ -1,0 +1,196 @@
+{
+  "_doc": "Phase 5a: индекс шаблонов договоров. Каждый шаблон — md-файл в contracts/templates/. Поля fields[] описывают плейсхолдеры в формате [X]. Поле autofill — путь к источнику (project.name, contact.name, contact.passport, contract.amount и т.д.).",
+  "templates": [
+    {
+      "id": "actor",
+      "file": "01_Договор_с_актером.md",
+      "label": "Договор с актёром (передача смежных прав)",
+      "category": "договор",
+      "filename_template": "Договор_актер_{lastName}_{yearMonth}",
+      "fields": [
+        {"key": "[ФИО Продюсера]", "label": "ФИО Продюсера", "type": "text", "required": true},
+        {"key": "[ФИО Актёра]",    "label": "ФИО Актёра",    "type": "text", "autofill": "contact.name", "required": true},
+        {"key": "[роль]",           "label": "Роль (имя персонажа)", "type": "text", "required": true},
+        {"key": "[фильм]",          "label": "Название фильма", "type": "text", "autofill": "project.name", "required": true},
+        {"key": "[дата]",           "label": "Дата начала съёмок", "type": "date", "autofill": "project.start_date"},
+        {"key": "[сумма]",          "label": "Вознаграждение, руб.", "type": "number"},
+        {"key": "[прописью]",       "label": "Сумма прописью", "type": "text"},
+        {"key": "[аванс X% при подписании; остаток по завершении съёмок]", "label": "Порядок выплат", "type": "textarea", "default": "аванс 30% при подписании; остаток 70% по завершении съёмок"}
+      ]
+    },
+    {
+      "id": "director",
+      "file": "02_Договор_с_режиссером.md",
+      "label": "Договор с режиссёром-постановщиком",
+      "category": "договор",
+      "filename_template": "Договор_режиссер_{lastName}_{yearMonth}",
+      "fields": [
+        {"key": "[ФИО Продюсера]",  "label": "ФИО Продюсера", "type": "text", "required": true},
+        {"key": "[ФИО Режиссёра]",  "label": "ФИО Режиссёра", "type": "text", "autofill": "contact.name", "required": true},
+        {"key": "[фильм]",          "label": "Название фильма", "type": "text", "autofill": "project.name", "required": true},
+        {"key": "[хронометраж]",    "label": "Хронометраж (мин.)", "type": "text", "autofill": "project.duration"},
+        {"key": "[дата]",           "label": "Дата начала работ", "type": "date", "autofill": "project.start_date"},
+        {"key": "[сумма]",          "label": "Вознаграждение, руб.", "type": "number"},
+        {"key": "[прописью]",       "label": "Сумма прописью", "type": "text"},
+        {"key": "[X]",              "label": "Аванс, %", "type": "number", "default": 30},
+        {"key": "[Y]",              "label": "По завершении съёмок, %", "type": "number", "default": 40},
+        {"key": "[Z]",              "label": "По сдаче финальной версии, %", "type": "number", "default": 30}
+      ]
+    },
+    {
+      "id": "author_order",
+      "file": "03_Договор_авт_заказа_отчуждение.md",
+      "label": "Договор авторского заказа с отчуждением (сценарист, композитор)",
+      "category": "договор",
+      "filename_template": "Договор_авт_заказ_{lastName}_{yearMonth}",
+      "fields": [
+        {"key": "[ФИО Продюсера]",  "label": "ФИО Продюсера / Заказчика", "type": "text", "required": true},
+        {"key": "[ФИО Автора]",     "label": "ФИО Автора", "type": "text", "autofill": "contact.name", "required": true},
+        {"key": "[вид: литературный сценарий / музыкальное произведение / иное]", "label": "Вид произведения", "type": "select", "options": ["литературный сценарий", "музыкальное произведение", "режиссёрский сценарий", "иное"]},
+        {"key": "[название]",       "label": "Название произведения", "type": "text"},
+        {"key": "[дата]",           "label": "Срок передачи произведения", "type": "date"},
+        {"key": "[сумма]",          "label": "Вознаграждение, руб.", "type": "number"},
+        {"key": "[прописью]",       "label": "Сумма прописью", "type": "text"},
+        {"key": "[X]",              "label": "Аванс, %", "type": "number", "default": 50},
+        {"key": "[Y]",              "label": "По сдаче, %", "type": "number", "default": 50},
+        {"key": "[10]",             "label": "Срок приёмки заказчиком, рабочих дней", "type": "number", "default": 10}
+      ]
+    },
+    {
+      "id": "alienation",
+      "file": "04_Договор_об_отчуждении.md",
+      "label": "Договор об отчуждении исключительного права (готовое произведение)",
+      "category": "договор",
+      "filename_template": "Договор_отчуждение_{lastName}_{yearMonth}",
+      "fields": [
+        {"key": "[ФИО Продюсера]",       "label": "ФИО Продюсера / Приобретателя", "type": "text", "required": true},
+        {"key": "[ФИО Правообладателя]", "label": "ФИО Правообладателя", "type": "text", "autofill": "contact.name", "required": true},
+        {"key": "[вид]",                 "label": "Вид произведения", "type": "text", "default": "сценарий"},
+        {"key": "[название]",            "label": "Название произведения", "type": "text"},
+        {"key": "[год]",                 "label": "Год создания", "type": "text"},
+        {"key": "[способ]",              "label": "Способ передачи произведения", "type": "select", "options": ["электронный файл формата .pdf", "электронный файл формата .docx", "бумажный носитель", "иное"]},
+        {"key": "[сумма]",               "label": "Вознаграждение, руб.", "type": "number"},
+        {"key": "[прописью]",            "label": "Сумма прописью", "type": "text"},
+        {"key": "[3]",                   "label": "Срок передачи произведения, рабочих дней", "type": "number", "default": 3},
+        {"key": "[5]",                   "label": "Срок выплаты, рабочих дней", "type": "number", "default": 5}
+      ]
+    },
+    {
+      "id": "license",
+      "file": "05_Лицензионный_договор.md",
+      "label": "Лицензионный договор (права на срок)",
+      "category": "договор",
+      "filename_template": "Лицензионный_договор_{lastName}_{yearMonth}",
+      "fields": [
+        {"key": "[ФИО Продюсера]",  "label": "ФИО Лицензиата (Продюсера)", "type": "text", "required": true},
+        {"key": "[ФИО Лицензиара]", "label": "ФИО Лицензиара", "type": "text", "autofill": "contact.name", "required": true},
+        {"key": "[вид]",            "label": "Вид произведения", "type": "text"},
+        {"key": "[название]",       "label": "Название произведения", "type": "text"},
+        {"key": "[способ]",         "label": "Способ передачи произведения", "type": "select", "options": ["электронный файл формата .pdf", "электронный файл формата .docx", "бумажный носитель", "иное"]},
+        {"key": "[сумма]",          "label": "Лицензионное вознаграждение, руб.", "type": "number"},
+        {"key": "[прописью]",       "label": "Сумма прописью", "type": "text"},
+        {"key": "[N]",              "label": "Срок лицензии, лет", "type": "number", "default": 5},
+        {"key": "[3]",              "label": "Срок передачи произведения, рабочих дней", "type": "number", "default": 3},
+        {"key": "[5]",              "label": "Срок выплаты, рабочих дней", "type": "number", "default": 5}
+      ]
+    },
+    {
+      "id": "consent",
+      "file": "06_Согласие_съемка_изображение.md",
+      "label": "Согласие на съёмку и использование изображения",
+      "category": "согласие",
+      "filename_template": "Согласие_съемка_{lastName}_{yearMonth}",
+      "fields": [
+        {"key": "[ФИО Продюсера]", "label": "ФИО Продюсера", "type": "text", "required": true},
+        {"key": "[ФИО участника]", "label": "ФИО участника", "type": "text", "autofill": "contact.name", "required": true},
+        {"key": "[фильм]",         "label": "Название фильма", "type": "text", "autofill": "project.name", "required": true}
+      ]
+    },
+    {
+      "id": "operator",
+      "file": "07_Договор_с_оператором.md",
+      "label": "Договор с оператором-постановщиком",
+      "category": "договор",
+      "filename_template": "Договор_оператор_{lastName}_{yearMonth}",
+      "fields": [
+        {"key": "[ФИО Продюсера]", "label": "ФИО Продюсера", "type": "text", "required": true},
+        {"key": "[ФИО Оператора]", "label": "ФИО Оператора", "type": "text", "autofill": "contact.name", "required": true},
+        {"key": "[фильм]",         "label": "Название фильма", "type": "text", "autofill": "project.name", "required": true},
+        {"key": "[жанр]",          "label": "Жанр", "type": "text", "autofill": "project.genre"},
+        {"key": "[дата]",          "label": "Дата начала съёмок", "type": "date", "autofill": "project.start_date"},
+        {"key": "[сумма]",         "label": "Вознаграждение, руб.", "type": "number"},
+        {"key": "[прописью]",      "label": "Сумма прописью", "type": "text"},
+        {"key": "[N]",             "label": "Дней съёмочного периода", "type": "number"},
+        {"key": "[X]",             "label": "Аванс, %", "type": "number", "default": 30},
+        {"key": "[Y]",             "label": "По завершении съёмок, %", "type": "number", "default": 50},
+        {"key": "[Z]",             "label": "По сдаче финальной версии, %", "type": "number", "default": 20}
+      ]
+    },
+    {
+      "id": "nda",
+      "file": "08_НДА.md",
+      "label": "Соглашение о неразглашении (НДА)",
+      "category": "соглашение",
+      "filename_template": "НДА_{lastName}_{yearMonth}",
+      "fields": [
+        {"key": "[ФИО Продюсера / ООО «Название»]", "label": "Сторона 1 (раскрывающая)", "type": "text", "required": true},
+        {"key": "[ФИО / ООО]",                       "label": "Сторона 2 (получатель)", "type": "text", "autofill": "contact.name", "required": true},
+        {"key": "[название фильма]",                 "label": "Название фильма / проекта", "type": "text", "autofill": "project.name"},
+        {"key": "[описание цели]",                   "label": "Цель раскрытия информации", "type": "textarea"},
+        {"key": "[адрес]",                           "label": "Адрес физлица", "type": "text", "autofill": "contact.address"},
+        {"key": "[Юридический адрес]",               "label": "Юридический адрес юрлица", "type": "text"},
+        {"key": "[ОГРН / ИНН — если юрлицо]",        "label": "ОГРН / ИНН", "type": "text", "autofill": "contact.inn"},
+        {"key": "[Расчётный счёт, Банк, БИК]",       "label": "Банковские реквизиты", "type": "textarea"},
+        {"key": "[кем, когда]",                      "label": "Паспорт: кем выдан, когда", "type": "text", "autofill": "contact.passport"},
+        {"key": "[сумма]",                           "label": "Штраф за разглашение, руб.", "type": "number", "default": 500000},
+        {"key": "[5 (пять)]",                        "label": "Срок действия после расторжения, лет", "type": "text", "default": "5 (пять)"}
+      ]
+    },
+    {
+      "id": "act",
+      "file": "09_Акт_приема_передачи.md",
+      "label": "Акт приёма-передачи произведения",
+      "category": "акт",
+      "filename_template": "Акт_приема_передачи_{lastName}_{yearMonth}",
+      "fields": [
+        {"key": "[Заказчик / Приобретатель]",       "label": "Заказчик / Приобретатель", "type": "text", "required": true},
+        {"key": "[Заказчик]",                       "label": "Заказчик (краткая роль)", "type": "text", "default": "Заказчик"},
+        {"key": "[Заказчику / Приобретателю]",      "label": "Заказчику / Приобретателю (дательный)", "type": "text"},
+        {"key": "[Автор / Правообладатель]",        "label": "Автор / Правообладатель", "type": "text", "autofill": "contact.name", "required": true},
+        {"key": "[ФИО Заказчика / Приобретателя]",  "label": "ФИО Заказчика", "type": "text"},
+        {"key": "[ФИО Автора / Правообладателя]",   "label": "ФИО Автора", "type": "text", "autofill": "contact.name"},
+        {"key": "[произведения / исключительного права на произведение]", "label": "Что передаётся", "type": "select", "options": ["произведения", "исключительного права на произведение"]},
+        {"key": "[вид произведения]",               "label": "Вид произведения", "type": "text"},
+        {"key": "[название]",                       "label": "Название произведения", "type": "text"},
+        {"key": "[описание: жанр, объём, формат]",  "label": "Описание (жанр, объём, формат)", "type": "textarea"},
+        {"key": "[электронный файл формата ___ / бумажный носитель / иное]", "label": "Способ передачи", "type": "select", "options": ["электронный файл формата .pdf", "электронный файл формата .docx", "бумажный носитель", "иное"]},
+        {"key": "[тип]",                            "label": "Тип акта (для имени файла)", "type": "select", "options": ["приема", "отчуждение", "лицензия"], "default": "приема"}
+      ]
+    },
+    {
+      "id": "minor_actor",
+      "file": "10_Договор_несовершеннолетний_актер.md",
+      "label": "Договор с несовершеннолетним актёром (через представителя)",
+      "category": "договор",
+      "filename_template": "Договор_несовершеннолетний_{lastName}_{yearMonth}",
+      "fields": [
+        {"key": "[ФИО Продюсера]",          "label": "ФИО Продюсера", "type": "text", "required": true},
+        {"key": "[ФИО представителя]",      "label": "ФИО законного представителя", "type": "text", "autofill": "contact.name", "required": true},
+        {"key": "[отец / мать / опекун]",   "label": "Кто представитель", "type": "select", "options": ["отец", "мать", "опекун"]},
+        {"key": "[ФИО несовершеннолетнего]","label": "ФИО несовершеннолетнего актёра", "type": "text", "required": true},
+        {"key": "[дата рождения]",          "label": "Дата рождения ребёнка", "type": "date"},
+        {"key": "[тип и номер]",            "label": "Тип и номер документа ребёнка", "type": "text", "default": "свидетельство о рождении"},
+        {"key": "[кем, когда]",             "label": "Кем и когда выдан документ ребёнка", "type": "text"},
+        {"key": "[адрес]",                  "label": "Адрес регистрации", "type": "text", "autofill": "contact.address"},
+        {"key": "[роль]",                   "label": "Роль (имя персонажа)", "type": "text", "required": true},
+        {"key": "[фильм]",                  "label": "Название фильма", "type": "text", "autofill": "project.name", "required": true},
+        {"key": "[жанр]",                   "label": "Жанр", "type": "text", "autofill": "project.genre"},
+        {"key": "[N]",                      "label": "Хронометраж, мин.", "type": "text", "autofill": "project.duration"},
+        {"key": "[дата]",                   "label": "Дата начала съёмок", "type": "date", "autofill": "project.start_date"},
+        {"key": "[сумма]",                  "label": "Вознаграждение, руб.", "type": "number"},
+        {"key": "[прописью]",               "label": "Сумма прописью", "type": "text"},
+        {"key": "[5]",                      "label": "Срок выплаты, рабочих дней", "type": "number", "default": 5}
+      ]
+    }
+  ]
+}
