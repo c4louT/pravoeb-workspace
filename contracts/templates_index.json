@@ -2601,6 +2601,18 @@
           "label": "Телефон контрагента",
           "type": "text",
           "autofill": "contact.phone"
+        },
+        {
+          "key": "[Дата начала]",
+          "label": "Дата начала съёмочного периода",
+          "type": "date",
+          "autofill": "project.start_date"
+        },
+        {
+          "key": "[Дата окончания]",
+          "label": "Дата окончания съёмочного периода",
+          "type": "date",
+          "autofill": "project.end_date"
         }
       ]
     },
