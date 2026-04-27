@@ -79,14 +79,14 @@ async function sbInsertChatMessageAsUser(env, jwt, row) {
 }
 
 async function sbInsertChatMessageAsService(env, row) {
-  // Webhook -> вставляем от service-role, RLS обходится.
+  // Service-role вставка, RLS обходится. Возвращаем вставленную строку — нужно для AI-флоу.
   const res = await fetch(`${env.SUPABASE_URL}/rest/v1/chat_messages`, {
     method: 'POST',
     headers: {
       apikey: env.SUPABASE_SERVICE_ROLE_KEY,
       authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
       'content-type': 'application/json',
-      prefer: 'return=minimal',
+      prefer: 'return=representation',
     },
     body: JSON.stringify(row),
   });
@@ -94,7 +94,8 @@ async function sbInsertChatMessageAsService(env, row) {
     const err = await res.text().catch(() => '');
     return { ok: false, error: `supabase_${res.status}`, detail: err.slice(0, 400) };
   }
-  return { ok: true };
+  const body = await res.json().catch(() => []);
+  return { ok: true, row: Array.isArray(body) ? (body[0] || null) : null };
 }
 
 async function sbFindUserByChatId(env, chatId) {
@@ -191,6 +192,136 @@ async function handleTgWebhook(request, env) {
   return json({ ok: true });
 }
 
+// =========================================================================
+// /api/chat/ai — запрос к OpenRouter с историей переписки как контекстом.
+// =========================================================================
+
+const DEFAULT_MODEL = 'google/gemini-2.0-flash-exp:free';
+const ALLOWED_MODELS = new Set([
+  'anthropic/claude-3.5-sonnet',
+  'anthropic/claude-sonnet-4',
+  'openai/gpt-4o',
+  'openai/gpt-4o-mini',
+  'google/gemini-2.0-flash-exp:free',
+  'google/gemini-2.0-flash-001',
+  'deepseek/deepseek-chat-v3-0324:free',
+  'deepseek/deepseek-chat',
+  'meta-llama/llama-3.3-70b-instruct:free',
+]);
+
+const SYSTEM_PROMPT = `Ты — AI-помощник юриста в сфере кинопроизводства и ТВ в Российской Федерации.
+Твой пользователь — продюсер/юрист киностудии «Правоеб».
+Отвечай на русском, кратко и по делу. Форматируй ответы маркдауном (списки, выделение важного).
+Ссылайся на конкретные статьи ГК РФ (часть IV — интеллектуальная собственность), ФЗ «О государственной поддержке кинематографии» №126-ФЗ, ТК РФ, НК РФ.
+Если норма могла измениться или ты не уверен в актуальной редакции — прямо говори «нужно проверить на consultant.ru или pravo.gov.ru», не выдумывай статью.
+Если задача выходит за пределы юр/производственной тематики — помогай как обычный ассистент, но не выдавай себя за лицензированного адвоката.
+Не пиши длинных извинений и воды. Отвечай так, как отвечал бы опытный юрист коллеге.`;
+
+async function sbFetchRecentMessages(env, jwt, userId, limit) {
+  const url = `${env.SUPABASE_URL}/rest/v1/chat_messages?user_id=eq.${encodeURIComponent(userId)}&order=created_at.desc&limit=${limit}&select=direction,text,created_at`;
+  const res = await fetch(url, {
+    headers: { apikey: env.SUPABASE_ANON_KEY, authorization: `Bearer ${jwt}` },
+  });
+  if (!res.ok) return [];
+  const rows = await res.json().catch(() => []);
+  return rows.reverse();
+}
+
+async function openrouterChat(env, model, messages) {
+  if (!env.OPENROUTER_API_KEY) return { ok: false, error: 'openrouter_key_missing' };
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
+      'HTTP-Referer': 'https://pravoeb-workspace.arstepan2006.workers.dev',
+      'X-Title': 'Правоеб Dashboard',
+    },
+    body: JSON.stringify({ model, messages, temperature: 0.3, max_tokens: 1500 }),
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msg = body?.error?.message || `openrouter_${res.status}`;
+    return { ok: false, error: msg };
+  }
+  const text = body?.choices?.[0]?.message?.content?.trim();
+  if (!text) return { ok: false, error: 'empty_response' };
+  return { ok: true, text, model: body?.model || model, usage: body?.usage || null };
+}
+
+function buildMessages(history, userText) {
+  const msgs = [{ role: 'system', content: SYSTEM_PROMPT }];
+  // Последние сообщения как контекст. direction='out' → user, 'ai' → assistant, 'in' → user (пишется от имени человека из TG).
+  for (const m of history) {
+    const role = m.direction === 'ai' ? 'assistant' : 'user';
+    const content = String(m.text || '').slice(0, 4000);
+    if (content) msgs.push({ role, content });
+  }
+  msgs.push({ role: 'user', content: userText });
+  return msgs;
+}
+
+async function handleChatAi(request, env) {
+  if (request.method !== 'POST') return methodNotAllowed();
+  const auth = request.headers.get('authorization') || '';
+  const jwt = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7) : null;
+  if (!jwt) return json({ ok: false, error: 'unauthorized' }, 401);
+
+  const user = await sbGetUser(env, jwt);
+  if (!user?.id) return json({ ok: false, error: 'unauthorized' }, 401);
+
+  let body;
+  try { body = await request.json(); } catch { return json({ ok: false, error: 'bad_json' }, 400); }
+  const text = String(body?.text || '').trim();
+  if (!text) return json({ ok: false, error: 'empty_text' }, 400);
+  if (text.length > 4000) return json({ ok: false, error: 'text_too_long' }, 400);
+  const model = ALLOWED_MODELS.has(body?.model) ? body.model : DEFAULT_MODEL;
+
+  // 1) Сохраняем вопрос пользователя 'out'
+  const userIns = await sbInsertChatMessageAsUser(env, jwt, {
+    user_id: user.id,
+    direction: 'out',
+    text,
+  });
+  if (!userIns.ok) return json({ ok: false, error: 'db_insert_failed', detail: userIns.detail }, 500);
+
+  // 2) Достаём историю (без только что вставленного — он уже есть в text)
+  const history = await sbFetchRecentMessages(env, jwt, user.id, 20);
+  // Убираем последний 'out' (мы его только что вставили) чтобы не дублировать в messages
+  const idx = history.findLastIndex?.((m) => m.direction === 'out' && m.text === text);
+  if (idx >= 0) history.splice(idx, 1);
+
+  const messages = buildMessages(history, text);
+
+  // 3) Запрос в OpenRouter
+  const ai = await openrouterChat(env, model, messages);
+  if (!ai.ok) {
+    // user_row уже в БД; возвращаем его клиенту чтобы UI не терял сообщение пока realtime догоняет.
+    return json({ ok: false, error: 'ai_failed', detail: ai.error, user_row: userIns.row || null }, 502);
+  }
+
+  // 4) Сохраняем ответ 'ai' через service-role (чтобы RLS не требовал auth.uid==user_id для записи 'ai')
+  const aiIns = await sbInsertChatMessageAsService(env, {
+    user_id: user.id,
+    direction: 'ai',
+    text: ai.text,
+    model: ai.model,
+  });
+  if (!aiIns.ok) {
+    // Ответ уже получен — вернём его клиенту даже если в БД не записали, чтобы юзер не потерял.
+    console.error('ai response inserted failed', aiIns.error, aiIns.detail);
+  }
+
+  return json({
+    ok: true,
+    text: ai.text,
+    model: ai.model,
+    usage: ai.usage,
+    user_row: userIns.row || null,
+    ai_row: aiIns.ok ? (aiIns.row || null) : null,
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -198,6 +329,7 @@ export default {
 
     if (path === '/api/health') return json({ ok: true, ts: Date.now() });
     if (path === '/api/chat/send') return handleChatSend(request, env);
+    if (path === '/api/chat/ai') return handleChatAi(request, env);
     if (path === '/api/tg/webhook') return handleTgWebhook(request, env);
 
     // Fallback — статика

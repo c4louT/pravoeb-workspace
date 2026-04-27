@@ -284,7 +284,23 @@ th.sortable.act .ar{opacity:1}
 .cw-msg{max-width:82%;padding:.5rem .75rem;border-radius:10px;font-size:.78rem;font-family:'Fraunces',serif;line-height:1.35;white-space:pre-wrap;word-wrap:break-word}
 .cw-msg.out{align-self:flex-end;background:var(--acc);color:var(--bg);border-bottom-right-radius:2px}
 .cw-msg.in{align-self:flex-start;background:var(--bg-el);border:1px solid var(--brd);color:var(--ink);border-bottom-left-radius:2px}
+.cw-msg.ai{align-self:flex-start;background:linear-gradient(135deg,rgba(67,134,96,.18),rgba(67,134,96,.08));border:1px solid rgba(120,180,140,.35);color:var(--ink);border-bottom-left-radius:2px;max-width:92%}
+.cw-msg.ai .md-model{font-size:.6rem;font-family:'JetBrains Mono',monospace;opacity:.55;letter-spacing:.04em;margin-bottom:.35rem;text-transform:none}
+.cw-msg.ai p{margin:.35rem 0}
+.cw-msg.ai strong{color:var(--acc)}
+.cw-msg.ai code{background:rgba(0,0,0,.3);padding:.05rem .3rem;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:.72rem}
+.cw-msg.ai ul,.cw-msg.ai ol{margin:.3rem 0 .3rem 1rem;padding:0}
+.cw-msg.ai li{margin:.1rem 0}
 .cw-msg .ts{font-size:.6rem;font-family:'JetBrains Mono',monospace;opacity:.7;margin-top:.25rem;letter-spacing:.04em}
+.cw-typing{align-self:flex-start;padding:.5rem .75rem;color:var(--ink-m);font-family:'JetBrains Mono',monospace;font-size:.7rem;opacity:.85;display:flex;gap:.25rem;align-items:center}
+.cw-typing .dots{display:inline-block}
+.cw-typing .dots::after{content:'•';animation:cwdot 1.4s infinite}
+@keyframes cwdot{0%{content:'·'}33%{content:'· ·'}66%{content:'· · ·'}100%{content:'·'}}
+.cw-mode{display:flex;gap:.2rem;padding:.4rem .6rem;border-bottom:1px solid var(--brd-s);background:var(--bg-el);align-items:center}
+.cw-mode-btn{flex:1;background:transparent;border:1px solid var(--brd);color:var(--ink-m);padding:.3rem .4rem;font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;transition:all .15s}
+.cw-mode-btn.on{background:var(--acc);color:var(--bg);border-color:var(--acc)}
+.cw-model{background:var(--bg);border:1px solid var(--brd);color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:.62rem;padding:.25rem .3rem;border-radius:2px;max-width:150px}
+.cw-model:focus{outline:none;border-color:var(--acc)}
 .cw-input{display:flex;gap:.4rem;padding:.6rem;border-top:1px solid var(--brd);background:var(--bg-el)}
 .cw-input textarea{flex:1;resize:none;background:var(--bg);border:1px solid var(--brd);color:var(--ink);padding:.5rem .6rem;font-family:'Fraunces',serif;font-size:.85rem;border-radius:2px;max-height:120px}
 .cw-input textarea:focus{outline:none;border-color:var(--acc)}
@@ -614,8 +630,13 @@ th.sortable.act .ar{opacity:1}
   <button id="cw-fab" title="Чат с ботом" onclick="cwToggle()">💬<span class="dot" id="cw-dot"></span></button>
   <div id="cw-panel">
     <div class="cw-head">
-      <span class="cw-title">Чат <span class="sub">↔ Telegram</span></span>
+      <span class="cw-title">Чат <span class="sub" id="cw-sub">· AI</span></span>
       <button class="cw-x" onclick="cwToggle()" aria-label="Закрыть">×</button>
+    </div>
+    <div class="cw-mode">
+      <button class="cw-mode-btn on" id="cw-mode-ai" onclick="cwSetMode('ai')" title="AI-помощник">AI</button>
+      <button class="cw-mode-btn" id="cw-mode-tg" onclick="cwSetMode('tg')" title="Переслать в Telegram">TG</button>
+      <select class="cw-model" id="cw-model" title="Модель AI"></select>
     </div>
     <div class="cw-notice" id="cw-notice" style="display:none"></div>
     <div class="cw-history" id="cw-history"></div>
@@ -1665,6 +1686,22 @@ let cwChannel=null;          // realtime-подписка
 let cwUnreadCnt=0;
 let profileAvailable=true;   // станет false, если таблица profiles/chat_messages ещё не создана миграцией
 let cwKeyWired=false;        // keydown-листенер #cw-text вешается один раз на жизнь страницы
+let cwModelsWired=false;     // change-листенер #cw-model тоже однократно
+let cwMode='ai';             // 'ai' | 'tg' — куда улетает следующее сообщение
+let cwAiWaiting=false;       // показываем индикатор «печатает…»
+const CW_MODELS=[
+  {id:'google/gemini-2.0-flash-exp:free',label:'Gemini 2.0 Flash (free)'},
+  {id:'deepseek/deepseek-chat-v3-0324:free',label:'DeepSeek V3 (free)'},
+  {id:'meta-llama/llama-3.3-70b-instruct:free',label:'Llama 3.3 70B (free)'},
+  {id:'anthropic/claude-3.5-sonnet',label:'Claude 3.5 Sonnet ($)'},
+  {id:'anthropic/claude-sonnet-4',label:'Claude Sonnet 4 ($)'},
+  {id:'openai/gpt-4o',label:'GPT-4o ($)'},
+  {id:'openai/gpt-4o-mini',label:'GPT-4o mini ($)'},
+  {id:'google/gemini-2.0-flash-001',label:'Gemini 2.0 Flash ($)'},
+  {id:'deepseek/deepseek-chat',label:'DeepSeek V3 ($)'},
+];
+let cwModel=localStorage.getItem('pravoeb_cw_model')||CW_MODELS[0].id;
+if(!CW_MODELS.some(m=>m.id===cwModel))cwModel=CW_MODELS[0].id;
 
 async function loadProfile(){
   if(!U?.id)return null;
@@ -1712,12 +1749,46 @@ function cwRenderNotice(){
     n.innerHTML='⚠ Нужна SQL-миграция <code>2026-04-27_chat_tg.sql</code> для чата (см. инструкции в PR #9).';
     return;
   }
-  if(!profile?.telegram_chat_id){
+  // В AI-режиме Telegram chat_id не обязателен.
+  if(cwMode==='tg' && !profile?.telegram_chat_id){
     n.style.display='block';
-    n.innerHTML=`Укажи свой Telegram chat_id, чтобы бот знал кому отвечать. <button class="lnk" onclick="openProfile()">Настроить профиль →</button>`;
+    n.innerHTML=`Для режима TG укажи свой Telegram chat_id. <button class="lnk" onclick="openProfile()">Настроить профиль →</button>`;
     return;
   }
   n.style.display='none';
+}
+function cwSetMode(m){
+  cwMode=(m==='tg')?'tg':'ai';
+  document.getElementById('cw-mode-ai')?.classList.toggle('on',cwMode==='ai');
+  document.getElementById('cw-mode-tg')?.classList.toggle('on',cwMode==='tg');
+  const sub=document.getElementById('cw-sub');if(sub)sub.textContent=cwMode==='ai'?'· AI':'· Telegram';
+  const sel=document.getElementById('cw-model');if(sel)sel.style.display=cwMode==='ai'?'inline-block':'none';
+  const ta=document.getElementById('cw-text');
+  if(ta)ta.placeholder=cwMode==='ai'?'Спроси AI-юриста…':'Сообщение в Telegram боту…';
+  cwRenderNotice();
+}
+function cwPopulateModels(){
+  const sel=document.getElementById('cw-model');if(!sel)return;
+  sel.innerHTML=CW_MODELS.map(m=>`<option value="${m.id}"${m.id===cwModel?' selected':''}>${esc(m.label)}</option>`).join('');
+  if(!cwModelsWired){
+    sel.addEventListener('change',()=>{cwModel=sel.value;try{localStorage.setItem('pravoeb_cw_model',cwModel)}catch(_){}}); 
+    cwModelsWired=true;
+  }
+}
+// Минимальный safe-markdown. Внутри ```code``` / `inline` не трогаем ни bold/italic, ни переводы строк —
+// для этого сначала вырезаем их в массив и заменяем на плейсхолдеры, потом обрабатываем остальное,
+// и в конце возвращаем куски обратно.
+function cwRenderMarkdown(txt){
+  let s=esc(String(txt||''));
+  const holders=[];
+  const tok=(html)=>{holders.push(html);return `\u0000CB${holders.length-1}\u0000`};
+  s=s.replace(/```([\s\S]+?)```/g,(_,c)=>tok(`<pre><code>${c}</code></pre>`));
+  s=s.replace(/`([^`\n]+)`/g,(_,c)=>tok(`<code>${c}</code>`));
+  s=s.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/(^|[\s(])\*([^*\n]+?)\*(?=[\s).,!?:;]|$)/g,'$1<em>$2</em>');
+  s=s.replace(/\n/g,'<br>');
+  s=s.replace(/\u0000CB(\d+)\u0000/g,(_,i)=>holders[+i]||'');
+  return s;
 }
 function cwToggle(){
   cwOpen=!cwOpen;
@@ -1731,10 +1802,18 @@ function cwToggle(){
   }
 }
 function cwTimeFmt(ts){const d=new Date(ts);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function cwMsgHtml(m){
+  const cls=m.direction==='out'?'out':(m.direction==='ai'?'ai':'in');
+  const modelTag=m.direction==='ai'&&m.model?`<div class="md-model">🤖 ${esc(m.model)}</div>`:'';
+  const body=m.direction==='ai'?cwRenderMarkdown(m.text||''):esc(m.text||'');
+  return `<div class="cw-msg ${cls}">${modelTag}${body}<div class="ts">${cwTimeFmt(m.created_at)}</div></div>`;
+}
 function cwRender(){
   const h=document.getElementById('cw-history');if(!h)return;
-  if(!cwHistory.length){h.innerHTML='<div class="cw-empty">Сообщений ещё нет. Напиши боту — он ответит в Telegram, а ответ вернётся сюда.</div>';return}
-  h.innerHTML=cwHistory.map(m=>`<div class="cw-msg ${m.direction==='out'?'out':'in'}">${esc(m.text)}<div class="ts">${cwTimeFmt(m.created_at)}</div></div>`).join('');
+  if(!cwHistory.length&&!cwAiWaiting){h.innerHTML='<div class="cw-empty">Пусто. В режиме AI спроси что-нибудь про договоры/права/налоги — ответит LLM. В режиме TG сообщение улетит в Telegram боту.</div>';return}
+  let html=cwHistory.map(cwMsgHtml).join('');
+  if(cwAiWaiting)html+='<div class="cw-typing"><span>AI думает</span><span class="dots"></span></div>';
+  h.innerHTML=html;
   cwScrollBottom();
 }
 function cwScrollBottom(){const h=document.getElementById('cw-history');if(h)h.scrollTop=h.scrollHeight}
@@ -1743,7 +1822,7 @@ function cwAppend(row){
   cwHistory.push(row);
   if(cwHistory.length>200)cwHistory=cwHistory.slice(-200);
   cwRender();
-  if(row.direction==='in'&&!cwOpen){
+  if((row.direction==='in'||row.direction==='ai')&&!cwOpen){
     cwUnreadCnt++;
     document.getElementById('cw-dot')?.classList.add('on');
   }
@@ -1770,22 +1849,61 @@ async function cwSend(){
   const text=(ta?.value||'').trim();
   if(!text)return;
   if(!U?.id){toast('Нет сессии','err','Чат');return}
-  if(!profile?.telegram_chat_id){toast('Сначала укажи Telegram chat_id в профиле','err','Чат');openProfile();return}
+  if(cwMode==='tg' && !profile?.telegram_chat_id){toast('Для режима TG укажи chat_id в профиле','err','Чат');openProfile();return}
   btn.disabled=true;ta.classList.add('cw-sending');
   try{
     const{data:{session}}=await sb.auth.getSession();
     const jwt=session?.access_token;
     if(!jwt){toast('Токен истёк, перелогинься','err','Auth');return}
-    const res=await fetch('/api/chat/send',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+jwt},body:JSON.stringify({text})});
-    const body=await res.json().catch(()=>({}));
-    if(!res.ok||!body.ok){
-      const err=body.hint||body.error||body.detail||('HTTP '+res.status);
-      toast('Не отправилось: '+err,'err','Чат');return;
+    if(cwMode==='ai'){
+      const savedText=text;
+      ta.value='';
+      cwAiWaiting=true;cwRender();
+      let res,body;
+      try{
+        res=await fetch('/api/chat/ai',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+jwt},body:JSON.stringify({text,model:cwModel})});
+        body=await res.json().catch(()=>({}));
+      }catch(netErr){
+        cwAiWaiting=false;cwRender();
+        ta.value=savedText;  // сеть упала — возвращаем текст юзеру чтобы он мог отправить повторно
+        throw netErr;
+      }
+      cwAiWaiting=false;
+      if(!res.ok||!body.ok){
+        if(body.user_row){
+          // Вопрос успел записаться в БД → показываем его локально и textarea не трогаем (чистый был).
+          cwAppend(body.user_row);
+        }else{
+          // Ничего не записалось → возвращаем текст чтобы юзер мог переотправить.
+          ta.value=savedText;
+        }
+        cwRender();
+        const err=body.hint||body.detail||body.error||('HTTP '+res.status);
+        toast('AI не ответил: '+err,'err','Чат');
+        return;
+      }
+      // Оба сообщения уже в БД (ai_row с настоящим UUID совпадёт с realtime-доставкой по id — dedupe сработает).
+      if(body.user_row)cwAppend(body.user_row);
+      if(body.ai_row){
+        cwAppend(body.ai_row);
+      }else if(body.text){
+        // DB-insert ответа не удался, но сам ответ получен — показываем юзеру с синтетическим id.
+        // Realtime ничего не доставит (записи нет), так что дубля не будет.
+        const fallbackId=(crypto&&crypto.randomUUID)?crypto.randomUUID():'ai-'+Date.now();
+        cwAppend({id:fallbackId,direction:'ai',text:body.text,model:body.model,created_at:new Date().toISOString()});
+      }
+    }else{
+      const res=await fetch('/api/chat/send',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+jwt},body:JSON.stringify({text})});
+      const body=await res.json().catch(()=>({}));
+      if(!res.ok||!body.ok){
+        const err=body.hint||body.error||body.detail||('HTTP '+res.status);
+        toast('Не отправилось: '+err,'err','Чат');return;
+      }
+      ta.value='';
+      if(body.row)cwAppend(body.row);
     }
-    ta.value='';
-    // INSERT в Supabase уже случился внутри /api/chat/send → realtime подхватит. Но если realtime лаганёт, подстрахуем optimistic append:
-    if(body.row)cwAppend(body.row);
   }catch(e){
+    cwAiWaiting=false;cwRender();
     console.error('cwSend failed',e);
     toast('Сбой сети: '+(e?.message||e),'err','Чат');
   }finally{
@@ -1795,7 +1913,7 @@ async function cwSend(){
 function cwKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();cwSend()}}
 function cwShow(on){const r=document.getElementById('cw-root');if(r)r.style.display=on?'block':'none'}
 function cwTeardown(){
-  cwShow(false);cwOpen=false;cwHistory=[];profile=null;profileAvailable=true;cwUnreadCnt=0;
+  cwShow(false);cwOpen=false;cwHistory=[];profile=null;profileAvailable=true;cwUnreadCnt=0;cwAiWaiting=false;
   const p=document.getElementById('cw-panel');if(p)p.classList.remove('on');
   const d=document.getElementById('cw-dot');if(d)d.classList.remove('on');
   if(cwChannel){try{sb.removeChannel(cwChannel)}catch(_){}cwChannel=null}
@@ -1803,6 +1921,8 @@ function cwTeardown(){
 async function cwBootstrap(){
   profile=await loadProfile();
   cwShow(true);
+  cwPopulateModels();
+  cwSetMode(cwMode);
   cwRenderNotice();
   await cwLoadHistory();
   cwSubscribe();
