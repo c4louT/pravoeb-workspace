@@ -2623,12 +2623,19 @@ function cwSubscribe(){
 }
 // Phase 5g: отправить запрос в /api/docgen/chat и вставить локальные псевдо-сообщения
 // (out для текста юзера + docgen для AI-карточки). В БД ничего не пишем — карточки live на сессию.
+// opts.isRetry=true — повтор из pick_template flow, не добавляем дубль исходящего сообщения.
+// opts.savedText/opts.ta — позволяют восстановить ввод юзера при ошибке (как в обычном AI-flow).
 async function cwSendDocGen(text,jwt,opts){
   opts=opts||{};
-  // 1) Локальное 'out' (если не replace mode)
+  const restoreInput=()=>{
+    if(opts.ta&&opts.savedText!=null&&!opts.ta.value)opts.ta.value=opts.savedText;
+  };
+  // 1) Локальное 'out' (при retry из pick_template пропускаем — оригинальное уже в истории)
   const now=new Date().toISOString();
-  const userRow={id:'cwd-out-'+Date.now(),direction:'out',text,created_at:now};
-  cwAppend(userRow);
+  if(!opts.isRetry){
+    const userRow={id:'cwd-out-'+Date.now(),direction:'out',text,created_at:now};
+    cwAppend(userRow);
+  }
   cwAiWaiting=true;cwRender();
   try{
     const res=await fetch('/api/docgen/chat',{
@@ -2641,6 +2648,7 @@ async function cwSendDocGen(text,jwt,opts){
     if(!res.ok||!body.ok){
       const err=body.detail||body.error||('HTTP '+res.status);
       cwRender();
+      restoreInput();
       toast('docgen: '+err,'err','Чат');
       return;
     }
@@ -2661,6 +2669,7 @@ async function cwSendDocGen(text,jwt,opts){
     cwAppend({id:cardId,direction:'docgen',created_at:new Date().toISOString()});
   }catch(e){
     cwAiWaiting=false;cwRender();
+    restoreInput();
     console.error('cwSendDocGen failed',e);
     toast('docgen: '+(e?.message||e),'err','Чат');
   }
@@ -2676,7 +2685,7 @@ async function cwSendDocGenRetry(text,templateId,replaceMsgId){
     cwDocGenStore.delete(replaceMsgId);
     cwRender();
   }
-  await cwSendDocGen(text,jwt,{forceTemplateId:templateId});
+  await cwSendDocGen(text,jwt,{forceTemplateId:templateId,isRetry:true});
 }
 async function cwSend(){
   const ta=document.getElementById('cw-text');const btn=document.getElementById('cw-send');
@@ -2694,7 +2703,7 @@ async function cwSend(){
       ta.value='';
       // Phase 5g: интент «договор» → отдельный flow в /api/docgen/chat без записи в БД
       if(cwLooksLikeDocGen(text)){
-        await cwSendDocGen(text,jwt);
+        await cwSendDocGen(text,jwt,{ta,savedText});
         return;
       }
       cwAiWaiting=true;cwRender();
