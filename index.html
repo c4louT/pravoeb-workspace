@@ -22,6 +22,7 @@ function toggleTheme(){
   var next=cur==='light'?'dark':'light';
   document.documentElement.setAttribute('data-theme',next);
   try{localStorage.setItem('pravoeb-theme',next);}catch(e){}
+  try{if(typeof rPayChart==='function')rPayChart();if(typeof rBudgetChart==='function')rBudgetChart();}catch(e){}
 }
 </script>
 <style>
@@ -1494,7 +1495,8 @@ function rPayChart(){
   pays.forEach(p=>{const k=ymKey(p.date);if(k!=null&&k in buckets)buckets[k]+=Number(p.amount||0)});
   const data=months.map(m=>buckets[m]);
   if(chPay){chPay.destroy();chPay=null}
-  chPay=new Chart(cv.getContext('2d'),{type:'bar',data:{labels:months.map(ymLabel),datasets:[{label:'Выплачено, ₽',data,backgroundColor:'rgba(201,169,97,.55)',borderColor:'#c9a961',borderWidth:1,borderRadius:2}]},options:chartOpts(true)});
+  const tc=themeChartCols();
+  chPay=new Chart(cv.getContext('2d'),{type:'bar',data:{labels:months.map(ymLabel),datasets:[{label:'Выплачено, ₽',data,backgroundColor:tc.accSoft,borderColor:tc.acc,borderWidth:1,borderRadius:6}]},options:chartOpts(true)});
 }
 function rBudgetChart(){
   const cv=document.getElementById('budget-chart');if(!cv||!window.Chart)return;
@@ -1505,10 +1507,16 @@ function rBudgetChart(){
   if(chBudget){chBudget.destroy();chBudget=null}
   chBudget=new Chart(cv.getContext('2d'),{type:'bar',data:{labels,datasets},options:chartOpts(false,true)});
 }
+function themeChartCols(){
+  const cs=getComputedStyle(document.documentElement);
+  const g=k=>cs.getPropertyValue(k).trim();
+  return{ink:g('--ink')||'#1d1d1f',inkM:g('--ink-m')||'#86868b',brd:g('--brd-s')||'rgba(60,60,67,.08)',acc:g('--acc')||'#007aff',accSoft:g('--acc-soft')||'rgba(0,122,255,.18)'};
+}
 function chartOpts(showSingle,stacked){
-  const ink='#e8e4dc',inkM='#8a857a',brd='rgba(255,255,255,.06)';
+  const tc=themeChartCols();
+  const fam='-apple-system,BlinkMacSystemFont,SF Pro Text,Inter,Helvetica Neue,Segoe UI,Arial,sans-serif';
   // ?? а не ||: в Chart.js c.parsed это объект {x,y}, и при y===0 || проваливалось в сам объект → tooltip показывал "[object Object]".
-  return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:!showSingle,labels:{color:ink,font:{family:'JetBrains Mono',size:10}}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.parsed?.y??c.parsed??0).toLocaleString('ru-RU')+' ₽'}}},scales:{x:{stacked:!!stacked,ticks:{color:inkM,font:{family:'JetBrains Mono',size:10}},grid:{color:brd}},y:{stacked:!!stacked,ticks:{color:inkM,font:{family:'JetBrains Mono',size:10},callback:v=>v.toLocaleString('ru-RU')},grid:{color:brd}}}};
+  return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:!showSingle,labels:{color:tc.ink,font:{family:fam,size:11}}},tooltip:{callbacks:{label:c=>c.dataset.label+': '+(c.parsed?.y??c.parsed??0).toLocaleString('ru-RU')+' ₽'}}},scales:{x:{stacked:!!stacked,ticks:{color:tc.inkM,font:{family:fam,size:11}},grid:{color:tc.brd}},y:{stacked:!!stacked,ticks:{color:tc.inkM,font:{family:fam,size:11},callback:v=>v.toLocaleString('ru-RU')},grid:{color:tc.brd}}}};
 }
 function rGantt(){
   const tgt=document.getElementById('gantt-view');if(!tgt)return;
