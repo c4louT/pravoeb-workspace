@@ -986,6 +986,8 @@ const{createClient}=supabase;
 const noopLock=async(_n,_t,fn)=>fn();
 // Чистим старый ключ из предыдущей версии — там оставался залипший navigator.locks-токен.
 try{localStorage.removeItem('sb-vcjwzkbsivgiivgvibjo-auth-token');}catch(_){}
+// Миграция Supabase-сессии при ребрендинге pravoeb→cuelex: переносим токен под новый ключ, чтобы не выкинуть пользователей.
+try{const _old=localStorage.getItem('pravoeb-auth-v2');if(_old&&!localStorage.getItem('cuelex-auth-v1'))localStorage.setItem('cuelex-auth-v1',_old);localStorage.removeItem('pravoeb-auth-v2');}catch(_){}
 const sb=createClient(SB_URL,SB_KEY,{auth:{lock:noopLock,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'cuelex-auth-v1'}});
 
 const TL={'actor':'Актёр','actor-minor':'Актёр (несов.)','director':'Режиссёр','operator':'Оператор','author-order':'Авт. заказ','alienation':'Отчуждение','license':'Лицензия','consent':'Согласие','nda':'НДА','other':'Другое'};
