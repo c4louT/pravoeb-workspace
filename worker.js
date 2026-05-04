@@ -205,6 +205,7 @@ const ALLOWED_MODELS = new Set([
   'qwen/qwen3-next-80b-a3b-instruct:free',
   'nousresearch/hermes-3-llama-3.1-405b:free',
   'google/gemma-4-31b-it:free',
+  'meta-llama/llama-3.3-70b-instruct:free',
   // paid 2026
   'anthropic/claude-sonnet-4.6',
   'anthropic/claude-opus-4.6',
@@ -214,6 +215,7 @@ const ALLOWED_MODELS = new Set([
   'google/gemini-2.5-flash',
   'deepseek/deepseek-v3.2',
 ]);
+const DEFAULT_DOCGEN_MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
 
 const SYSTEM_PROMPT = `Ты — AI-помощник юриста в сфере кинопроизводства и ТВ в Российской Федерации.
 Твой пользователь — продюсер/юрист киностудии «Правоеб».
@@ -344,6 +346,130 @@ async function handleChatAi(request, env) {
   });
 }
 
+// =========================================================================
+// /api/docgen/extract — Phase 5e: AI извлекает значения полей договора из
+// свободного текста пользователя. На вход список fields[], на выход
+// JSON {values: {key: value}, missing: [{key, label, question}]}.
+// Не пишем в БД — это вспомогательный stateless-эндпоинт для модалки.
+// =========================================================================
+
+const DOCGEN_SYSTEM = `Ты — AI-ассистент, который извлекает значения полей юридического договора из описания пользователя.
+
+ВХОД:
+1. Описание договора свободным русским текстом.
+2. Шаблон договора с метаданными (название, налоговая форма исполнителя).
+3. Список полей шаблона: каждое поле имеет уникальный key вида "{snake_case}", человекочитаемый label, type (text/date/number/textarea/select), и опциональный autofill-источник.
+
+ЗАДАЧА:
+Вернуть СТРОГО JSON-объект следующего формата (без markdown-обрамления, без комментариев):
+{
+  "values": { "{key1}": "значение", "{key2}": "значение" },
+  "missing": [ { "key": "{keyN}", "label": "человеческий label", "question": "Уточняющий вопрос пользователю" } ]
+}
+
+ПРАВИЛА:
+- Включай в "values" ТОЛЬКО те ключи, для которых пользователь явно указал значение или это обоснованно следует из текста.
+- Ключи в "values" должны точно совпадать со списком fields (с фигурными скобками: "{contract_number}").
+- Для type="date" возвращай в формате YYYY-MM-DD (ISO 8601, например "2026-05-15") — это требование нативного <input type="date">. Фронт сам конвертирует в русский формат для превью.
+- Для type="number" — только цифры без пробелов, без символов валюты.
+- Для текстовых полей суммы — пиши прописью ("сто тысяч рублей").
+- Не выдумывай ИНН, ОГРН, КПП, паспорта — если не указаны, добавь в "missing".
+- Поля school.* (реквизиты Киношколы) НЕ заполняй — они автозаполняются на фронте.
+- Поля autofill="contact.*" заполняй из текста про контрагента; "project.*" — из текста про фильм/проект.
+- В "missing" клади только КРИТИЧНЫЕ для договора поля, которые не упомянуты (например ФИО исполнителя, паспорт/ИНН в зависимости от tax_form, сумма гонорара, дата). Не больше 5 вопросов.
+- Поля типа {manual_N} с label "Поле (контекст: ...)" — это неразмеченные плейсхолдеры; заполняй их только если из контекста ОЧЕВИДНО что туда пишется (например "ДОГОВОР {f1} (далее..." — туда идёт номер договора). Иначе НЕ включай в "values" и НЕ включай в "missing".
+- НИКАКОГО текста кроме JSON. Никаких объяснений до или после.`;
+
+function tryParseDocgenJson(text) {
+  if (!text || typeof text !== 'string') return null;
+  // Иногда модели оборачивают JSON в \`\`\`json ... \`\`\` или префиксят текстом.
+  let s = text.trim();
+  // Снимаем тройные обратные кавычки если есть
+  const fence = s.match(/```(?:json)?\s*([\s\S]+?)```/);
+  if (fence) s = fence[1].trim();
+  // Берём от первой { до последней } — на случай мусора
+  const i = s.indexOf('{');
+  const j = s.lastIndexOf('}');
+  if (i < 0 || j < 0 || j <= i) return null;
+  const cand = s.slice(i, j + 1);
+  try { return JSON.parse(cand); } catch { return null; }
+}
+
+async function handleDocgenExtract(request, env) {
+  if (request.method !== 'POST') return methodNotAllowed();
+  const auth = request.headers.get('authorization') || '';
+  const jwt = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7) : null;
+  if (!jwt) return json({ ok: false, error: 'unauthorized' }, 401);
+
+  const user = await sbGetUser(env, jwt);
+  if (!user?.id) return json({ ok: false, error: 'unauthorized' }, 401);
+
+  let body;
+  try { body = await request.json(); } catch { return json({ ok: false, error: 'bad_json' }, 400); }
+  const text = String(body?.text || '').trim();
+  if (!text) return json({ ok: false, error: 'empty_text' }, 400);
+  if (text.length > 6000) return json({ ok: false, error: 'text_too_long' }, 400);
+  const fields = Array.isArray(body?.fields) ? body.fields.slice(0, 200) : [];
+  if (!fields.length) return json({ ok: false, error: 'no_fields' }, 400);
+  const templateId = String(body?.template_id || '').slice(0, 80);
+  const templateLabel = String(body?.template_label || '').slice(0, 200);
+  const model = ALLOWED_MODELS.has(body?.model) ? body.model : DEFAULT_DOCGEN_MODEL;
+
+  // Компактный JSON-список полей для промпта (label + key + type)
+  const fieldsCompact = fields.map((f) => ({
+    key: String(f.key || ''),
+    label: String(f.label || '').slice(0, 200),
+    type: String(f.type || 'text'),
+    autofill: f.autofill ? String(f.autofill).slice(0, 60) : null,
+  }));
+
+  const userMsg = `ШАБЛОН: ${templateLabel} (id=${templateId})
+
+ПОЛЯ ШАБЛОНА:
+${JSON.stringify(fieldsCompact, null, 0)}
+
+ОПИСАНИЕ ДОГОВОРА:
+${text}
+
+Верни JSON с values и missing.`;
+
+  const messages = [
+    { role: 'system', content: DOCGEN_SYSTEM },
+    { role: 'user', content: userMsg },
+  ];
+
+  const ai = await openrouterChat(env, model, messages);
+  if (!ai.ok) return json({ ok: false, error: 'ai_failed', detail: ai.error }, 502);
+
+  const parsed = tryParseDocgenJson(ai.text);
+  if (!parsed || typeof parsed !== 'object') {
+    return json({ ok: false, error: 'bad_ai_response', detail: 'AI вернул не-JSON: ' + (ai.text || '').slice(0, 300) }, 502);
+  }
+
+  const values = parsed.values && typeof parsed.values === 'object' ? parsed.values : {};
+  const missing = Array.isArray(parsed.missing) ? parsed.missing.slice(0, 10) : [];
+
+  // Фильтруем values: ключи должны быть из fields[]; missing — тоже валидируем
+  const fieldKeys = new Set(fieldsCompact.map((f) => f.key));
+  const cleanValues = {};
+  for (const [k, v] of Object.entries(values)) {
+    const key = String(k).startsWith('{') ? String(k) : '{' + String(k).replace(/[{}]/g, '') + '}';
+    if (!fieldKeys.has(key)) continue;
+    if (v == null || v === '') continue;
+    cleanValues[key] = String(v).slice(0, 1000);
+  }
+  const cleanMissing = missing
+    .filter((m) => m && m.key)
+    .map((m) => ({
+      key: String(m.key).startsWith('{') ? String(m.key) : '{' + String(m.key).replace(/[{}]/g, '') + '}',
+      label: String(m.label || '').slice(0, 200),
+      question: String(m.question || m.label || '').slice(0, 300),
+    }))
+    .filter((m) => fieldKeys.has(m.key) && !cleanValues[m.key]);
+
+  return json({ ok: true, values: cleanValues, missing: cleanMissing, model: ai.model, usage: ai.usage });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -352,6 +478,7 @@ export default {
     if (path === '/api/health') return json({ ok: true, ts: Date.now() });
     if (path === '/api/chat/send') return handleChatSend(request, env);
     if (path === '/api/chat/ai') return handleChatAi(request, env);
+    if (path === '/api/docgen/extract') return handleDocgenExtract(request, env);
     if (path === '/api/tg/webhook') return handleTgWebhook(request, env);
 
     // Fallback — статика
