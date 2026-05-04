@@ -14,7 +14,7 @@
 //   SUPABASE_ANON_KEY             — публичный anon key (для верификации JWT пользователя + RLS-insert).
 //   SUPABASE_SERVICE_ROLE_KEY     — service-role key (для webhook: вставка 'in' в обход RLS).
 //
-// Хостинг: тот же Worker что и статика — https://pravoeb-workspace.arstepan2006.workers.dev/.
+// Хостинг: тот же Worker что и статика (Cloudflare worker, субдомен из wrangler.toml).
 
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
 
@@ -218,7 +218,7 @@ const ALLOWED_MODELS = new Set([
 const DEFAULT_DOCGEN_MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
 
 const SYSTEM_PROMPT = `Ты — AI-помощник юриста в сфере кинопроизводства и ТВ в Российской Федерации.
-Твой пользователь — продюсер/юрист киностудии «Правоеб».
+Твой пользователь — продюсер/юрист, работающий в кинопроизводстве.
 Отвечай на русском, кратко и по делу. Форматируй ответы маркдауном (списки, выделение важного).
 Ссылайся на конкретные статьи ГК РФ (часть IV — интеллектуальная собственность), ФЗ «О государственной поддержке кинематографии» №126-ФЗ, ТК РФ, НК РФ.
 Если норма могла измениться или ты не уверен в актуальной редакции — прямо говори «нужно проверить на consultant.ru или pravo.gov.ru», не выдумывай статью.
@@ -243,7 +243,7 @@ async function openrouterChat(env, model, messages) {
       'content-type': 'application/json',
       authorization: `Bearer ${env.OPENROUTER_API_KEY}`,
       'HTTP-Referer': 'https://pravoeb-workspace.arstepan2006.workers.dev',
-      'X-Title': 'Правоеб Dashboard',
+      'X-Title': 'Cuelex Dashboard',
     },
     body: JSON.stringify({ model, messages, temperature: 0.3, max_tokens: 1500 }),
   });
