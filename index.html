@@ -659,7 +659,7 @@ th.sortable.act .ar{opacity:1}
       <div class="form-group" style="border:1px dashed var(--brd);padding:.7rem;border-radius:3px;background:var(--bg-el)">
         <label class="form-label" style="display:flex;justify-content:space-between;align-items:center">
           <span>🤖 Заполнить через AI</span>
-          <span style="color:var(--ink-d);font-weight:400;font-size:.65rem">бесплатно (Llama 3.3 / Qwen 2.5)</span>
+          <span style="color:var(--ink-d);font-weight:400;font-size:.65rem">бесплатно (Llama 3.3 / Qwen 3)</span>
         </label>
         <textarea class="form-input" id="dg-ai-input" rows="3" placeholder="Опиши договор свободным текстом. Например: «Звукорежиссёр Петров Пётр Петрович, ИП, ИНН 770000000000, ОГРНИП 320770000000000, сумма 100 000 руб, фильм „Дипломный“, режиссёр Сидоров, 15 мая 2026»"></textarea>
         <div style="display:flex;gap:.4rem;margin-top:.4rem;align-items:center;flex-wrap:wrap">
@@ -2033,7 +2033,7 @@ async function dgAiFill(){
   try{
     const{data:{session}}=await sb.auth.getSession();
     const jwt=session?.access_token;
-    if(!jwt){toast('Токен истёк, перелогинься','err','Auth');return}
+    if(!jwt){status.textContent='';toast('Токен истёк, перелогинься','err','Auth');return}
     // Передаём поля шаблона как «справочник» — AI должен вернуть только валидные ключи.
     const fields=(tpl.fields||[]).map(f=>({
       key:f.key,
