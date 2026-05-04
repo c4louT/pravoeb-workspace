@@ -2062,10 +2062,17 @@ async function dgAiFill(){
       const key=String(k).startsWith('{')?String(k):'{'+String(k).replace(/[{}]/g,'')+'}';
       const f=(tpl.fields||[]).find(x=>x.key===key);
       if(!f)return;  // ключ не из шаблона — игнорим
-      dgState.values[key]=String(v);
+      let val=String(v);
+      // Если поле — нативный <input type="date">, ему нужен ISO YYYY-MM-DD.
+      // Промпт уже просит ISO, но free-модели часто отдают DD.MM.YYYY — нормализуем.
+      if(f.type==='date'){
+        const ru=val.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/);
+        if(ru)val=`${ru[3]}-${String(ru[2]).padStart(2,'0')}-${String(ru[1]).padStart(2,'0')}`;
+      }
+      dgState.values[key]=val;
       dgState.touched.add(key);
       const el=document.getElementById(dgKeyId(key));
-      if(el)el.value=String(v);
+      if(el)el.value=val;
       filled++;
     });
     status.textContent=`Заполнено ${filled} полей`+(missing.length?` · ${missing.length} уточнить`:'');
@@ -2448,7 +2455,9 @@ function cwToggle(){
 function cwTimeFmt(ts){const d=new Date(ts);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
 // Phase 5e: распознать «сделай договор / сгенерируй договор» в исходящем сообщении
 // и предложить кнопку «Открыть генератор и заполнить через AI».
-const CW_DOCGEN_RX=/\b(сдела(й|ть)|сгенери|оформ(и|ить)|нужен|подготов(ь|ить)|состав(ь|ить))[^.\n]{0,40}\b(догов|контракт|соглашени|акт)/i;
+// Внимание: \b в JS regex без флага 'u' не понимает кириллицу (все буквы — non-word),
+// поэтому используем явные группы границ из пробелов/пунктуации/начала-конца строки.
+const CW_DOCGEN_RX=/(^|[\s.,;:!?()«»"'])(?:сдела(?:й|ть|ем|ете)?|сгенери[а-яё]*|оформ(?:и|ить|ляешь|ляем)?|нужен|нужно|подготов(?:ь|ить|им)?|состав(?:ь|ить|им)?)[\s\S]{0,60}?(?:догов[а-яё]*|контракт[а-яё]*|соглашени[а-яё]*|акт[а-яё]*)(?![а-яёА-ЯЁ])/i;
 function cwLooksLikeDocGen(text){return!!text&&CW_DOCGEN_RX.test(text)}
 function cwMsgHtml(m){
   const cls=m.direction==='out'?'out':(m.direction==='ai'?'ai':'in');
@@ -2457,7 +2466,9 @@ function cwMsgHtml(m){
   // На исходящих сообщениях про договор — показать quick-action кнопку
   let docGenBtn='';
   if(m.direction==='out'&&cwLooksLikeDocGen(m.text||'')){
-    const safe=encodeURIComponent(m.text||'');
+    // encodeURIComponent НЕ экранирует ' ( ) ! ~ * — поэтому добавляем %27 для одинарных
+    // кавычек (которые ломают onclick-атрибут и потенциально дают XSS).
+    const safe=encodeURIComponent(m.text||'').replace(/'/g,'%27');
     docGenBtn=`<button class="btn btn-s" style="margin-top:.4rem;font-size:.65rem" onclick="cwOpenDocGenWithText('${safe}')">🪄 Открыть генератор и заполнить через AI</button>`;
   }
   return `<div class="cw-msg ${cls}">${modelTag}${body}${docGenBtn}<div class="ts">${cwTimeFmt(m.created_at)}</div></div>`;
