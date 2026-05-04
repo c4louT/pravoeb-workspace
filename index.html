@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Правоеб · Контрольная панель</title>
+<title>Cuelex · Контрольная панель</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,7 +12,7 @@
 <script>
 (function(){
   try{
-    var saved=localStorage.getItem('pravoeb-theme');
+    var saved=localStorage.getItem('cuelex-theme')||localStorage.getItem('pravoeb-theme');
     var theme=saved||(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
     document.documentElement.setAttribute('data-theme',theme);
   }catch(e){}
@@ -21,7 +21,7 @@ function toggleTheme(){
   var cur=document.documentElement.getAttribute('data-theme')||'light';
   var next=cur==='light'?'dark':'light';
   document.documentElement.setAttribute('data-theme',next);
-  try{localStorage.setItem('pravoeb-theme',next);}catch(e){}
+  try{localStorage.setItem('cuelex-theme',next);}catch(e){}
   try{if(typeof rPayChart==='function')rPayChart();if(typeof rBudgetChart==='function')rBudgetChart();}catch(e){}
 }
 </script>
@@ -558,7 +558,7 @@ th.sortable.act .ar{opacity:1}
 
 <div class="auth-screen" id="auth-screen">
   <div class="auth-box">
-    <div class="auth-logo">Правоеб <span>⚖️</span></div>
+    <div class="auth-logo">Cuelex <span>🎬</span></div>
     <div class="auth-sub">Кино · ТВ · Продюсирование</div>
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchTab('login')">Войти</button>
@@ -584,9 +584,9 @@ th.sortable.act .ar{opacity:1}
   <div class="side-backdrop" id="side-backdrop" onclick="closeSidebar()"></div>
   <aside class="side-rail">
     <div class="side-brand">
-      <div class="side-logo">П</div>
+      <div class="side-logo">C</div>
       <div>
-        <div class="side-bn">Правоеб</div>
+        <div class="side-bn">Cuelex</div>
         <div class="side-bs">Workspace</div>
       </div>
     </div>
@@ -624,7 +624,7 @@ th.sortable.act .ar{opacity:1}
   </div>
   <header style="display:none">
     <div class="brand">
-      <h1 class="brand-name">Правоеб <span class="brand-acc">·</span> <span class="brand-acc">Контрольная панель</span></h1>
+      <h1 class="brand-name">Cuelex <span class="brand-acc">·</span> <span class="brand-acc">Контрольная панель</span></h1>
       <span class="brand-sub">Кино · ТВ · Продюсирование</span>
     </div>
   </header>
@@ -780,7 +780,7 @@ th.sortable.act .ar{opacity:1}
     </section>
   </main>
   <footer>
-    <span>данные защищены supabase · личный кабинет · pravoeb</span>
+    <span>данные защищены supabase · личный кабинет · cuelex</span>
     <span style="display:flex;gap:.5rem;flex-wrap:wrap">
       <button class="btn btn-s" onclick="exportCSV()">Экспорт CSV</button>
       <button class="btn btn-s" onclick="exportData()">Экспорт JSON</button>
@@ -986,7 +986,7 @@ const{createClient}=supabase;
 const noopLock=async(_n,_t,fn)=>fn();
 // Чистим старый ключ из предыдущей версии — там оставался залипший navigator.locks-токен.
 try{localStorage.removeItem('sb-vcjwzkbsivgiivgvibjo-auth-token');}catch(_){}
-const sb=createClient(SB_URL,SB_KEY,{auth:{lock:noopLock,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'pravoeb-auth-v2'}});
+const sb=createClient(SB_URL,SB_KEY,{auth:{lock:noopLock,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'cuelex-auth-v1'}});
 
 const TL={'actor':'Актёр','actor-minor':'Актёр (несов.)','director':'Режиссёр','operator':'Оператор','author-order':'Авт. заказ','alienation':'Отчуждение','license':'Лицензия','consent':'Согласие','nda':'НДА','other':'Другое'};
 const SL={'signed':'Подписан','pending':'В работе','missing':'Не подписан','draft':'Черновик'};
@@ -1997,7 +1997,7 @@ async function toggleCL(stageId,itemId,checked){
 function exportData(){
   const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=`pravoeb-${new Date().toISOString().slice(0,10)}.json`;a.click();
+  const a=document.createElement('a');a.href=url;a.download=`cuelex-${new Date().toISOString().slice(0,10)}.json`;a.click();
   URL.revokeObjectURL(url);
   toast('JSON выгружен','ok');
 }
@@ -2006,9 +2006,9 @@ function csvCell(v){const s=v==null?'':String(v);return /[",;\n]/.test(s)?'"'+s.
 function csvDownload(name,header,rows){const lines=[header.map(csvCell).join(';'),...rows.map(r=>r.map(csvCell).join(';'))];const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
 function exportCSV(){
   const today=new Date().toISOString().slice(0,10);
-  csvDownload(`pravoeb-projects-${today}.csv`,['id','name','genre','duration','status','start_date','end_date','budget'],S.projects.map(p=>[p.id,p.name,p.genre,p.duration,PL[p.status]||p.status,p.start_date,p.end_date,p.budget]));
-  csvDownload(`pravoeb-contracts-${today}.csv`,['id','project','type','person','role','number','date','amount','paid','status','file'],S.contracts.map(c=>{const p=S.projects.find(pr=>pr.id===c.project_id);const paid=S.payments.filter(pay=>pay.contract_id===c.id).reduce((s,x)=>s+x.amount,0);return[c.id,p?.name||'',TL[c.type]||c.type,c.person,c.role,c.number,c.date,c.amount,paid,SL[c.status]||c.status,c.file_name||'']}));
-  csvDownload(`pravoeb-payments-${today}.csv`,['id','contract_id','person','project','date','amount','note'],S.payments.map(pay=>{const c=S.contracts.find(x=>x.id===pay.contract_id);const p=S.projects.find(pr=>pr.id===c?.project_id);return[pay.id,pay.contract_id,c?.person||'',p?.name||'',pay.date,pay.amount,pay.note]}));
+  csvDownload(`cuelex-projects-${today}.csv`,['id','name','genre','duration','status','start_date','end_date','budget'],S.projects.map(p=>[p.id,p.name,p.genre,p.duration,PL[p.status]||p.status,p.start_date,p.end_date,p.budget]));
+  csvDownload(`cuelex-contracts-${today}.csv`,['id','project','type','person','role','number','date','amount','paid','status','file'],S.contracts.map(c=>{const p=S.projects.find(pr=>pr.id===c.project_id);const paid=S.payments.filter(pay=>pay.contract_id===c.id).reduce((s,x)=>s+x.amount,0);return[c.id,p?.name||'',TL[c.type]||c.type,c.person,c.role,c.number,c.date,c.amount,paid,SL[c.status]||c.status,c.file_name||'']}));
+  csvDownload(`cuelex-payments-${today}.csv`,['id','contract_id','person','project','date','amount','note'],S.payments.map(pay=>{const c=S.contracts.find(x=>x.id===pay.contract_id);const p=S.projects.find(pr=>pr.id===c?.project_id);return[pay.id,pay.contract_id,c?.person||'',p?.name||'',pay.date,pay.amount,pay.note]}));
   toast('Три CSV выгружены: проекты, договоры, выплаты','ok');
 }
 
@@ -2613,7 +2613,7 @@ const CW_MODELS=[
   {id:'google/gemini-2.5-flash',label:'Gemini 2.5 Flash ($)'},
   {id:'deepseek/deepseek-v3.2',label:'DeepSeek V3.2 ($)'},
 ];
-let cwModel=localStorage.getItem('pravoeb_cw_model')||CW_MODELS[0].id;
+let cwModel=localStorage.getItem('cuelex_cw_model')||localStorage.getItem('pravoeb_cw_model')||CW_MODELS[0].id;
 if(!CW_MODELS.some(m=>m.id===cwModel))cwModel=CW_MODELS[0].id;
 
 async function loadProfile(){
@@ -2684,7 +2684,7 @@ function cwPopulateModels(){
   const sel=document.getElementById('cw-model');if(!sel)return;
   sel.innerHTML=CW_MODELS.map(m=>`<option value="${m.id}"${m.id===cwModel?' selected':''}>${esc(m.label)}</option>`).join('');
   if(!cwModelsWired){
-    sel.addEventListener('change',()=>{cwModel=sel.value;try{localStorage.setItem('pravoeb_cw_model',cwModel)}catch(_){}}); 
+    sel.addEventListener('change',()=>{cwModel=sel.value;try{localStorage.setItem('cuelex_cw_model',cwModel)}catch(_){}}); 
     cwModelsWired=true;
   }
 }
