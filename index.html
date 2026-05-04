@@ -91,38 +91,79 @@ button,input,textarea,select{font:inherit;color:inherit}
 
 /* APP CHROME */
 .app{display:none}
-.app.on{display:block}
-.top-bar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:.55rem 2rem;background:var(--bg-pane);backdrop-filter:saturate(180%) blur(30px);-webkit-backdrop-filter:saturate(180%) blur(30px);border-bottom:1px solid var(--brd-s);font-size:13px;color:var(--ink-m);flex-wrap:wrap;gap:.5rem;min-height:48px}
-.top-bar #user-email{color:var(--ink);font-weight:500}
-.theme-tg{padding:0;border:none;border-radius:50%;background:var(--bg-hover);cursor:pointer;display:grid;place-items:center;width:30px;height:30px;color:var(--ink);font-size:14px;transition:filter .15s}
+.app.on{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.app-main{display:flex;flex-direction:column;min-width:0}
+
+/* SIDEBAR */
+.side-rail{position:sticky;top:0;height:100vh;background:var(--bg-side);backdrop-filter:saturate(180%) blur(30px);-webkit-backdrop-filter:saturate(180%) blur(30px);border-right:1px solid var(--brd-s);padding:.7rem;display:flex;flex-direction:column;gap:.15rem;overflow-y:auto}
+.side-brand{display:flex;align-items:center;gap:.65rem;padding:.85rem .7rem 1rem}
+.side-logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#007aff 0%,#af52de 60%,#ff2d55 100%);display:grid;place-items:center;color:white;font-weight:700;font-size:15px;box-shadow:var(--shadow-s);flex-shrink:0;letter-spacing:0}
+.side-bn{font-size:14.5px;font-weight:600;letter-spacing:-.015em;line-height:1.1}
+.side-bs{font-size:11px;color:var(--ink-m);letter-spacing:0;line-height:1.2}
+.side-section{margin:.7rem .7rem .25rem;font-size:11px;color:var(--ink-m);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.side-item{display:flex;align-items:center;gap:.65rem;padding:.5rem .65rem;border-radius:8px;cursor:pointer;color:var(--ink);font-size:13.5px;transition:background .15s;user-select:none;font-weight:400;line-height:1.2}
+.side-item:hover{background:var(--bg-hover)}
+.side-item.active{background:var(--acc-soft);color:var(--acc);font-weight:500}
+.side-icon{width:22px;height:22px;border-radius:5px;display:grid;place-items:center;font-size:13px;flex-shrink:0;background:var(--bg-hover);color:var(--ink-m);transition:background .15s,color .15s}
+.side-item.active .side-icon{background:var(--acc);color:white}
+.side-cnt{margin-left:auto;font-size:12px;color:var(--ink-m);font-feature-settings:'tnum'}
+.side-spacer{flex:1;min-height:.5rem}
+.side-bottom{display:flex;align-items:center;gap:.4rem;padding:.5rem .25rem 0;border-top:1px solid var(--brd-s);margin-top:.5rem}
+.user-card{display:flex;align-items:center;gap:.55rem;padding:.45rem .55rem;border-radius:9px;cursor:pointer;flex:1;min-width:0;transition:background .15s}
+.user-card:hover{background:var(--bg-hover)}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#ff9500,#ff2d55);display:grid;place-items:center;color:white;font-weight:600;font-size:13px;letter-spacing:0;flex-shrink:0}
+.user-name{font-size:13px;font-weight:500;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-mail{font-size:11px;color:var(--ink-m);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* TOP BAR */
+.top-bar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:.7rem;padding:.55rem 1.6rem;background:var(--bg-pane);backdrop-filter:saturate(180%) blur(30px);-webkit-backdrop-filter:saturate(180%) blur(30px);border-bottom:1px solid var(--brd-s);min-height:52px;height:52px}
+.crumb{font-size:13px;color:var(--ink-m);display:flex;align-items:center;gap:.5rem}
+.crumb b{color:var(--ink);font-weight:600;letter-spacing:-.005em}
+.tb-spacer{flex:1}
+.tb-search{position:relative;width:320px;max-width:40vw}
+.tb-search input{width:100%;padding:.45rem .85rem .45rem 2rem;border:none;background:var(--bg-hover);font-size:13px;border-radius:8px;color:var(--ink);outline:none;font-family:inherit;letter-spacing:-.005em}
+.tb-search input:focus{background:var(--bg-card);box-shadow:0 0 0 2px var(--acc-soft)}
+.tb-search input::placeholder{color:var(--ink-m)}
+.tb-search::before{content:'⌕';position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--ink-m);font-size:14px;pointer-events:none}
+.theme-tg{padding:0;border:none;border-radius:50%;background:var(--bg-hover);cursor:pointer;display:grid;place-items:center;width:32px;height:32px;color:var(--ink);font-size:15px;transition:filter .15s;flex-shrink:0}
 .theme-tg:hover{filter:brightness(.94)}
-.prof-btn{background:var(--bg-hover);border:none;color:var(--ink);padding:.4rem .85rem;font-size:13px;font-weight:500;cursor:pointer;border-radius:8px;transition:filter .15s;margin-right:0}
+.prof-btn{background:var(--bg-hover);border:none;color:var(--ink);padding:.4rem .85rem;font-size:13px;font-weight:500;cursor:pointer;border-radius:8px;transition:filter .15s}
 .prof-btn:hover{filter:brightness(.94)}
-.logout-btn{background:transparent;border:none;color:var(--ink-m);padding:.4rem .75rem;font-size:13px;font-weight:500;cursor:pointer;border-radius:8px;transition:color .15s,background .15s}
+.logout-btn{background:var(--bg-hover);border:none;color:var(--ink-m);padding:0;font-size:14px;font-weight:500;cursor:pointer;border-radius:50%;width:30px;height:30px;display:grid;place-items:center;flex-shrink:0;transition:color .15s,background .15s}
 .logout-btn:hover{color:var(--red);background:var(--red-soft)}
 
-header{padding:1.6rem 2rem .4rem}
+/* PAGE HEAD */
+.page-head{padding:.4rem 0 1.4rem}
+.page-h1{font-size:32px;font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-bottom:.4rem}
+.page-lead{color:var(--ink-m);font-size:15px;letter-spacing:-.005em;max-width:680px;line-height:1.5}
+
+header{padding:0}
 .brand{display:flex;align-items:baseline;gap:1.2rem;flex-wrap:wrap}
 .brand-name{font-size:30px;font-weight:700;letter-spacing:-.03em}
 .brand-acc{color:var(--acc);font-weight:600}
 .brand-sub{font-size:12px;color:var(--ink-m);background:var(--bg-hover);padding:.25rem .65rem;border-radius:6px;font-weight:500}
 
-nav{display:flex;gap:.4rem;padding:1rem 2rem .8rem;background:transparent;position:sticky;top:48px;z-index:15;overflow-x:auto;backdrop-filter:saturate(180%) blur(30px);-webkit-backdrop-filter:saturate(180%) blur(30px);background:var(--bg-pane);border-bottom:1px solid var(--brd-s)}
 .nav-tab{font-size:13.5px;font-weight:500;color:var(--ink-m);cursor:pointer;padding:.4rem .85rem;border-radius:8px;transition:all .15s;white-space:nowrap;letter-spacing:-.005em}
-.nav-tab:hover{color:var(--ink);background:var(--bg-hover)}
-.nav-tab.active{color:var(--acc);background:var(--acc-soft);font-weight:600}
 
-main{padding:2rem 2rem 5rem;max-width:1500px;margin:0 auto}
+main{padding:1.6rem 2rem 4rem;max-width:1280px;width:100%;margin:0 auto;flex:1}
 .tv{display:none;animation:fi .25s ease}
 .tv.active{display:block}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 /* STAT CARDS */
-.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.85rem;margin-bottom:2rem}
-.sc{padding:1.1rem 1.2rem;background:var(--bg-card);border:1px solid var(--brd-s);border-radius:14px;box-shadow:var(--shadow-s);transition:transform .15s,box-shadow .15s}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
+.sc{padding:1.1rem 1.2rem;background:var(--bg-card);border:1px solid var(--brd-s);border-radius:14px;box-shadow:var(--shadow-s);transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
 .sc:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
-.sl{font-size:12px;color:var(--ink-m);margin-bottom:.55rem;font-weight:500;letter-spacing:.005em}
-.sv{font-size:28px;font-weight:700;line-height:1.05;letter-spacing:-.025em;font-feature-settings:'tnum'}
+.sl{font-size:12px;color:var(--ink-m);margin-bottom:.6rem;font-weight:500;letter-spacing:.005em;display:flex;align-items:center;gap:.4rem}
+.sl .ic{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:12px;flex-shrink:0}
+.sl .ic.blue{background:var(--acc-soft);color:var(--acc)}
+.sl .ic.orange{background:var(--amber-soft);color:var(--amber)}
+.sl .ic.green{background:var(--green-soft);color:var(--green)}
+.sl .ic.purple{background:var(--purple-soft);color:var(--purple)}
+.sl .ic.pink{background:var(--pink-soft);color:var(--pink)}
+.sl .ic.teal{background:var(--teal-soft);color:var(--teal)}
+.sl .ic.red{background:var(--red-soft);color:var(--red)}
+.sv{font-size:30px;font-weight:700;line-height:1.05;letter-spacing:-.03em;font-feature-settings:'tnum'}
 .sv.sm{font-size:20px}
 .ss{font-size:12px;color:var(--ink-m);margin-top:.35rem;font-weight:500}
 .sv.ac{color:var(--acc)}
@@ -466,9 +507,15 @@ th.sortable.act .ar{opacity:1}
 
 /* RESPONSIVE */
 @media(max-width:900px){.dg-layout{grid-template-columns:1fr}}
+@media(max-width:900px){
+  .app.on{grid-template-columns:1fr}
+  .side-rail{display:none}
+  .tb-search{display:none}
+}
 @media(max-width:768px){
   header,nav,main,footer,.top-bar{padding-left:1rem;padding-right:1rem}
   nav{top:48px;gap:.2rem}
+  .page-h1{font-size:24px}
   .fr{grid-template-columns:1fr}
   .sv{font-size:24px}
   .md{padding:1.4rem;max-height:96vh;border-radius:14px}
@@ -528,34 +575,60 @@ th.sortable.act .ar{opacity:1}
 </div>
 
 <div class="app" id="app">
+  <aside class="side-rail">
+    <div class="side-brand">
+      <div class="side-logo">П</div>
+      <div>
+        <div class="side-bn">Правоеб</div>
+        <div class="side-bs">Workspace</div>
+      </div>
+    </div>
+    <div class="side-section">Главное</div>
+    <div class="side-item nav-tab active" data-tab="dashboard"><span class="side-icon">🏠</span>Сводка</div>
+    <div class="side-item nav-tab" data-tab="projects"><span class="side-icon">🎬</span>Проекты</div>
+    <div class="side-item nav-tab" data-tab="contracts"><span class="side-icon">⚖️</span>Договоры</div>
+    <div class="side-item nav-tab" data-tab="documents"><span class="side-icon">📄</span>Документы</div>
+    <div class="side-item nav-tab" data-tab="payments"><span class="side-icon">💰</span>Выплаты</div>
+    <div class="side-section">База</div>
+    <div class="side-item nav-tab" data-tab="contacts"><span class="side-icon">👥</span>Контрагенты</div>
+    <div class="side-item nav-tab" data-tab="checklists"><span class="side-icon">✅</span>Чеклисты</div>
+    <div class="side-item nav-tab" data-tab="calendar"><span class="side-icon">📅</span>Календарь</div>
+    <div class="side-item nav-tab" data-tab="analytics"><span class="side-icon">📊</span>Аналитика</div>
+    <div class="side-item nav-tab" data-tab="timeline"><span class="side-icon">🕘</span>Таймлайн</div>
+    <div class="side-spacer"></div>
+    <div class="side-bottom">
+      <div class="user-card" onclick="openProfile()">
+        <div class="user-avatar" id="user-avatar">А</div>
+        <div style="min-width:0;flex:1">
+          <div class="user-name" id="user-name">Аккаунт</div>
+          <div class="user-mail" id="user-email"></div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="logout()" title="Выйти">↪</button>
+    </div>
+  </aside>
+  <div class="app-main">
   <div class="top-bar">
-    <span>⚖️ Правоеб · <span id="user-email"></span></span>
-    <span style="display:flex;gap:.4rem;align-items:center">
-      <button class="theme-tg" onclick="toggleTheme()" title="Сменить тему" aria-label="Сменить тему">◐</button>
-      <button class="prof-btn" onclick="openProfile()">Профиль</button>
-      <button class="logout-btn" onclick="logout()">Выйти</button>
-    </span>
+    <div class="crumb"><span>Workspace</span><span>›</span><b id="crumb-name">Сводка</b></div>
+    <div class="tb-spacer"></div>
+    <div class="tb-search"><input id="global-search" placeholder="Найти проект, договор, контрагента..." autocomplete="off"></div>
+    <button class="theme-tg" onclick="toggleTheme()" title="Сменить тему" aria-label="Сменить тему">◐</button>
   </div>
-  <header>
+  <header style="display:none">
     <div class="brand">
       <h1 class="brand-name">Правоеб <span class="brand-acc">·</span> <span class="brand-acc">Контрольная панель</span></h1>
       <span class="brand-sub">Кино · ТВ · Продюсирование</span>
     </div>
   </header>
-  <nav>
-    <span class="nav-tab active" data-tab="dashboard">Сводка</span>
-    <span class="nav-tab" data-tab="projects">Проекты</span>
-    <span class="nav-tab" data-tab="contracts">Договоры</span>
-    <span class="nav-tab" data-tab="payments">Выплаты</span>
-    <span class="nav-tab" data-tab="contacts">Контрагенты</span>
-    <span class="nav-tab" data-tab="checklists">Чеклисты</span>
-    <span class="nav-tab" data-tab="documents">Документы</span>
-    <span class="nav-tab" data-tab="analytics">Аналитика</span>
-    <span class="nav-tab" data-tab="calendar">Календарь</span>
-    <span class="nav-tab" data-tab="timeline">Таймлайн</span>
+  <nav style="display:none">
+    <span class="nav-tab" data-tab="dashboard">Сводка</span>
   </nav>
   <main>
     <section class="tv active" id="dashboard">
+      <div class="page-head">
+        <h1 class="page-h1" id="dash-greet">Сводка</h1>
+        <p class="page-lead" id="dash-lead">Активные проекты, договоры и оплаты — на одном экране.</p>
+      </div>
       <div class="sg" id="stats-grid"></div>
       <h2 class="st">Уведомления <span class="st-sub">требуют внимания</span></h2>
       <div id="alerts"></div>
@@ -705,6 +778,7 @@ th.sortable.act .ar{opacity:1}
       <button class="btn btn-s" onclick="exportData()">Экспорт JSON</button>
     </span>
   </footer>
+  </div>
 </div>
 
 <!-- Модалка: Проект -->
@@ -1150,7 +1224,9 @@ async function getSignedUrl(path){
 }
 
 // ============ NAV ============
-document.querySelectorAll('.nav-tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tv').forEach(v=>v.classList.remove('active'));t.classList.add('active');document.getElementById(t.dataset.tab).classList.add('active');});});
+const TAB_LABELS={dashboard:'Сводка',projects:'Проекты',contracts:'Договоры',payments:'Выплаты',contacts:'Контрагенты',checklists:'Чеклисты',documents:'Документы',analytics:'Аналитика',calendar:'Календарь',timeline:'Таймлайн'};
+function setCrumb(tab){const el=document.getElementById('crumb-name');if(el)el.textContent=TAB_LABELS[tab]||'Сводка'}
+document.querySelectorAll('.nav-tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tv').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav-tab[data-tab="'+t.dataset.tab+'"]').forEach(x=>x.classList.add('active'));document.getElementById(t.dataset.tab).classList.add('active');setCrumb(t.dataset.tab);});});
 document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on')}));
 
 // ============ PROJECTS ============
@@ -1359,11 +1435,13 @@ function rStats(){
   const tp=S.payments.reduce((s,p)=>s+p.amount,0);
   const withFiles=S.contracts.filter(c=>c.file_url).length;
   document.getElementById('stats-grid').innerHTML=`
-    <div class="sc"><div class="sl">Проектов</div><div class="sv">${S.projects.length}</div><div class="ss">активных: ${ap}</div></div>
-    <div class="sc"><div class="sl">Договоров</div><div class="sv">${S.contracts.length}</div><div class="ss">подписано: ${signed} · в работе: ${pending}</div></div>
-    <div class="sc"><div class="sl">Критично</div><div class="sv ${missing>0?'rd':'gr'}">${missing}</div><div class="ss">${missing>0?'не подписано':'всё ок'}</div></div>
-    <div class="sc"><div class="sl">Файлов загружено</div><div class="sv ac">${withFiles}</div><div class="ss">из ${S.contracts.length} договоров</div></div>
-    <div class="sc"><div class="sl">К выплате</div><div class="sv sm ${tb-tp>0?'am':'gr'}">${fmt(tb-tp)} ₽</div><div class="ss">из ${fmt(tb)} ₽</div></div>`;
+    <div class="sc"><div class="sl"><span class="ic blue">📁</span>Проектов</div><div class="sv">${S.projects.length}</div><div class="ss">активных: ${ap}</div></div>
+    <div class="sc"><div class="sl"><span class="ic orange">⚖️</span>Договоров</div><div class="sv">${S.contracts.length}</div><div class="ss">подписано: ${signed} · в работе: ${pending}</div></div>
+    <div class="sc"><div class="sl"><span class="ic ${missing>0?'pink':'green'}">${missing>0?'⚑':'✓'}</span>Критично</div><div class="sv ${missing>0?'rd':'gr'}">${missing}</div><div class="ss">${missing>0?'не подписано':'всё ок'}</div></div>
+    <div class="sc"><div class="sl"><span class="ic teal">📄</span>Файлов загружено</div><div class="sv ac">${withFiles}</div><div class="ss">из ${S.contracts.length} договоров</div></div>
+    <div class="sc"><div class="sl"><span class="ic purple">💰</span>К выплате</div><div class="sv sm ${tb-tp>0?'am':'gr'}">${fmt(tb-tp)} ₽</div><div class="ss">из ${fmt(tb)} ₽</div></div>`;
+  const dg=document.getElementById('dash-greet');if(dg){const h=new Date().getHours();const n=(U?.user_metadata?.name||U?.email||'').split('@')[0].split(' ')[0];dg.textContent=(h<6?'Доброй ночи':h<12?'Доброе утро':h<18?'Добрый день':'Добрый вечер')+(n?', '+n:'')}
+  const dl=document.getElementById('dash-lead');if(dl){const parts=[];if(missing>0)parts.push(`<b>${missing}</b> договоров без подписи`);if(pending>0)parts.push(`<b>${pending}</b> в работе`);if(tb-tp>0)parts.push(`к выплате <b>${fmt(tb-tp)} ₽</b>`);dl.innerHTML=parts.length?parts.join(' · '):'Всё под контролем — критичных задач нет.'}
 }
 
 function rAlerts(){
@@ -2960,6 +3038,9 @@ sb.auth.onAuthStateChange(async(event,session)=>{
     if(session?.user){
       U=session.user;
       document.getElementById('user-email').textContent=U.email;
+      const _nm=(U.user_metadata?.name||U.email||'').split('@')[0];
+      const _un=document.getElementById('user-name');if(_un)_un.textContent=_nm||'Аккаунт';
+      const _ua=document.getElementById('user-avatar');if(_ua)_ua.textContent=(_nm||'А').charAt(0).toUpperCase();
       document.getElementById('auth-screen').style.display='none';
       document.getElementById('app').classList.add('on');
       wireSearch();
