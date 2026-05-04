@@ -656,6 +656,25 @@ th.sortable.act .ar{opacity:1}
         <div class="form-group"><label class="form-label">Проект (для автозаполнения)</label><select class="form-select" id="dg-proj" onchange="dgAutofill()"><option value="">— без проекта —</option></select></div>
         <div class="form-group"><label class="form-label">Контрагент (для автозаполнения)</label><select class="form-select" id="dg-contact" onchange="dgAutofill()"><option value="">— без контрагента —</option></select></div>
       </div>
+      <div class="form-group" style="border:1px dashed var(--brd);padding:.7rem;border-radius:3px;background:var(--bg-el)">
+        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center">
+          <span>🤖 Заполнить через AI</span>
+          <span style="color:var(--ink-d);font-weight:400;font-size:.65rem">бесплатно (Llama 3.3 / Qwen 2.5)</span>
+        </label>
+        <textarea class="form-input" id="dg-ai-input" rows="3" placeholder="Опиши договор свободным текстом. Например: «Звукорежиссёр Петров Пётр Петрович, ИП, ИНН 770000000000, ОГРНИП 320770000000000, сумма 100 000 руб, фильм „Дипломный“, режиссёр Сидоров, 15 мая 2026»"></textarea>
+        <div style="display:flex;gap:.4rem;margin-top:.4rem;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-s btn-p" type="button" id="dg-ai-fill-btn" onclick="dgAiFill()">🪄 Заполнить</button>
+          <select class="form-select" id="dg-ai-model" style="max-width:240px;font-size:.7rem">
+            <option value="meta-llama/llama-3.3-70b-instruct:free" selected>Llama 3.3 70B · free</option>
+            <option value="qwen/qwen3-next-80b-a3b-instruct:free">Qwen 3 80B · free</option>
+            <option value="openai/gpt-oss-120b:free">GPT-OSS 120B · free</option>
+            <option value="anthropic/claude-sonnet-4.6">Claude Sonnet 4.6 · paid</option>
+            <option value="openai/gpt-5-mini">GPT-5 mini · paid</option>
+          </select>
+          <span id="dg-ai-status" style="font-size:.7rem;color:var(--ink-d)"></span>
+        </div>
+        <div id="dg-ai-questions" style="margin-top:.5rem;display:none"></div>
+      </div>
       <div id="dg-fields"></div>
     </div>
     <div class="dg-right">
@@ -1997,6 +2016,92 @@ function dgAutofill(){
   dgRender();
 }
 
+// Phase 5e: «Заполнить через AI» — отправляем описание в /api/docgen/extract,
+// получаем JSON {values, missing[]}, заливаем в форму, показываем уточняющие вопросы.
+async function dgAiFill(){
+  const tpl=dgGetTpl(dgState.tplId);
+  if(!tpl){toast('Шаблон не выбран','err','AI');return}
+  const ta=document.getElementById('dg-ai-input');
+  const text=(ta?.value||'').trim();
+  if(!text){toast('Опиши договор сначала','warn','AI');return}
+  const btn=document.getElementById('dg-ai-fill-btn');
+  const status=document.getElementById('dg-ai-status');
+  const qWrap=document.getElementById('dg-ai-questions');
+  const model=document.getElementById('dg-ai-model').value;
+  if(qWrap){qWrap.style.display='none';qWrap.innerHTML=''}
+  btn.disabled=true;status.textContent='AI думает…';
+  try{
+    const{data:{session}}=await sb.auth.getSession();
+    const jwt=session?.access_token;
+    if(!jwt){toast('Токен истёк, перелогинься','err','Auth');return}
+    // Передаём поля шаблона как «справочник» — AI должен вернуть только валидные ключи.
+    const fields=(tpl.fields||[]).map(f=>({
+      key:f.key,
+      label:f.label,
+      type:f.type||'text',
+      autofill:f.autofill||null,
+    }));
+    const res=await fetch('/api/docgen/extract',{
+      method:'POST',
+      headers:{'content-type':'application/json','authorization':'Bearer '+jwt},
+      body:JSON.stringify({text,model,template_id:tpl.id,template_label:tpl.label,fields}),
+    });
+    const body=await res.json().catch(()=>({}));
+    if(!res.ok||!body.ok){
+      const detail=body.detail||body.error||('HTTP '+res.status);
+      status.textContent='Ошибка';
+      toast('AI не смог: '+detail,'err','AI');
+      return;
+    }
+    const values=body.values||{};
+    const missing=Array.isArray(body.missing)?body.missing:[];
+    let filled=0;
+    Object.entries(values).forEach(([k,v])=>{
+      if(v==null||v==='')return;
+      // Принимаем как с фигурными скобками, так и без — AI иногда забывает обёртку.
+      const key=String(k).startsWith('{')?String(k):'{'+String(k).replace(/[{}]/g,'')+'}';
+      const f=(tpl.fields||[]).find(x=>x.key===key);
+      if(!f)return;  // ключ не из шаблона — игнорим
+      dgState.values[key]=String(v);
+      dgState.touched.add(key);
+      const el=document.getElementById(dgKeyId(key));
+      if(el)el.value=String(v);
+      filled++;
+    });
+    status.textContent=`Заполнено ${filled} полей`+(missing.length?` · ${missing.length} уточнить`:'');
+    if(missing.length&&qWrap){
+      qWrap.style.display='block';
+      qWrap.innerHTML='<div style="font-size:.7rem;color:var(--ink-m);margin-bottom:.3rem">AI просит уточнить:</div>'+
+        missing.map((m,i)=>{
+          const key=String(m.key||'').startsWith('{')?m.key:'{'+String(m.key||'').replace(/[{}]/g,'')+'}';
+          const id='dg-ai-q-'+i;
+          return `<div class="form-group" style="margin-bottom:.4rem">
+            <label class="form-label" style="font-size:.7rem">${esc(m.question||m.label||key)}<span style="color:var(--ink-d);font-weight:400;margin-left:.4rem">${esc(key)}</span></label>
+            <input class="form-input" type="text" id="${id}" data-key="${esc(key)}" oninput="dgAiAnswer(this)">
+          </div>`;
+        }).join('');
+    }
+    dgRender();
+  }catch(e){
+    console.error('dgAiFill failed',e);
+    status.textContent='Ошибка';
+    toast('AI: '+(e?.message||e),'err','AI');
+  }finally{
+    btn.disabled=false;
+  }
+}
+
+// При вводе в уточняющий вопрос — заполняем dgState и обновляем основной input + превью.
+function dgAiAnswer(inp){
+  const key=inp.dataset.key;if(!key)return;
+  const v=String(inp.value||'').trim();
+  dgState.values[key]=v;
+  dgState.touched.add(key);
+  const el=document.getElementById(dgKeyId(key));
+  if(el)el.value=v;
+  dgRender();
+}
+
 function dgSubstitute(body){
   const tpl=dgGetTpl(dgState.tplId);if(!tpl)return body;
   let out=body;
@@ -2341,11 +2446,34 @@ function cwToggle(){
   }
 }
 function cwTimeFmt(ts){const d=new Date(ts);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+// Phase 5e: распознать «сделай договор / сгенерируй договор» в исходящем сообщении
+// и предложить кнопку «Открыть генератор и заполнить через AI».
+const CW_DOCGEN_RX=/\b(сдела(й|ть)|сгенери|оформ(и|ить)|нужен|подготов(ь|ить)|состав(ь|ить))[^.\n]{0,40}\b(догов|контракт|соглашени|акт)/i;
+function cwLooksLikeDocGen(text){return!!text&&CW_DOCGEN_RX.test(text)}
 function cwMsgHtml(m){
   const cls=m.direction==='out'?'out':(m.direction==='ai'?'ai':'in');
   const modelTag=m.direction==='ai'&&m.model?`<div class="md-model">🤖 ${esc(m.model)}</div>`:'';
   const body=m.direction==='ai'?cwRenderMarkdown(m.text||''):esc(m.text||'');
-  return `<div class="cw-msg ${cls}">${modelTag}${body}<div class="ts">${cwTimeFmt(m.created_at)}</div></div>`;
+  // На исходящих сообщениях про договор — показать quick-action кнопку
+  let docGenBtn='';
+  if(m.direction==='out'&&cwLooksLikeDocGen(m.text||'')){
+    const safe=encodeURIComponent(m.text||'');
+    docGenBtn=`<button class="btn btn-s" style="margin-top:.4rem;font-size:.65rem" onclick="cwOpenDocGenWithText('${safe}')">🪄 Открыть генератор и заполнить через AI</button>`;
+  }
+  return `<div class="cw-msg ${cls}">${modelTag}${body}${docGenBtn}<div class="ts">${cwTimeFmt(m.created_at)}</div></div>`;
+}
+// Открыть модалку генератора, перенести текст из чата в textarea AI-fill,
+// дёрнуть автозаполнение чтобы сразу извлечь поля.
+async function cwOpenDocGenWithText(safe){
+  const text=decodeURIComponent(safe||'');
+  if(!text)return;
+  await openDocGen({});
+  const ta=document.getElementById('dg-ai-input');
+  if(ta)ta.value=text;
+  // Дать модалке отрисоваться, потом запустить AI
+  setTimeout(()=>{
+    if(typeof dgAiFill==='function')dgAiFill();
+  },200);
 }
 function cwRender(){
   const h=document.getElementById('cw-history');if(!h)return;
