@@ -470,6 +470,186 @@ ${text}
   return json({ ok: true, values: cleanValues, missing: cleanMissing, model: ai.model, usage: ai.usage });
 }
 
+// =========================================================================
+// /api/docgen/chat — Phase 5f+5g: ОДНА ручка для чата.
+// Принимает свободный текст → AI выбирает шаблон из templates_index.json
+// → AI извлекает значения полей → отдаёт всё клиенту, тот рендерит DOCX.
+// =========================================================================
+
+const DOCGEN_CLASSIFY_SYSTEM = `Ты — классификатор юридических шаблонов договоров для российского кинопроизводства.
+
+Тебе дают:
+1. Описание договора пользователем (свободный русский текст).
+2. Список доступных шаблонов: каждый имеет id, label, role_group ("Звукоцех", "Операторский цех", и т.п.), tax_form ("ИП"/"ФЛ"/"СЗ"/"ЮЛ"/"ИП+ФЛ"/"?").
+
+Твоя задача — выбрать ОДИН наиболее подходящий шаблон.
+
+Верни СТРОГО JSON (без markdown):
+{
+  "template_id": "id_шаблона",
+  "confidence": 0.85,
+  "alternatives": [
+    { "template_id": "alt_1", "label": "alt label" },
+    { "template_id": "alt_2", "label": "alt label" }
+  ],
+  "reason": "короткое объяснение почему именно этот шаблон"
+}
+
+ПРАВИЛА:
+- "confidence" — твоя оценка от 0 до 1 насколько ты уверен. Если < 0.6 — обязательно дай alternatives с 2-3 вариантами.
+- Сначала определи РОЛЬ исполнителя (звукорежиссёр, оператор, актёр, гафер, …) → это указывает на role_group + конкретный шаблон.
+- Затем определи НАЛОГОВУЮ ФОРМУ: ИП (есть ОГРНИП/ИНН ИП), Самозанятый/СЗ (упоминается НПД), ФЛ (есть паспорт без ИП), ЮЛ (договор с компанией). Если форма не указана — используй "ФЛ" как дефолт.
+- Если role_group ясен но конкретный шаблон неоднозначен — используй alternatives.
+- НИКАКОГО текста кроме JSON.`;
+
+async function loadTemplatesIndex(request, env) {
+  if (!env.ASSETS || !env.ASSETS.fetch) return null;
+  const u = new URL('/contracts/templates_index.json', request.url);
+  const res = await env.ASSETS.fetch(new Request(u.toString()));
+  if (!res.ok) return null;
+  return await res.json().catch(() => null);
+}
+
+async function handleDocgenChat(request, env) {
+  if (request.method !== 'POST') return methodNotAllowed();
+  const auth = request.headers.get('authorization') || '';
+  const jwt = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7) : null;
+  if (!jwt) return json({ ok: false, error: 'unauthorized' }, 401);
+
+  const user = await sbGetUser(env, jwt);
+  if (!user?.id) return json({ ok: false, error: 'unauthorized' }, 401);
+
+  let body;
+  try { body = await request.json(); } catch { return json({ ok: false, error: 'bad_json' }, 400); }
+  const text = String(body?.text || '').trim();
+  if (!text) return json({ ok: false, error: 'empty_text' }, 400);
+  if (text.length > 6000) return json({ ok: false, error: 'text_too_long' }, 400);
+  const model = ALLOWED_MODELS.has(body?.model) ? body.model : DEFAULT_DOCGEN_MODEL;
+  // Опциональное принудительное закрепление шаблона (если пользователь уточнил какой именно)
+  const forceTemplateId = body?.template_id ? String(body.template_id).slice(0, 80) : null;
+
+  // 1) Загружаем индекс шаблонов из ASSETS
+  const idx = await loadTemplatesIndex(request, env);
+  if (!idx || !Array.isArray(idx.templates)) {
+    return json({ ok: false, error: 'templates_index_missing' }, 500);
+  }
+  const tplById = new Map(idx.templates.map((t) => [t.id, t]));
+
+  let chosen = null;
+  let classify = null;
+
+  if (forceTemplateId && tplById.has(forceTemplateId)) {
+    chosen = tplById.get(forceTemplateId);
+    classify = { template_id: forceTemplateId, confidence: 1, alternatives: [], reason: 'forced by client' };
+  } else {
+    // 2) Шаг классификации — отдаём AI компактный список (id + label + role_group + tax_form)
+    const tplCompact = idx.templates.map((t) => ({
+      id: t.id,
+      label: t.label,
+      role_group: t.role_group || null,
+      tax_form: t.tax_form || null,
+    }));
+    const classifyMsg = `СПИСОК ШАБЛОНОВ:
+${JSON.stringify(tplCompact, null, 0)}
+
+ОПИСАНИЕ ДОГОВОРА:
+${text}
+
+Выбери template_id.`;
+    const ai1 = await openrouterChat(env, model, [
+      { role: 'system', content: DOCGEN_CLASSIFY_SYSTEM },
+      { role: 'user', content: classifyMsg },
+    ]);
+    if (!ai1.ok) return json({ ok: false, error: 'classify_failed', detail: ai1.error }, 502);
+    classify = tryParseDocgenJson(ai1.text);
+    if (!classify || !classify.template_id) {
+      return json({ ok: false, error: 'classify_bad_json', detail: (ai1.text || '').slice(0, 300) }, 502);
+    }
+    chosen = tplById.get(classify.template_id);
+    if (!chosen) {
+      return json({ ok: false, error: 'classify_unknown_template', detail: classify.template_id }, 502);
+    }
+  }
+
+  // 3) Если confidence низкая — отдаём пользователю на выбор, БЕЗ извлечения значений
+  const confidence = typeof classify.confidence === 'number' ? classify.confidence : 1;
+  if (!forceTemplateId && confidence < 0.6) {
+    const alts = Array.isArray(classify.alternatives) ? classify.alternatives.slice(0, 4) : [];
+    // Гарантируем что в альтернативах есть сам chosen
+    const altIds = new Set(alts.map((a) => a.template_id));
+    if (!altIds.has(chosen.id)) {
+      alts.unshift({ template_id: chosen.id, label: chosen.label });
+    }
+    const altsResolved = alts
+      .map((a) => tplById.get(a.template_id))
+      .filter(Boolean)
+      .slice(0, 4)
+      .map((t) => ({ id: t.id, label: t.label, role_group: t.role_group, tax_form: t.tax_form }));
+    return json({
+      ok: true,
+      stage: 'pick_template',
+      reason: classify.reason || '',
+      confidence,
+      alternatives: altsResolved,
+    });
+  }
+
+  // 4) Шаг извлечения значений — переиспользуем DOCGEN_SYSTEM
+  const fieldsCompact = (chosen.fields || []).map((f) => ({
+    key: String(f.key || ''),
+    label: String(f.label || '').slice(0, 200),
+    type: String(f.type || 'text'),
+    autofill: f.autofill ? String(f.autofill).slice(0, 60) : null,
+  }));
+  const extractMsg = `ШАБЛОН: ${chosen.label} (id=${chosen.id})
+
+ПОЛЯ ШАБЛОНА:
+${JSON.stringify(fieldsCompact, null, 0)}
+
+ОПИСАНИЕ ДОГОВОРА:
+${text}
+
+Верни JSON с values и missing.`;
+  const ai2 = await openrouterChat(env, model, [
+    { role: 'system', content: DOCGEN_SYSTEM },
+    { role: 'user', content: extractMsg },
+  ]);
+  if (!ai2.ok) return json({ ok: false, error: 'extract_failed', detail: ai2.error }, 502);
+  const parsed = tryParseDocgenJson(ai2.text);
+  if (!parsed) {
+    return json({ ok: false, error: 'extract_bad_json', detail: (ai2.text || '').slice(0, 300) }, 502);
+  }
+  const values = parsed.values && typeof parsed.values === 'object' ? parsed.values : {};
+  const missing = Array.isArray(parsed.missing) ? parsed.missing.slice(0, 10) : [];
+  const fieldKeys = new Set(fieldsCompact.map((f) => f.key));
+  const cleanValues = {};
+  for (const [k, v] of Object.entries(values)) {
+    const key = String(k).startsWith('{') ? String(k) : '{' + String(k).replace(/[{}]/g, '') + '}';
+    if (!fieldKeys.has(key)) continue;
+    if (v == null || v === '') continue;
+    cleanValues[key] = String(v).slice(0, 1000);
+  }
+  const cleanMissing = missing
+    .filter((m) => m && m.key)
+    .map((m) => ({
+      key: String(m.key).startsWith('{') ? String(m.key) : '{' + String(m.key).replace(/[{}]/g, '') + '}',
+      label: String(m.label || '').slice(0, 200),
+      question: String(m.question || m.label || '').slice(0, 300),
+    }))
+    .filter((m) => fieldKeys.has(m.key) && !cleanValues[m.key]);
+
+  return json({
+    ok: true,
+    stage: 'filled',
+    template: { id: chosen.id, label: chosen.label, file: chosen.file, role_group: chosen.role_group, tax_form: chosen.tax_form },
+    confidence,
+    reason: classify.reason || '',
+    values: cleanValues,
+    missing: cleanMissing,
+    model: ai2.model,
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -479,6 +659,7 @@ export default {
     if (path === '/api/chat/send') return handleChatSend(request, env);
     if (path === '/api/chat/ai') return handleChatAi(request, env);
     if (path === '/api/docgen/extract') return handleDocgenExtract(request, env);
+    if (path === '/api/docgen/chat') return handleDocgenChat(request, env);
     if (path === '/api/tg/webhook') return handleTgWebhook(request, env);
 
     // Fallback — статика

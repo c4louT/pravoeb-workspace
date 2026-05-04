@@ -1823,16 +1823,18 @@ function dgDocxToText(arrBuf){
   s=s.replace(/\n{3,}/g,'\n\n').replace(/[ \t]+\n/g,'\n');
   return s.trim();
 }
-// Подставляет значения в .docx через docxtemplater и возвращает Blob готового файла
-function dgRenderDocxBlob(arrBuf,tpl){
+// Подставляет значения в .docx через docxtemplater и возвращает Blob готового файла.
+// valuesMap опционален; если не передан — берёт из dgState (для совместимости с модалкой).
+function dgRenderDocxBlob(arrBuf,tpl,valuesMap){
   if(typeof window.docxtemplater==='undefined'&&typeof window.Docxtemplater==='undefined')throw new Error('Docxtemplater не загрузился (CDN недоступен?)');
   const Docx=window.docxtemplater||window.Docxtemplater;
   const zip=new PizZip(arrBuf);
+  const src=valuesMap||(dgState&&dgState.values)||{};
   // Собираем словарь значений: ключи без фигурных скобок
   const data={};
   (tpl.fields||[]).forEach(f=>{
     const stripped=String(f.key).replace(/^\{/,'').replace(/\}$/,'');
-    let v=dgState.values[f.key];
+    let v=src[f.key];
     if(v==null||v==='')v=f.default??'';
     if(v&&f.type==='date')v=dgFmtRuDate(String(v));
     // Если поле не заполнено — оставляем сам ключ в фигурных скобках (видно в Word'е что заполнить)
@@ -2459,32 +2461,129 @@ function cwTimeFmt(ts){const d=new Date(ts);return String(d.getHours()).padStart
 // поэтому используем явные группы границ из пробелов/пунктуации/начала-конца строки.
 const CW_DOCGEN_RX=/(^|[\s.,;:!?()«»"'])(?:сдела(?:й|ть|ем|ете)?|сгенери[а-яё]*|оформ(?:и|ить|ляешь|ляем)?|нужен|нужно|подготов(?:ь|ить|им)?|состав(?:ь|ить|им)?)[\s\S]{0,60}?(?:догов[а-яё]*|контракт[а-яё]*|соглашени[а-яё]*|акт[а-яё]*)(?![а-яёА-ЯЁ])/i;
 function cwLooksLikeDocGen(text){return!!text&&CW_DOCGEN_RX.test(text)}
+// Phase 5g: хранилище payload'ов docgen-карточек по id сообщения.
+// Не персистим в БД — карточки live только пока открыта вкладка.
+const cwDocGenStore=new Map();
 function cwMsgHtml(m){
+  if(m.direction==='docgen'){
+    const p=cwDocGenStore.get(m.id);
+    return `<div class="cw-msg ai">${cwDocGenCardHtml(m.id,p)}<div class="ts">${cwTimeFmt(m.created_at)}</div></div>`;
+  }
   const cls=m.direction==='out'?'out':(m.direction==='ai'?'ai':'in');
   const modelTag=m.direction==='ai'&&m.model?`<div class="md-model">🤖 ${esc(m.model)}</div>`:'';
   const body=m.direction==='ai'?cwRenderMarkdown(m.text||''):esc(m.text||'');
-  // На исходящих сообщениях про договор — показать quick-action кнопку
-  let docGenBtn='';
-  if(m.direction==='out'&&cwLooksLikeDocGen(m.text||'')){
-    // encodeURIComponent НЕ экранирует ' ( ) ! ~ * — поэтому добавляем %27 для одинарных
-    // кавычек (которые ломают onclick-атрибут и потенциально дают XSS).
-    const safe=encodeURIComponent(m.text||'').replace(/'/g,'%27');
-    docGenBtn=`<button class="btn btn-s" style="margin-top:.4rem;font-size:.65rem" onclick="cwOpenDocGenWithText('${safe}')">🪄 Открыть генератор и заполнить через AI</button>`;
-  }
-  return `<div class="cw-msg ${cls}">${modelTag}${body}${docGenBtn}<div class="ts">${cwTimeFmt(m.created_at)}</div></div>`;
+  return `<div class="cw-msg ${cls}">${modelTag}${body}<div class="ts">${cwTimeFmt(m.created_at)}</div></div>`;
 }
-// Открыть модалку генератора, перенести текст из чата в textarea AI-fill,
-// дёрнуть автозаполнение чтобы сразу извлечь поля.
-async function cwOpenDocGenWithText(safe){
-  const text=decodeURIComponent(safe||'');
-  if(!text)return;
-  await openDocGen({});
-  const ta=document.getElementById('dg-ai-input');
-  if(ta)ta.value=text;
-  // Дать модалке отрисоваться, потом запустить AI
+// Карточка-результат docgen: либо «выбери шаблон» (низкая confidence),
+// либо «N полей заполнено + missing-вопросы + кнопки Скачать DOCX / Открыть в редакторе».
+function cwDocGenCardHtml(msgId,p){
+  if(!p)return '<em>Карточка договора не загрузилась</em>';
+  if(p.stage==='pick_template'){
+    const opts=(p.alternatives||[]).map((t,i)=>`<button class="btn btn-s" type="button" style="margin:.15rem .2rem .15rem 0;font-size:.65rem" onclick="cwDocGenPick('${esc(msgId)}',${i})">${esc(t.label)}${t.tax_form&&t.tax_form!=='?'?` · ${esc(t.tax_form)}`:''}</button>`).join('');
+    return `<div class="md-model">🤖 docgen · уточнение</div>
+<p style="margin:.2rem 0 .4rem">Не понял точно какой шаблон нужен${p.reason?` (${esc(p.reason)})`:''}. Выбери:</p>
+${opts}`;
+  }
+  // stage==='filled'
+  const t=p.template||{};
+  const filled=Object.keys(p.values||{}).length;
+  const missing=Array.isArray(p.missing)?p.missing:[];
+  const conf=typeof p.confidence==='number'?Math.round(p.confidence*100):null;
+  const missingHtml=missing.length?
+    '<div style="margin-top:.4rem"><div style="font-size:.7rem;color:var(--ink-m);margin-bottom:.25rem">AI просит уточнить:</div>'+
+    missing.map((m,i)=>`<div style="margin-bottom:.3rem"><label style="font-size:.65rem;color:var(--ink-m);display:block;margin-bottom:.1rem">${esc(m.question||m.label||m.key)}</label><input class="form-input" type="text" data-key="${esc(m.key)}" oninput="cwDocGenAnswer('${esc(msgId)}',this)" style="font-size:.7rem;padding:.3rem .5rem"></div>`).join('')+
+    '</div>':'';
+  return `<div class="md-model">🤖 docgen${p.model?` · ${esc(p.model)}`:''}${conf!=null?` · ${conf}%`:''}</div>
+<div style="margin:.2rem 0 .35rem"><strong>${esc(t.label||t.id||'?')}</strong>${t.tax_form&&t.tax_form!=='?'?` · ${esc(t.tax_form)}`:''}</div>
+<div style="font-size:.7rem;color:var(--ink-m)">Заполнено ${filled} ${pluralize(filled,'поле','поля','полей')}${missing.length?` · ${missing.length} ${pluralize(missing.length,'уточнить','уточнить','уточнить')}`:''}</div>
+${missingHtml}
+<div style="margin-top:.45rem;display:flex;gap:.3rem;flex-wrap:wrap">
+  <button class="btn btn-s btn-p" type="button" style="font-size:.65rem" onclick="cwDocGenDownload('${esc(msgId)}')">⬇ Скачать DOCX</button>
+  <button class="btn btn-s" type="button" style="font-size:.65rem" onclick="cwDocGenOpenEditor('${esc(msgId)}')">📂 Открыть в редакторе</button>
+</div>`;
+}
+function pluralize(n,one,few,many){
+  const a=Math.abs(n)%100,b=a%10;
+  if(a>10&&a<20)return many;
+  if(b>1&&b<5)return few;
+  if(b===1)return one;
+  return many;
+}
+// Юзер вводит ответ на missing-вопрос → обновляем payload в сторе.
+function cwDocGenAnswer(msgId,inp){
+  const p=cwDocGenStore.get(msgId);if(!p)return;
+  const k=inp.dataset.key;if(!k)return;
+  p.values=p.values||{};
+  const v=String(inp.value||'').trim();
+  if(v)p.values[k]=v;else delete p.values[k];
+}
+// Юзер кликнул на альтернативный шаблон в pick_template-карточке.
+async function cwDocGenPick(msgId,altIdx){
+  const p=cwDocGenStore.get(msgId);if(!p)return;
+  const alt=(p.alternatives||[])[altIdx];if(!alt)return;
+  const sourceText=p.sourceText||'';
+  // Сервер возвращает alternatives со свойством id (не template_id) — берём его.
+  await cwSendDocGenRetry(sourceText,alt.id,msgId);
+}
+// Скачивание DOCX: грузим .docx-шаблон, прогоняем через docxtemplater, отдаём файл.
+async function cwDocGenDownload(msgId){
+  const p=cwDocGenStore.get(msgId);if(!p||!p.template)return;
+  try{
+    await dgEnsureIndex();
+    const tpl=dgGetTpl(p.template.id);
+    if(!tpl){toast('Шаблон не найден в индексе','err','docgen');return}
+    const url='contracts/templates_docx/'+encodeURIComponent(tpl.file||(tpl.id+'.docx'));
+    const r=await fetch(url);
+    if(!r.ok)throw new Error('HTTP '+r.status+' при загрузке '+url);
+    const buf=await r.arrayBuffer();
+    const blob=dgRenderDocxBlob(buf,tpl,p.values||{});
+    // Имя файла: filename_template шаблона + Фамилия из значений (если есть).
+    const lastName=cwGuessLastName(p.values||{})||'без_фамилии';
+    const ym=new Date().toISOString().slice(0,7);
+    const fname=(tpl.filename_template||('Договор_'+tpl.id+'_{lastName}_{yearMonth}'))
+      .replace('{lastName}',lastName).replace('{yearMonth}',ym).replace(/[\/\\:*?"<>|]/g,'_')+'.docx';
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download=fname;
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+    toast('Готово: '+fname,'ok','docgen');
+  }catch(e){
+    console.error('cwDocGenDownload failed',e);
+    toast('Не получилось: '+(e?.message||e),'err','docgen');
+  }
+}
+function cwGuessLastName(values){
+  // Пытаемся вытащить фамилию из {contractor_name} / {fio} / любого ключа с "name".
+  const candidates=['{contractor_name}','{fio}','{performer_name}','{actor_name}','{director_name}'];
+  for(const k of candidates){const v=values[k];if(v){return String(v).trim().split(/\s+/)[0]}}
+  for(const [k,v] of Object.entries(values)){
+    if(/name|fio|\u0444\u0438\u043e/i.test(k)&&v)return String(v).trim().split(/\s+/)[0];
+  }
+  return null;
+}
+// Открыть модалку «+ Сгенерировать» с шаблоном и предзаполненными значениями.
+async function cwDocGenOpenEditor(msgId){
+  const p=cwDocGenStore.get(msgId);if(!p||!p.template)return;
+  await openDocGen({tplId:p.template.id});
+  // openDocGen сбрасывает dgState.values — заливаем после открытия
   setTimeout(()=>{
-    if(typeof dgAiFill==='function')dgAiFill();
-  },200);
+    const tpl=dgGetTpl(p.template.id);
+    if(!tpl)return;
+    Object.entries(p.values||{}).forEach(([k,v])=>{
+      const f=(tpl.fields||[]).find(x=>x.key===k);
+      if(!f)return;
+      let val=String(v);
+      if(f.type==='date'){
+        const ru=val.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/);
+        if(ru)val=`${ru[3]}-${String(ru[2]).padStart(2,'0')}-${String(ru[1]).padStart(2,'0')}`;
+      }
+      dgState.values[k]=val;
+      dgState.touched.add(k);
+      const el=document.getElementById(dgKeyId(k));
+      if(el)el.value=val;
+    });
+    if(typeof dgRender==='function')dgRender();
+  },150);
 }
 function cwRender(){
   const h=document.getElementById('cw-history');if(!h)return;
@@ -2522,6 +2621,72 @@ function cwSubscribe(){
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages',filter:`user_id=eq.${U.id}`},(payload)=>cwAppend(payload.new))
     .subscribe();
 }
+// Phase 5g: отправить запрос в /api/docgen/chat и вставить локальные псевдо-сообщения
+// (out для текста юзера + docgen для AI-карточки). В БД ничего не пишем — карточки live на сессию.
+// opts.isRetry=true — повтор из pick_template flow, не добавляем дубль исходящего сообщения.
+// opts.savedText/opts.ta — позволяют восстановить ввод юзера при ошибке (как в обычном AI-flow).
+async function cwSendDocGen(text,jwt,opts){
+  opts=opts||{};
+  const restoreInput=()=>{
+    if(opts.ta&&opts.savedText!=null&&!opts.ta.value)opts.ta.value=opts.savedText;
+  };
+  // 1) Локальное 'out' (при retry из pick_template пропускаем — оригинальное уже в истории)
+  const now=new Date().toISOString();
+  if(!opts.isRetry){
+    const userRow={id:'cwd-out-'+Date.now(),direction:'out',text,created_at:now};
+    cwAppend(userRow);
+  }
+  cwAiWaiting=true;cwRender();
+  try{
+    const res=await fetch('/api/docgen/chat',{
+      method:'POST',
+      headers:{'content-type':'application/json','authorization':'Bearer '+jwt},
+      body:JSON.stringify({text,model:cwModel,template_id:opts.forceTemplateId||null}),
+    });
+    const body=await res.json().catch(()=>({}));
+    cwAiWaiting=false;
+    if(!res.ok||!body.ok){
+      const err=body.detail||body.error||('HTTP '+res.status);
+      cwRender();
+      restoreInput();
+      toast('docgen: '+err,'err','Чат');
+      return;
+    }
+    // 2) Локальная карточка docgen
+    const cardId='cwd-card-'+Date.now();
+    const payload={
+      stage:body.stage,
+      template:body.template||null,
+      values:body.values||{},
+      missing:body.missing||[],
+      alternatives:body.alternatives||[],
+      reason:body.reason||'',
+      confidence:body.confidence,
+      model:body.model||cwModel,
+      sourceText:text,
+    };
+    cwDocGenStore.set(cardId,payload);
+    cwAppend({id:cardId,direction:'docgen',created_at:new Date().toISOString()});
+  }catch(e){
+    cwAiWaiting=false;cwRender();
+    restoreInput();
+    console.error('cwSendDocGen failed',e);
+    toast('docgen: '+(e?.message||e),'err','Чат');
+  }
+}
+// Повтор docgen с принудительным template_id (когда юзер выбрал альтернативу).
+async function cwSendDocGenRetry(text,templateId,replaceMsgId){
+  const{data:{session}}=await sb.auth.getSession();
+  const jwt=session?.access_token;
+  if(!jwt){toast('Токен истёк','err','Auth');return}
+  // Удаляем старую pick-template карточку, чтобы не висела рядом
+  if(replaceMsgId){
+    cwHistory=cwHistory.filter(m=>m.id!==replaceMsgId);
+    cwDocGenStore.delete(replaceMsgId);
+    cwRender();
+  }
+  await cwSendDocGen(text,jwt,{forceTemplateId:templateId,isRetry:true});
+}
 async function cwSend(){
   const ta=document.getElementById('cw-text');const btn=document.getElementById('cw-send');
   const text=(ta?.value||'').trim();
@@ -2536,6 +2701,11 @@ async function cwSend(){
     if(cwMode==='ai'){
       const savedText=text;
       ta.value='';
+      // Phase 5g: интент «договор» → отдельный flow в /api/docgen/chat без записи в БД
+      if(cwLooksLikeDocGen(text)){
+        await cwSendDocGen(text,jwt,{ta,savedText});
+        return;
+      }
       cwAiWaiting=true;cwRender();
       let res,body;
       try{
@@ -2592,6 +2762,8 @@ function cwKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();cwSend()}}
 function cwShow(on){const r=document.getElementById('cw-root');if(r)r.style.display=on?'block':'none'}
 function cwTeardown(){
   cwShow(false);cwOpen=false;cwHistory=[];profile=null;profileAvailable=true;cwUnreadCnt=0;cwAiWaiting=false;
+  // Phase 5g: чистим стор docgen-карточек при логауте — в payload могут быть имена/ИНН/паспорта.
+  cwDocGenStore.clear();
   const p=document.getElementById('cw-panel');if(p)p.classList.remove('on');
   const d=document.getElementById('cw-dot');if(d)d.classList.remove('on');
   if(cwChannel){try{sb.removeChannel(cwChannel)}catch(_){}cwChannel=null}
