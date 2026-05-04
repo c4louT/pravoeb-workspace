@@ -1097,7 +1097,7 @@ function showMigrationBanner(){
   if(document.getElementById('mig-banner'))return;
   const div=document.createElement('div');
   div.id='mig-banner';
-  div.style.cssText='background:rgba(212,168,83,.12);border:1px solid var(--amber);padding:.9rem 1.2rem;margin:0 0 1.5rem;border-radius:2px;font-family:JetBrains Mono,monospace;font-size:.78rem;color:var(--ink);line-height:1.5';
+  div.style.cssText='background:var(--amber-soft);border:1px solid var(--amber);padding:.9rem 1.2rem;margin:0 0 1.5rem;border-radius:10px;font-size:13px;color:var(--ink);line-height:1.5';
   div.innerHTML='⚠ <b>Нужна SQL-миграция</b> для контрагентов и чеклистов. Открой Supabase → SQL Editor → запусти содержимое <code>migrations/2026-04-26_contacts_checklists.sql</code> из репозитория. После этого обнови страницу.';
   const main=document.querySelector('main');
   if(main)main.insertBefore(div,main.firstChild);
@@ -1394,7 +1394,7 @@ function rDonut(){
   const cols={signed:'var(--green)',pending:'var(--amber)',missing:'var(--red)',draft:'var(--ink-m)'};
   const circ=2*Math.PI*60;let off=0;
   const segs=['signed','pending','missing','draft'].filter(k=>cnt[k]>0).map(k=>{const f=cnt[k]/total;const seg=`<circle r="60" cx="80" cy="80" fill="transparent" stroke="${cols[k]}" stroke-width="20" stroke-dasharray="${f*circ} ${circ}" stroke-dashoffset="${-off}" transform="rotate(-90 80 80)"/>`;off+=f*circ;return seg;}).join('');
-  document.getElementById('donut-chart').innerHTML=`<svg width="160" height="160" viewBox="0 0 160 160"><circle r="60" cx="80" cy="80" fill="transparent" stroke="var(--brd)" stroke-width="20"/>${segs}<text x="80" y="82" text-anchor="middle" fill="var(--ink)" font-family="Instrument Serif" font-size="28" font-style="italic">${total}</text><text x="80" y="100" text-anchor="middle" fill="var(--ink-m)" font-family="JetBrains Mono" font-size="9" letter-spacing="1">ДОГОВОРОВ</text></svg><div class="dl">${['signed','pending','missing','draft'].filter(k=>cnt[k]>0).map(k=>`<div class="li"><span class="ld" style="background:${cols[k]}"></span><span>${SL[k]}</span><span style="color:var(--ink-m);margin-left:auto;padding-left:2rem">${cnt[k]} · ${Math.round(cnt[k]/total*100)}%</span></div>`).join('')}</div>`;
+  document.getElementById('donut-chart').innerHTML=`<svg width="160" height="160" viewBox="0 0 160 160"><circle r="60" cx="80" cy="80" fill="transparent" stroke="var(--brd)" stroke-width="20"/>${segs}<text x="80" y="86" text-anchor="middle" fill="var(--ink)" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="30" font-weight="700" letter-spacing="-1">${total}</text><text x="80" y="104" text-anchor="middle" fill="var(--ink-m)" font-family="-apple-system,BlinkMacSystemFont,Inter,sans-serif" font-size="9" font-weight="500" letter-spacing="1">ДОГОВОРОВ</text></svg><div class="dl">${['signed','pending','missing','draft'].filter(k=>cnt[k]>0).map(k=>`<div class="li"><span class="ld" style="background:${cols[k]}"></span><span>${SL[k]}</span><span style="color:var(--ink-m);margin-left:auto;padding-left:2rem">${cnt[k]} · ${Math.round(cnt[k]/total*100)}%</span></div>`).join('')}</div>`;
 }
 
 function rProjects(){
@@ -1628,7 +1628,7 @@ function rCalWeek(tgt){
     const day=new Date(start);day.setDate(start.getDate()+i);
     const isToday=sameDay(day,today);
     const dayEv=eventsOnDay(ev,day);
-    const evHTML=dayEv.length?dayEv.map(e=>`<div class="cal-wd-ev e-${e.type}" title="${esc(e.meta||'')}">${esc(e.title)}</div>`).join(''):'<div style="color:var(--ink-d);font-family:JetBrains Mono,monospace;font-size:.7rem">—</div>';
+    const evHTML=dayEv.length?dayEv.map(e=>`<div class="cal-wd-ev e-${e.type}" title="${esc(e.meta||'')}">${esc(e.title)}</div>`).join(''):'<div style="color:var(--ink-d);font-size:12px">—</div>';
     html+=`<div class="cal-wd${isToday?' cal-today':''}" data-d="${esc(isoDate(day))}"><div class="cal-wd-h">${dows[i]} · ${day.getDate()}.${String(day.getMonth()+1).padStart(2,'0')}</div>${evHTML}</div>`;
   }
   html+='</div>';
@@ -1663,7 +1663,7 @@ function openDayModal(dIso){
   document.getElementById('dm-title').textContent=day.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
   document.getElementById('dm-sub').textContent=items.length?`${items.length} соб.`:'нет событий';
   const body=document.getElementById('dm-body');
-  if(!items.length){body.innerHTML='<div style="color:var(--ink-m);font-family:JetBrains Mono,monospace;font-size:.78rem;padding:1rem 0">В этот день ничего не запланировано.</div>'}
+  if(!items.length){body.innerHTML='<div style="color:var(--ink-m);font-size:13px;padding:1rem 0">В этот день ничего не запланировано.</div>'}
   else{body.innerHTML=items.map(e=>{
     let act='';
     if(e.ref?.kind==='project')act=`<button class="btn btn-s" onclick="closeM('dm');document.querySelector('.nav-tab[data-tab=projects]').click();">К проекту →</button>`;
