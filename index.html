@@ -2522,8 +2522,8 @@ async function cwDocGenPick(msgId,altIdx){
   const p=cwDocGenStore.get(msgId);if(!p)return;
   const alt=(p.alternatives||[])[altIdx];if(!alt)return;
   const sourceText=p.sourceText||'';
-  // Запускаем повторный заход с принудительным template_id
-  await cwSendDocGenRetry(sourceText,alt.template_id,msgId);
+  // Сервер возвращает alternatives со свойством id (не template_id) — берём его.
+  await cwSendDocGenRetry(sourceText,alt.id,msgId);
 }
 // Скачивание DOCX: грузим .docx-шаблон, прогоняем через docxtemplater, отдаём файл.
 async function cwDocGenDownload(msgId){
@@ -2753,6 +2753,8 @@ function cwKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();cwSend()}}
 function cwShow(on){const r=document.getElementById('cw-root');if(r)r.style.display=on?'block':'none'}
 function cwTeardown(){
   cwShow(false);cwOpen=false;cwHistory=[];profile=null;profileAvailable=true;cwUnreadCnt=0;cwAiWaiting=false;
+  // Phase 5g: чистим стор docgen-карточек при логауте — в payload могут быть имена/ИНН/паспорта.
+  cwDocGenStore.clear();
   const p=document.getElementById('cw-panel');if(p)p.classList.remove('on');
   const d=document.getElementById('cw-dot');if(d)d.classList.remove('on');
   if(cwChannel){try{sb.removeChannel(cwChannel)}catch(_){}cwChannel=null}
