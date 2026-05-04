@@ -127,6 +127,10 @@ button,input,textarea,select{font:inherit;color:inherit}
 .tb-search::before{content:'⌕';position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--ink-m);font-size:14px;pointer-events:none}
 .theme-tg{padding:0;border:none;border-radius:50%;background:var(--bg-hover);cursor:pointer;display:grid;place-items:center;width:32px;height:32px;color:var(--ink);font-size:15px;transition:filter .15s;flex-shrink:0}
 .theme-tg:hover{filter:brightness(.94)}
+.side-burger{display:none;padding:0;border:none;border-radius:8px;background:var(--bg-hover);cursor:pointer;width:32px;height:32px;color:var(--ink);font-size:16px;flex-shrink:0;place-items:center}
+.side-burger:hover{filter:brightness(.94)}
+.side-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:39;animation:fi .2s ease}
+.side-backdrop.on{display:block}
 .prof-btn{background:var(--bg-hover);border:none;color:var(--ink);padding:.4rem .85rem;font-size:13px;font-weight:500;cursor:pointer;border-radius:8px;transition:filter .15s}
 .prof-btn:hover{filter:brightness(.94)}
 .logout-btn{background:var(--bg-hover);border:none;color:var(--ink-m);padding:0;font-size:14px;font-weight:500;cursor:pointer;border-radius:50%;width:30px;height:30px;display:grid;place-items:center;flex-shrink:0;transition:color .15s,background .15s}
@@ -509,7 +513,9 @@ th.sortable.act .ar{opacity:1}
 @media(max-width:900px){.dg-layout{grid-template-columns:1fr}}
 @media(max-width:900px){
   .app.on{grid-template-columns:1fr}
-  .side-rail{display:none}
+  .side-rail{position:fixed;left:0;top:0;bottom:0;width:260px;transform:translateX(-100%);transition:transform .2s ease;z-index:40;box-shadow:var(--shadow-l)}
+  .side-rail.on{transform:translateX(0)}
+  .side-burger{display:grid}
   .tb-search{display:none}
 }
 @media(max-width:768px){
@@ -575,6 +581,7 @@ th.sortable.act .ar{opacity:1}
 </div>
 
 <div class="app" id="app">
+  <div class="side-backdrop" id="side-backdrop" onclick="closeSidebar()"></div>
   <aside class="side-rail">
     <div class="side-brand">
       <div class="side-logo">П</div>
@@ -609,6 +616,7 @@ th.sortable.act .ar{opacity:1}
   </aside>
   <div class="app-main">
   <div class="top-bar">
+    <button class="side-burger" onclick="toggleSidebar()" aria-label="Меню" title="Меню">☰</button>
     <div class="crumb"><span>Workspace</span><span>›</span><b id="crumb-name">Сводка</b></div>
     <div class="tb-spacer"></div>
     <div class="tb-search"><input id="global-search" placeholder="Найти проект, договор, контрагента..." autocomplete="off"></div>
@@ -1226,7 +1234,9 @@ async function getSignedUrl(path){
 // ============ NAV ============
 const TAB_LABELS={dashboard:'Сводка',projects:'Проекты',contracts:'Договоры',payments:'Выплаты',contacts:'Контрагенты',checklists:'Чеклисты',documents:'Документы',analytics:'Аналитика',calendar:'Календарь',timeline:'Таймлайн'};
 function setCrumb(tab){const el=document.getElementById('crumb-name');if(el)el.textContent=TAB_LABELS[tab]||'Сводка'}
-document.querySelectorAll('.nav-tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tv').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav-tab[data-tab="'+t.dataset.tab+'"]').forEach(x=>x.classList.add('active'));document.getElementById(t.dataset.tab).classList.add('active');setCrumb(t.dataset.tab);});});
+function toggleSidebar(){const s=document.querySelector('.side-rail');const b=document.getElementById('side-backdrop');if(!s)return;const next=!s.classList.contains('on');s.classList.toggle('on',next);if(b)b.classList.toggle('on',next)}
+function closeSidebar(){const s=document.querySelector('.side-rail');const b=document.getElementById('side-backdrop');if(s)s.classList.remove('on');if(b)b.classList.remove('on')}
+document.querySelectorAll('.nav-tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tv').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav-tab[data-tab="'+t.dataset.tab+'"]').forEach(x=>x.classList.add('active'));document.getElementById(t.dataset.tab).classList.add('active');setCrumb(t.dataset.tab);closeSidebar();});});
 document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('on')}));
 
 // ============ PROJECTS ============
