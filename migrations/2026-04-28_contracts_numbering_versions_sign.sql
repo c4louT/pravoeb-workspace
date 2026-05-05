@@ -91,11 +91,15 @@ set search_path = public
 as $$
 declare
   r record;
+  rows_affected int;
 begin
+  -- FOR UPDATE берёт row-level lock, чтобы параллельные запросы с одним токеном
+  -- не могли оба пройти проверку sign_status='signed' (TOCTOU-гонка → перезапись подписанта).
   select id, sign_status into r
   from public.contracts
   where sign_token = p_token and sign_token is not null
-  limit 1;
+  limit 1
+  for update;
 
   if not found then
     return jsonb_build_object('ok', false, 'error', 'not_found');
@@ -105,11 +109,19 @@ begin
     return jsonb_build_object('ok', false, 'error', 'already_signed');
   end if;
 
+  -- Belt-and-suspenders: UPDATE фильтрует по sign_status != 'signed', чтобы даже
+  -- при обходе lock (репликация / другая изоляция) не было double-sign.
   update public.contracts
   set signed_at = now(),
       signer_name = nullif(trim(p_signer_name), ''),
       sign_status = 'signed'
-  where id = r.id;
+  where id = r.id
+    and (sign_status is null or sign_status <> 'signed');
+
+  get diagnostics rows_affected = row_count;
+  if rows_affected = 0 then
+    return jsonb_build_object('ok', false, 'error', 'already_signed');
+  end if;
 
   return jsonb_build_object('ok', true, 'id', r.id);
 end;
