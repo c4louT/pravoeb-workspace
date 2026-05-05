@@ -2838,7 +2838,7 @@ function dggRender(){
     parts.push(`<h2>${s.num?esc(s.num)+'. ':''}${esc(s.title||'')}</h2>`);
     for(const b of (s.blocks||[])){
       const ai=b.ai_generated?'ai':'';
-      parts.push(`<div class="dgg-block ${ai}" data-sec="${esc(s.slug||'')}" data-n="${esc(b.num||'')}" onclick="dggEditBlock(this)"><span class="dgg-num">${esc(b.num||'')}</span>${esc(b.text||'')}</div>`);
+      parts.push(`<div class="dgg-block ${ai}" data-si="${dggState.sections.indexOf(s)}" data-bi="${(s.blocks||[]).indexOf(b)}" onclick="dggEditBlock(this)"><span class="dgg-num">${esc(b.num||'')}</span>${esc(b.text||'')}</div>`);
     }
   }
   left.innerHTML=parts.join('');
@@ -2856,25 +2856,20 @@ function dggRender(){
 
 function dggEditBlock(el){
   if(el.getAttribute('contenteditable')==='true')return;
-  const sec=el.getAttribute('data-sec');
-  const num=el.getAttribute('data-n');
+  const si=parseInt(el.getAttribute('data-si'),10);
+  const bi=parseInt(el.getAttribute('data-bi'),10);
   el.setAttribute('contenteditable','true');
   el.focus();
   el.addEventListener('blur',()=>{
     el.removeAttribute('contenteditable');
-    // Сохраняем изменения в dggState
+    const section=dggState.sections[si];
+    const block=section&&section.blocks?section.blocks[bi]:null;
+    if(!block)return;
+    // Снимаем префикс «1.1. » если он присутствует — нумерация хранится отдельно в block.num.
     const rawText=el.textContent||'';
-    const prefix=(num?num:'').trim();
+    const prefix=String(block.num||'').trim();
     const clean=prefix&&rawText.startsWith(prefix)?rawText.slice(prefix.length).trim():rawText.trim();
-    for(const s of dggState.sections){
-      if(String(s.slug||'')!==String(sec||''))continue;
-      for(const b of (s.blocks||[])){
-        if(String(b.num||'')===String(num||'')){
-          b.text=clean;
-          break;
-        }
-      }
-    }
+    block.text=clean;
   },{once:true});
 }
 
@@ -2887,6 +2882,7 @@ async function dggRegenSection(si){
   try{
     const sess=await sb.auth.getSession();
     const jwt=sess?.data?.session?.access_token;
+    if(!jwt){toast('Нет активной сессии','err','Auth');st.textContent='';return}
     const res=await fetch('/api/docgen/generate',{
       method:'POST',
       headers:{'content-type':'application/json',authorization:'Bearer '+jwt},
