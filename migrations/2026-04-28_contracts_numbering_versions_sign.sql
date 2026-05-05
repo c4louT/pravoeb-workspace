@@ -26,6 +26,13 @@ create unique index if not exists contracts_sign_token_uq on public.contracts (s
 
 create index if not exists contracts_parent_idx on public.contracts (parent_contract_id);
 
+-- Уникальность номера per-user per-year. Если две параллельных сессии всё-таки получат
+-- одинаковый next_contract_number (read-then-insert TOCTOU), вторая INSERT упадёт по
+-- unique violation и клиент покажет понятную ошибку вместо молчаливого дубля.
+create unique index if not exists contracts_number_user_year_uq
+  on public.contracts (user_id, number_int, number_year)
+  where number_int is not null and number_year is not null;
+
 -- Автонумерация per-user per-year: next_num = max(number_int where number_year=YYYY and user_id=uid) + 1.
 -- Держим в RPC-функции чтобы можно было вызывать с client-side atomically.
 create or replace function public.next_contract_number(p_year int)
@@ -107,6 +114,12 @@ begin
 
   if r.sign_status = 'signed' then
     return jsonb_build_object('ok', false, 'error', 'already_signed');
+  end if;
+
+  -- Проверка имени на сервере: anon ключ публичный, клиентская валидация легко
+  -- обходится (прямой RPC или curl) — а без ФИО подпись юридически не стоит ничего.
+  if nullif(trim(coalesce(p_signer_name, '')), '') is null then
+    return jsonb_build_object('ok', false, 'error', 'signer_name_required');
   end if;
 
   -- Belt-and-suspenders: UPDATE фильтрует по sign_status != 'signed', чтобы даже
