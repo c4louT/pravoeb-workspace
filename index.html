@@ -2847,8 +2847,8 @@ function dggRender(){
     const rows=(s.blocks||[]).map(b=>{
       const srcClass=b.ai_generated?'ai':'';
       const srcTxt=b.ai_generated?'⚠ AI':(b.source||'—').slice(0,24);
-      const noteHtml=b.note?`<div style="font-size:10.5px;color:var(--ink-d);margin-top:.15rem;line-height:1.35">${esc(b.note).slice(0,200)}</div>`:'';
-      return `<div class="dgg-blk-line"><span class="dgg-blk-n">${esc(b.num||'')}</span><span style="flex:1;font-size:11px;color:var(--ink-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px" title="${esc(b.text||'').slice(0,300)}">${esc((b.text||'').slice(0,80))}</span><span class="dgg-blk-src ${srcClass}">${esc(srcTxt)}</span>${noteHtml?'':''}</div>${noteHtml}`;
+      const noteHtml=b.note?`<div style="font-size:10.5px;color:var(--ink-d);margin-top:.15rem;line-height:1.35">${esc(String(b.note).slice(0,200))}</div>`:'';
+      return `<div class="dgg-blk-line"><span class="dgg-blk-n">${esc(b.num||'')}</span><span style="flex:1;font-size:11px;color:var(--ink-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px" title="${esc((b.text||'').slice(0,300))}">${esc((b.text||'').slice(0,80))}</span><span class="dgg-blk-src ${srcClass}">${esc(srcTxt)}</span>${noteHtml?'':''}</div>${noteHtml}`;
     }).join('');
     return `<div class="dgg-sec"><div class="dgg-sec-t"><span>${esc(s.num||(si+1))}. ${esc(s.title||'')}</span><button class="dgg-sec-regen" onclick="dggRegenSection(${si})" type="button">↻ перегенерировать</button></div>${rows}</div>`;
   }).join('');

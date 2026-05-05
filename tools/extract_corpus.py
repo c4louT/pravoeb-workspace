@@ -277,7 +277,7 @@ def infer_contract_type(label: str, file_id: str) -> str:
     l = (label or "").lower()
     f = (file_id or "").lower()
     rules = [
-        ("актёр", "actor"), ("актер", "actor"), ("акт" , "actor"),
+        ("актёр", "actor"), ("актер", "actor"), ("akter", "actor"), ("actor", "actor"),
         ("режиссёр", "director"), ("режиссер", "director"), ("director", "director"),
         ("оператор", "dop"), ("dop", "dop"), ("камер", "dop"),
         ("звук", "sound"), ("sound", "sound"),
