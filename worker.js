@@ -650,6 +650,241 @@ ${text}
   });
 }
 
+// =========================================================================
+// /api/docgen/generate — Phase 5k: AI-генератор договоров "с нуля".
+// Не просто заполняет шаблон, а комбинирует клаузы из корпуса 69 шаблонов
+// Кинoшколы и при необходимости пишет новые пункты под нестандартные условия.
+// Возвращает структуру блоков с пометкой источника (template_id / ai) для
+// Review UI с подсветкой AI-сгенерированных частей.
+// =========================================================================
+
+const DOCGEN_GEN_CLASSIFY_SYSTEM = `Ты — аналитик сценариев юридических договоров для российского кинопроизводства.
+
+На вход — описание ситуации от продюсера. На выход — СТРОГО JSON (без markdown):
+{
+  "contract_type": "actor | director | dop | sound | composer | editor | screenplay | production_designer | art | costume | makeup | light | producer | administrator | choreographer | license | consent | backstage | alienation | other",
+  "tax_form": "ФЛ | СЗ | ИП | ЮЛ",
+  "role_group": "Актёрский цех | Режиссёрский цех | Операторский цех | Звукоцех | Художественный цех | Световой цех | Сценарий/Литература | Продюсерский цех | Производство | Постпродакшн | Согласия",
+  "needs_rid_alienation": true,
+  "summary": "2-3 предложения: кто, что делает, за сколько, ключевые нестандартные условия",
+  "custom_conditions": ["список нестандартных условий, которых может не быть в стандартных шаблонах — например 'процент от сборов', 'пожизненная лицензия', 'ребёнок-актёр до 14 лет', 'без оформления как ИП'"]
+}
+
+Если условие неясно — выбирай наиболее вероятный вариант (для tax_form по умолчанию "ФЛ"). НИКАКОГО текста кроме JSON.`;
+
+const DOCGEN_GEN_COMPOSE_SYSTEM = `Ты — юрист-редактор, собирающий договор для российского кинопроизводства.
+
+Тебе дают:
+1. Описание сценария от продюсера.
+2. Результат классификации (тип договора, tax_form, нестандартные условия).
+3. КОРПУС клауз из проверенных шаблонов Кинoшколы имени С.Ф. Бондарчука — сгруппирован по разделам (subject, term, rights_duties, payment, rights_transfer, personal_data, liability, force_majeure, confidentiality, termination, disputes, requisites).
+
+Твоя задача — собрать полный договор в стиле Кинoшколы.
+
+ПРАВИЛА:
+1. Используй клаузы из корпуса ДОСЛОВНО когда они подходят. Это основа юр. корректности.
+2. Если нужный пункт НЕ покрыт корпусом (нестандартное условие) — напиши его сам в том же канцелярском стиле. Помечай такие блоки ai_generated=true.
+3. Когда адаптируешь клаузу (меняешь детали под сценарий, напр. меняешь сумму, сроки, имена) — оставляй source=template_id + ai_generated=false, но можешь дополнить текст деталями.
+4. Подставляй из сценария конкретные значения: суммы, сроки, имена, название фильма. Плейсхолдеры {field_name} из корпуса замени на реальные значения или на [скобки] если нет данных.
+5. Сохраняй нумерацию разделов (1, 2, 3, ...) и пунктов внутри раздела (1.1, 1.2, 2.1, ...) — даже если клаузы из разных шаблонов, перенумеруй последовательно.
+6. Не включай разделы "requisites" в JSON — их обработаем отдельно.
+
+Верни СТРОГО JSON (без markdown):
+{
+  "title": "Название договора (напр. 'Договор № ___ на исполнение роли с условием об отчуждении исключительного права')",
+  "preamble": "Вводный абзац со сторонами (Продюсер/Исполнитель/Заказчик, ФИО, реквизиты) — в стиле шаблонов корпуса, с плейсхолдерами [ФИО] и [реквизиты] если данных нет",
+  "sections": [
+    {
+      "num": 1,
+      "title": "ПРЕДМЕТ ДОГОВОРА",
+      "slug": "subject",
+      "blocks": [
+        {
+          "num": "1.1",
+          "text": "Полный текст пункта с подставленными значениями из сценария",
+          "source": "director_main_fl",
+          "ai_generated": false,
+          "note": "Опционально: если ты адаптировал или скомпоновал — короткий комментарий, что изменено"
+        },
+        {
+          "num": "1.2",
+          "text": "Нестандартный пункт про 2% от сборов",
+          "source": "ai",
+          "ai_generated": true,
+          "note": "Нет аналога в корпусе — сформулировано с нуля под описанный сценарий"
+        }
+      ]
+    }
+  ]
+}
+
+НИКАКОГО текста кроме JSON. Верни строго валидный JSON.`;
+
+const SECTION_ORDER_FALLBACK = ['definitions', 'subject', 'term', 'rights_duties', 'acceptance', 'payment', 'rights_transfer', 'personal_data', 'liability', 'force_majeure', 'confidentiality', 'guarantees', 'anticorruption', 'termination', 'disputes', 'notices', 'misc'];
+const CORPUS_ASSET_PATH = '/contracts/clauses_corpus.json';
+
+async function loadClauseCorpus(request, env) {
+  if (!env.ASSETS || !env.ASSETS.fetch) return null;
+  const u = new URL(CORPUS_ASSET_PATH, request.url);
+  const res = await env.ASSETS.fetch(new Request(u.toString()));
+  if (!res.ok) return null;
+  return await res.json().catch(() => null);
+}
+
+function filterCorpusForScenario(corpus, scenario) {
+  if (!corpus || !Array.isArray(corpus.clauses)) return { bySection: {}, templates: [] };
+  const targetType = scenario.contract_type || 'other';
+  const targetTax = scenario.tax_form || 'ФЛ';
+  const targetRG = scenario.role_group || '';
+  const needsRid = !!scenario.needs_rid_alienation;
+
+  // Score each template by match quality
+  const tplScores = new Map();
+  for (const c of corpus.clauses) {
+    const t = c.template_id;
+    if (!tplScores.has(t)) {
+      let score = 0;
+      if (c.contract_type === targetType) score += 10;
+      if (c.tax_form === targetTax) score += 6;
+      if (c.role_group === targetRG) score += 4;
+      tplScores.set(t, score);
+    }
+  }
+  // Pick top 4 templates
+  const topTemplates = [...tplScores.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .map((x) => x[0])
+    .filter((t) => tplScores.get(t) > 0);
+  const topSet = new Set(topTemplates);
+
+  const bySection = {};
+  for (const c of corpus.clauses) {
+    if (!topSet.has(c.template_id)) continue;
+    if (c.section_slug === 'requisites' || c.section_slug === 'other') continue;
+    if (!needsRid && c.section_slug === 'rights_transfer') continue;
+    const arr = bySection[c.section_slug] || (bySection[c.section_slug] = []);
+    if (arr.length < 12) {
+      arr.push({
+        id: c.id,
+        template: c.template_id,
+        num: c.clause_num,
+        text: c.text.slice(0, 1800),
+      });
+    }
+  }
+  return { bySection, templates: topTemplates };
+}
+
+function buildComposePrompt(scenario, filtered) {
+  const lines = ['СЦЕНАРИЙ:', JSON.stringify(scenario, null, 2), '', 'КОРПУС КЛАУЗ (сгруппирован по разделам):', ''];
+  const ordered = SECTION_ORDER_FALLBACK.filter((s) => filtered.bySection[s]);
+  for (const slug of ordered) {
+    const items = filtered.bySection[slug];
+    lines.push(`## section=${slug} (${items.length} candidates)`);
+    for (const it of items) {
+      lines.push(`- [${it.template} §${it.num}] ${it.text.replace(/\s+/g, ' ').slice(0, 600)}`);
+    }
+    lines.push('');
+  }
+  lines.push('Собери договор. Верни JSON по описанной схеме.');
+  return lines.join('\n');
+}
+
+async function handleDocgenGenerate(request, env) {
+  if (request.method !== 'POST') return methodNotAllowed();
+  const auth = request.headers.get('authorization') || '';
+  const jwt = auth.toLowerCase().startsWith('bearer ') ? auth.slice(7) : null;
+  if (!jwt) return json({ ok: false, error: 'unauthorized' }, 401);
+  const user = await sbGetUser(env, jwt);
+  if (!user?.id) return json({ ok: false, error: 'unauthorized' }, 401);
+
+  let body;
+  try { body = await request.json(); } catch { return json({ ok: false, error: 'bad_json' }, 400); }
+  const text = String(body?.text || '').trim();
+  if (!text) return json({ ok: false, error: 'empty_text' }, 400);
+  if (text.length > 6000) return json({ ok: false, error: 'text_too_long' }, 400);
+  const model = ALLOWED_MODELS.has(body?.model) ? body.model : DEFAULT_DOCGEN_MODEL;
+  // Если клиент уже прогнал Stage-A classify и просто хочет regenerate конкретный блок —
+  // поддерживаем режим regenerate с передачей scenario и focus_section.
+  const providedScenario = body?.scenario && typeof body.scenario === 'object' ? body.scenario : null;
+  const focusSection = body?.focus_section ? String(body.focus_section).slice(0, 40) : null;
+
+  // Stage A: классификация сценария
+  let scenario = providedScenario;
+  if (!scenario) {
+    const ai1 = await openrouterChat(env, model, [
+      { role: 'system', content: DOCGEN_GEN_CLASSIFY_SYSTEM },
+      { role: 'user', content: text },
+    ]);
+    if (!ai1.ok) return json({ ok: false, error: 'classify_failed', detail: ai1.error }, 502);
+    scenario = tryParseDocgenJson(ai1.text);
+    if (!scenario || !scenario.contract_type) {
+      return json({ ok: false, error: 'classify_bad_json', detail: (ai1.text || '').slice(0, 300) }, 502);
+    }
+  }
+
+  // Stage B: загрузка корпуса и фильтрация
+  const corpus = await loadClauseCorpus(request, env);
+  if (!corpus) return json({ ok: false, error: 'corpus_missing' }, 500);
+  const filtered = filterCorpusForScenario(corpus, scenario);
+  if (!filtered.templates.length) {
+    return json({ ok: false, error: 'no_matching_templates', detail: scenario }, 502);
+  }
+
+  // Если focus_section — отсекаем лишние секции из промпта
+  if (focusSection && filtered.bySection[focusSection]) {
+    const only = { [focusSection]: filtered.bySection[focusSection] };
+    filtered.bySection = only;
+  }
+
+  // Stage C: композиция
+  const composePrompt = buildComposePrompt({ ...scenario, user_description: text }, filtered);
+  const ai2 = await openrouterChat(env, model, [
+    { role: 'system', content: DOCGEN_GEN_COMPOSE_SYSTEM },
+    { role: 'user', content: composePrompt },
+  ]);
+  if (!ai2.ok) return json({ ok: false, error: 'compose_failed', detail: ai2.error }, 502);
+  const composed = tryParseDocgenJson(ai2.text);
+  if (!composed || !Array.isArray(composed.sections)) {
+    return json({ ok: false, error: 'compose_bad_json', detail: (ai2.text || '').slice(0, 400) }, 502);
+  }
+
+  // Санитизация структуры
+  const sections = [];
+  for (const s of composed.sections.slice(0, 20)) {
+    if (!s || typeof s !== 'object') continue;
+    const blocks = Array.isArray(s.blocks) ? s.blocks : [];
+    const cleanBlocks = blocks
+      .map((b) => ({
+        num: String(b?.num || '').slice(0, 20),
+        text: String(b?.text || '').slice(0, 6000),
+        source: String(b?.source || 'ai').slice(0, 80),
+        ai_generated: !!b?.ai_generated,
+        note: b?.note ? String(b.note).slice(0, 300) : null,
+      }))
+      .filter((b) => b.text);
+    if (!cleanBlocks.length) continue;
+    sections.push({
+      num: Number.isFinite(s.num) ? s.num : sections.length + 1,
+      title: String(s.title || '').slice(0, 200),
+      slug: String(s.slug || 'other').slice(0, 40),
+      blocks: cleanBlocks,
+    });
+  }
+
+  return json({
+    ok: true,
+    scenario,
+    title: String(composed.title || 'Договор').slice(0, 300),
+    preamble: String(composed.preamble || '').slice(0, 4000),
+    sections,
+    corpus_templates: filtered.templates,
+    model: ai2.model,
+    usage: ai2.usage,
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -660,6 +895,7 @@ export default {
     if (path === '/api/chat/ai') return handleChatAi(request, env);
     if (path === '/api/docgen/extract') return handleDocgenExtract(request, env);
     if (path === '/api/docgen/chat') return handleDocgenChat(request, env);
+    if (path === '/api/docgen/generate') return handleDocgenGenerate(request, env);
     if (path === '/api/tg/webhook') return handleTgWebhook(request, env);
 
     // Fallback — статика

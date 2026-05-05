@@ -2,11 +2,12 @@ name = "pravoeb-workspace"
 compatibility_date = "2026-04-25"
 main = "worker.js"
 
-# Сборка статики: копируем index.html, _headers, templates/ (Phase 5a/b .md), templates_docx/ (Phase 5d .docx) и templates_index.json в dist/.
+# Сборка статики: копируем index.html, _headers, templates/ (Phase 5a/b .md), templates_docx/ (Phase 5d .docx),
+# templates_index.json и clauses_corpus.json (Phase 5k — корпус клауз для AI-генератора) в dist/.
 # ВАЖНО: не делаем `cp -R contracts/`, чтобы не выгрузить в публичные ассеты director-2026-04-21/
 # и любые другие подпапки с реальными заполненными договорами (PII).
 [build]
-command = "mkdir -p dist/contracts && cp index.html dist/ && cp _headers dist/_headers && cp contracts/templates_index.json dist/contracts/ && cp -R contracts/templates dist/contracts/templates && cp -R contracts/templates_docx dist/contracts/templates_docx"
+command = "mkdir -p dist/contracts && cp index.html dist/ && cp _headers dist/_headers && cp contracts/templates_index.json dist/contracts/ && cp contracts/clauses_corpus.json dist/contracts/ && cp -R contracts/templates dist/contracts/templates && cp -R contracts/templates_docx dist/contracts/templates_docx"
 
 # Статика отдаётся через Assets-биндинг: worker.js проксирует всё кроме /api/* в env.ASSETS.
 [assets]
