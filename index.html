@@ -438,6 +438,33 @@ th.sortable.act .ar{opacity:1}
 @media(max-width:900px){.dg-layout{grid-template-columns:1fr}.dg-left{max-height:none}.dg-preview{min-height:40vh;max-height:40vh}.dg-list-row{grid-template-columns:1fr}.dg-list-row.dg-head{display:none}.dg-list-row .dg-actions{justify-content:flex-start}}
 @media print{body *{visibility:hidden}#dg-print-area,#dg-print-area *{visibility:visible}#dg-print-area{position:absolute;left:0;top:0;width:100%;padding:1.6cm 2cm;font-family:'Times New Roman',serif;font-size:12pt;line-height:1.4;color:#000;background:#fff}#dg-print-area h1,#dg-print-area h2,#dg-print-area h3{font-family:'Times New Roman',serif}}
 
+/* Phase 5i: версии договора */
+.c-versions{display:flex;flex-direction:column;gap:.3rem;font-size:12.5px}
+.c-versions .c-ver-row{display:flex;gap:.6rem;align-items:center;padding:.35rem .55rem;background:var(--bg-card);border:1px solid var(--brd-s);border-radius:7px}
+.c-versions .c-ver-row.current{border-color:var(--acc);background:var(--acc-soft)}
+.c-versions .c-ver-n{font-weight:600;min-width:52px}
+.c-versions .c-ver-info{flex:1;color:var(--ink-m)}
+.c-versions .c-ver-btn{background:none;border:1px solid var(--brd);color:var(--ink-m);padding:.1rem .4rem;border-radius:5px;cursor:pointer;font-size:11px}
+.c-versions .c-ver-btn:hover{color:var(--acc);border-color:var(--acc)}
+
+/* Phase 6: e-sign row */
+.c-sign-row{display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.7rem .9rem;background:var(--bg-soft);border:1px solid var(--brd-s);border-radius:10px;margin-top:.6rem;flex-wrap:wrap}
+.c-sign-status{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.c-sign-actions{display:flex;gap:.3rem;flex-wrap:wrap}
+
+/* Phase 5j: bulk modal */
+.bulk-preview{max-height:260px;overflow:auto;border:1px solid var(--brd-s);border-radius:7px;font-size:11.5px;background:var(--bg-card)}
+.bulk-preview table{width:100%;border-collapse:collapse}
+.bulk-preview th,.bulk-preview td{padding:.3rem .5rem;border-bottom:1px solid var(--brd-s);text-align:left;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis}
+.bulk-preview th{background:var(--bg-soft);font-weight:600;color:var(--ink);position:sticky;top:0}
+.bulk-progress-head{display:flex;flex-direction:column;gap:.5rem;margin-bottom:.8rem;font-size:.8rem}
+.bulk-progress-bar{background:var(--bg-soft);height:8px;border-radius:4px;overflow:hidden}
+.bulk-progress-bar>div{background:var(--acc);height:100%;width:0%;transition:width .25s}
+.bulk-log{max-height:320px;overflow-y:auto;background:var(--bg-card);border:1px solid var(--brd-s);border-radius:7px;padding:.55rem .7rem;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;line-height:1.55;white-space:pre-wrap}
+.bulk-log .bl-ok{color:var(--ok)}
+.bulk-log .bl-err{color:#d44}
+.bulk-log .bl-info{color:var(--ink-m)}
+
 /* CALENDAR */
 .cal-bar{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
 .cal-nav{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
@@ -596,6 +623,9 @@ th.sortable.act .ar{opacity:1}
 <!-- Phase 5d: docxtemplater + pizzip для подстановки в оригинальные .docx с сохранением формата -->
 <script src="https://unpkg.com/pizzip@3.1.6/dist/pizzip.js"></script>
 <script src="https://unpkg.com/docxtemplater@3.50.0/build/docxtemplater.js"></script>
+<!-- Phase 5j: xlsx + jszip для массового импорта Excel и упаковки результатов в ZIP -->
+<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
 </head>
 <body>
 
@@ -840,8 +870,11 @@ th.sortable.act .ar{opacity:1}
       <div id="cal-view"></div>
     </section>
     <section class="tv" id="documents">
-      <div class="page-head"><span class="eyebrow">Генератор</span><h1 class="page-h1">Документы</h1><p class="page-lead">Собираем договоры из 69 реальных шаблонов Киношколы · AI-заполнение по описанию.</p></div>
-      <div class="ab"><div></div><button class="btn btn-p" onclick="openDocGen()">+ Сгенерировать</button></div>
+      <div class="page-head"><span class="eyebrow">Генератор</span><h1 class="page-h1">Документы</h1><p class="page-lead">Собираем договоры из 69 реальных шаблонов Киношколы · AI-заполнение по описанию · массовая генерация из Excel.</p></div>
+      <div class="ab"><div></div>
+        <button class="btn" onclick="openBulkModal()" title="Массовое AI-заполнение: загрузи Excel/CSV со списком контрагентов, получи ZIP с готовыми договорами">📊 Из Excel</button>
+        <button class="btn btn-p" onclick="openDocGen()">+ Сгенерировать</button>
+      </div>
       <div class="toolbar">
         <input class="search-input" id="dg-search" placeholder="Поиск: название, шаблон, контрагент" autocomplete="off">
         <select class="tb-select" id="dg-proj-filter" aria-label="Фильтр по проекту"><option value="all">Все проекты</option></select>
@@ -910,7 +943,13 @@ th.sortable.act .ar{opacity:1}
     </div>
   </div>
   <div class="fr">
-    <div class="form-group"><label class="form-label">Номер</label><input class="form-input" id="c-num" placeholder="01/2025"></div>
+    <div class="form-group">
+      <label class="form-label">Номер <span style="color:var(--ink-d);font-weight:400;font-size:.7rem">· авто при создании</span></label>
+      <div style="display:flex;gap:.3rem">
+        <input class="form-input" id="c-num" placeholder="01/2026" style="flex:1">
+        <button type="button" class="btn btn-s" onclick="cAutoNumber()" title="Получить следующий номер">⚡</button>
+      </div>
+    </div>
     <div class="form-group"><label class="form-label">Дата</label><input class="form-input" type="date" id="c-date"></div>
   </div>
   <div class="fr">
@@ -926,7 +965,48 @@ th.sortable.act .ar{opacity:1}
     </div>
     <input type="file" id="file-input" accept=".pdf,.doc,.docx" style="display:none" onchange="handleFileSelect(event)">
   </div>
+  <!-- Phase 5i: версии договора -->
+  <div class="form-group" id="c-versions-wrap" style="display:none">
+    <label class="form-label">История версий</label>
+    <div id="c-versions-list" class="c-versions"></div>
+  </div>
+  <!-- Phase 6: подписанный PDF -->
+  <div class="form-group" id="c-signed-wrap" style="display:none">
+    <label class="form-label">Подписанный PDF <span style="color:var(--ink-d);font-weight:400;font-size:.7rem">· скан или PDF с ЭЦП</span></label>
+    <div class="file-upload-area" id="signed-upload-area" onclick="document.getElementById('signed-file-input').click()">
+      <div class="file-upload-label" id="signed-upload-label">📎 Загрузить подписанный файл</div>
+    </div>
+    <input type="file" id="signed-file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleSignedFileSelect(event)">
+  </div>
+  <!-- Phase 6: действия подписания -->
+  <div class="c-sign-row" id="c-sign-row" style="display:none">
+    <div class="c-sign-status"><span id="c-sign-status-badge"></span> <span id="c-sign-status-info" style="font-size:.7rem;color:var(--ink-m)"></span></div>
+    <div class="c-sign-actions">
+      <button type="button" class="btn btn-s" onclick="openSendSignModal()" id="c-sign-btn">✉ Отправить на подпись</button>
+      <button type="button" class="btn btn-s" onclick="copySignLink()" id="c-sign-copy-btn" style="display:none">🔗 Ссылка</button>
+    </div>
+  </div>
   <div class="ma"><button class="btn" onclick="closeM('cm')">Отмена</button><button class="btn btn-p" onclick="saveC(event)">Сохранить</button></div>
+</div></div>
+
+<!-- Phase 6: модалка отправки на подпись -->
+<div class="mo" id="sendSignM"><div class="md" style="max-width:540px">
+  <h3 class="mt">Отправить на подпись</h3>
+  <p class="ms">Гость получит ссылку, увидит документ и сможет поставить ФИО + подтвердить. Статус договора изменится на «Отправлен на подпись» → «Подписан».</p>
+  <div class="form-group"><label class="form-label">Email контрагента <span style="color:var(--ink-d);font-weight:400;font-size:.7rem">· для истории, отправку письма пока делаем ручками</span></label><input class="form-input" id="send-sign-email" type="email" placeholder="contragent@example.com"></div>
+  <div class="form-group" id="send-sign-link-wrap" style="display:none">
+    <label class="form-label">Ссылка для подписания</label>
+    <div style="display:flex;gap:.3rem">
+      <input class="form-input" id="send-sign-link" readonly style="flex:1;font-family:ui-monospace,Menlo,monospace;font-size:.72rem">
+      <button type="button" class="btn btn-s" onclick="doCopySignLink()">Копировать</button>
+    </div>
+    <div style="margin-top:.4rem;display:flex;gap:.3rem;flex-wrap:wrap">
+      <a id="send-sign-tg" class="btn btn-s" target="_blank" rel="noopener">Telegram</a>
+      <a id="send-sign-wa" class="btn btn-s" target="_blank" rel="noopener">WhatsApp</a>
+      <a id="send-sign-mail" class="btn btn-s" target="_blank" rel="noopener">Email</a>
+    </div>
+  </div>
+  <div class="ma"><button class="btn" onclick="closeM('sendSignM')">Закрыть</button><button class="btn btn-p" onclick="doSendSign(event)" id="send-sign-btn">Создать ссылку</button></div>
 </div></div>
 
 <!-- Модалка: Контрагент -->
@@ -1021,6 +1101,44 @@ th.sortable.act .ar{opacity:1}
     <button class="btn btn-s" onclick="dgExportPdf()" id="dg-pdf-btn">📄 PDF (печать)</button>
     <button class="btn btn-s" onclick="dgExportDocx()" id="dg-docx-btn">⬇ DOCX</button>
     <button class="btn btn-p" onclick="dgSave(event)" id="dg-save-btn">Сохранить в БД</button>
+  </div>
+</div></div>
+
+<!-- Phase 5j: массовое AI-заполнение из Excel/CSV -->
+<div class="mo" id="bulkM"><div class="md md-wide" style="max-width:960px;max-height:92vh">
+  <h3 class="mt">📊 Массовое AI-заполнение</h3>
+  <p class="ms">Загрузи Excel/CSV со списком контрагентов — AI заполнит шаблон для каждой строки, получишь ZIP с готовыми .docx.</p>
+  <div class="bulk-stage" id="bulk-stage-setup">
+    <div class="fr">
+      <div class="form-group"><label class="form-label">Шаблон</label><select class="form-select" id="bulk-tpl"></select></div>
+      <div class="form-group"><label class="form-label">Проект (опционально)</label><select class="form-select" id="bulk-proj"><option value="">— без проекта —</option></select></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Excel (.xlsx) или CSV</label>
+      <div class="file-upload-area" onclick="document.getElementById('bulk-file-input').click()">
+        <div class="file-upload-label" id="bulk-file-label">📎 Выбери файл</div>
+      </div>
+      <input type="file" id="bulk-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="bulkOnFile(event)">
+      <p class="es-desc" style="margin-top:.4rem;font-size:.7rem">Первая строка — заголовки колонок (ФИО, ИНН, сумма, роль, …). AI сопоставит колонки с полями шаблона автоматически.</p>
+    </div>
+    <div id="bulk-preview-wrap" style="display:none">
+      <div class="form-label">Предпросмотр (первые 5 строк)</div>
+      <div id="bulk-preview" class="bulk-preview"></div>
+      <p class="es-desc" style="margin-top:.4rem;font-size:.75rem">Всего строк: <b id="bulk-rows-count">0</b></p>
+    </div>
+    <div class="ma"><button class="btn" onclick="closeM('bulkM')">Закрыть</button><button class="btn btn-p" id="bulk-run-btn" onclick="bulkRun(event)" disabled>Сгенерировать</button></div>
+  </div>
+  <div class="bulk-stage" id="bulk-stage-run" style="display:none">
+    <div class="bulk-progress-head">
+      <div><b id="bulk-progress-current">0</b> / <span id="bulk-progress-total">0</span> · успешно: <b id="bulk-progress-ok" style="color:var(--ok)">0</b> · ошибок: <b id="bulk-progress-err" style="color:#d44">0</b></div>
+      <div class="bulk-progress-bar"><div id="bulk-progress-fill"></div></div>
+    </div>
+    <div id="bulk-log" class="bulk-log"></div>
+    <div class="ma" style="flex-wrap:wrap;gap:.5rem">
+      <button class="btn" onclick="closeM('bulkM')">Закрыть</button>
+      <button class="btn btn-s" onclick="bulkCancel()" id="bulk-cancel-btn" style="display:none">Остановить</button>
+      <button class="btn btn-p" id="bulk-download-btn" onclick="bulkDownloadZip()" style="display:none">⬇ ZIP</button>
+    </div>
   </div>
 </div></div>
 
@@ -1367,10 +1485,11 @@ async function delP(id){
 function openCM(id=null){
   if(!S.projects.length){toast('Сначала создай хотя бы один проект — потом сможешь привязать к нему договор.','err','Договор');document.querySelector('.nav-tab[data-tab=projects]').click();return}
   eC=id;const c=id?S.contracts.find(x=>x.id===id):null;
-  document.getElementById('cm-title').textContent=c?'Редактировать':'Новый договор';
+  document.getElementById('cm-title').textContent=c?(c.version>1?`Редактировать · версия ${c.version}`:'Редактировать'):'Новый договор';
   document.getElementById('c-proj').innerHTML=S.projects.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
   fillContactSelect();
   resetFileUpload();
+  resetSignedFileUpload();
   document.getElementById('c-contact-hint').textContent='';
   document.getElementById('c-save-contact').style.display='none';
   if(c){
@@ -1386,6 +1505,11 @@ function openCM(id=null){
     document.getElementById('c-status').value=c.status;
     document.getElementById('c-notes').value=c.notes||'';
     if(c.file_name)document.getElementById('upload-label').innerHTML=`<span class="file-badge">📄 ${esc(c.file_name)} (уже загружен)</span>`;
+    if(c.signed_file_name)document.getElementById('signed-upload-label').innerHTML=`<span class="file-badge">✓ ${esc(c.signed_file_name)} (подписанный, загружен)</span>`;
+    // Phase 5i: показать версии + Phase 6: показать sign-row
+    cRenderVersions(c);
+    cRenderSignRow(c);
+    document.getElementById('c-signed-wrap').style.display='';
   }else{
     ['c-role','c-person','c-num','c-notes'].forEach(x=>document.getElementById(x).value='');
     document.getElementById('c-contact').value='';
@@ -1394,8 +1518,138 @@ function openCM(id=null){
     document.getElementById('c-amount').value='';
     document.getElementById('c-status').value='draft';
     document.getElementById('c-save-contact').style.display='inline-block';
+    document.getElementById('c-versions-wrap').style.display='none';
+    document.getElementById('c-signed-wrap').style.display='none';
+    document.getElementById('c-sign-row').style.display='none';
+    // Автономер сразу при открытии — чтобы юзер не забыл
+    cAutoNumber().catch(()=>{});
   }
   document.getElementById('cm').classList.add('on');
+}
+
+// Phase 5i: автоматическая нумерация через RPC next_contract_number(year)
+async function cAutoNumber(){
+  const year=new Date().getFullYear();
+  const currentInput=document.getElementById('c-num');
+  if(currentInput.value.trim()){
+    if(!confirm('В поле уже есть номер. Перезаписать автоматическим?'))return;
+  }
+  try{
+    const{data,error}=await sb.rpc('next_contract_number',{p_year:year});
+    if(error){
+      // RPC ещё не мигрирована — падаем на client-side fallback.
+      console.warn('next_contract_number RPC unavailable, fallback to client calc',error);
+      const existing=(S.contracts||[])
+        .filter(c=>c.number_year===year||(c.number&&c.number.includes('/'+year)))
+        .map(c=>c.number_int||parseInt(String(c.number||'').split('/')[0],10)||0);
+      const next=(Math.max(0,...existing)||0)+1;
+      currentInput.value=`${String(next).padStart(2,'0')}/${year}-Кш`;
+      return;
+    }
+    const n=Number(data)||1;
+    currentInput.value=`${String(n).padStart(2,'0')}/${year}-Кш`;
+  }catch(e){
+    console.error('cAutoNumber failed',e);
+    toast('Не смог получить следующий номер: '+(e?.message||e),'err','Договор');
+  }
+}
+
+// Phase 5i: рендер истории версий. Цепь ведёт по parent_contract_id.
+function cRenderVersions(c){
+  if(!c){document.getElementById('c-versions-wrap').style.display='none';return}
+  const chain=cGetVersionChain(c.id);
+  if(chain.length<=1){document.getElementById('c-versions-wrap').style.display='none';return}
+  const wrap=document.getElementById('c-versions-wrap');
+  const list=document.getElementById('c-versions-list');
+  wrap.style.display='';
+  list.innerHTML=chain.map(v=>{
+    const isCur=v.id===c.id;
+    const statusLabel={draft:'Черновик',pending:'В работе',signed:'Подписан',missing:'Не подписан'}[v.status]||v.status;
+    return `<div class="c-ver-row ${isCur?'current':''}">
+      <span class="c-ver-n">v${v.version||1}</span>
+      <span class="c-ver-info">${esc(v.number||'—')} · ${esc(statusLabel)} · ${v.date||'без даты'}</span>
+      ${isCur?'<span style="color:var(--acc);font-size:11px;font-weight:600">текущая</span>':`<button type="button" class="c-ver-btn" onclick="closeM('cm');setTimeout(()=>openCM('${esc(v.id)}'),150)">Открыть</button>`}
+    </div>`;
+  }).join('');
+}
+
+function cGetVersionChain(startId){
+  // Ищем корень цепочки и все потомки. parent_contract_id=null → это корень.
+  const byId=new Map((S.contracts||[]).map(c=>[c.id,c]));
+  const byParent=new Map();
+  for(const c of (S.contracts||[])){
+    if(c.parent_contract_id){
+      const arr=byParent.get(c.parent_contract_id)||[];arr.push(c);byParent.set(c.parent_contract_id,arr);
+    }
+  }
+  let cur=byId.get(startId);
+  if(!cur)return[];
+  while(cur.parent_contract_id&&byId.has(cur.parent_contract_id))cur=byId.get(cur.parent_contract_id);
+  const root=cur;
+  const chain=[root];
+  const queue=[root.id];
+  while(queue.length){
+    const pid=queue.shift();
+    for(const child of (byParent.get(pid)||[])){
+      chain.push(child);queue.push(child.id);
+    }
+  }
+  return chain.sort((a,b)=>(a.version||1)-(b.version||1));
+}
+
+// Phase 6: рендер строки «Отправить на подпись / статус».
+function cRenderSignRow(c){
+  if(!c){document.getElementById('c-sign-row').style.display='none';return}
+  const row=document.getElementById('c-sign-row');
+  row.style.display='';
+  const badge=document.getElementById('c-sign-status-badge');
+  const info=document.getElementById('c-sign-status-info');
+  const signBtn=document.getElementById('c-sign-btn');
+  const copyBtn=document.getElementById('c-sign-copy-btn');
+  const ss=c.sign_status||'draft';
+  const map={
+    draft:{txt:'Не отправлен',cls:'dot-draft'},
+    sent:{txt:'Отправлен, ожидаем подпись',cls:'dot-pending'},
+    signed:{txt:'Подписан',cls:'dot-signed'},
+  };
+  const m=map[ss]||map.draft;
+  badge.innerHTML=`<span class="c-chip c-chip-${ss}" style="display:inline-flex;align-items:center;gap:.25rem;padding:.15rem .45rem;border-radius:999px;background:var(--bg-card);border:1px solid var(--brd-s);font-size:11.5px"><span style="width:6px;height:6px;border-radius:50%;background:${ss==='signed'?'var(--ok)':ss==='sent'?'#e8a500':'#999'}"></span>${esc(m.txt)}</span>`;
+  const parts=[];
+  if(c.sent_at)parts.push('отправлен '+new Date(c.sent_at).toLocaleDateString('ru-RU'));
+  if(c.signed_at)parts.push('подписан '+new Date(c.signed_at).toLocaleDateString('ru-RU'));
+  if(c.signer_name)parts.push('«'+c.signer_name+'»');
+  info.textContent=parts.join(' · ');
+  // Кнопки
+  if(ss==='signed'){
+    signBtn.style.display='none';
+    copyBtn.style.display=c.sign_token?'':'none';
+  }else{
+    signBtn.style.display='';
+    signBtn.textContent=ss==='sent'?'✉ Переотправить / обновить ссылку':'✉ Отправить на подпись';
+    copyBtn.style.display=c.sign_token?'':'none';
+  }
+}
+
+function resetSignedFileUpload(){
+  signedSelectedFile=null;
+  const lbl=document.getElementById('signed-upload-label');
+  if(lbl)lbl.innerHTML='📎 Загрузить подписанный файл';
+  const inp=document.getElementById('signed-file-input');
+  if(inp)inp.value='';
+}
+
+let signedSelectedFile=null;
+function handleSignedFileSelect(e){
+  const file=e.target.files[0];if(!file)return;
+  signedSelectedFile=file;
+  document.getElementById('signed-upload-label').innerHTML=`<span class="file-badge">📄 ${esc(file.name)}</span>`;
+}
+
+// Phase 5i: извлекаем number_int + number_year из текстового номера типа «23/2026-Кш»
+function parseContractNumber(s){
+  const m=String(s||'').match(/^\s*(\d+)\s*\/\s*(\d{4})/);
+  if(!m)return{n:null,y:null};
+  return{n:parseInt(m[1],10),y:parseInt(m[2],10)};
 }
 
 async function saveC(ev){
@@ -1403,18 +1657,42 @@ async function saveC(ev){
   if(!U?.id){toast('Нет активной сессии. Войдите заново.','err','Auth');return}
   const restore=startBtn(btn,'Сохранение...');
   try{
-  const d={user_id:U.id,project_id:document.getElementById('c-proj').value,type:document.getElementById('c-type').value,role:document.getElementById('c-role').value.trim(),person:document.getElementById('c-person').value.trim(),number:document.getElementById('c-num').value.trim(),date:document.getElementById('c-date').value||null,amount:Number(document.getElementById('c-amount').value)||0,status:document.getElementById('c-status').value,notes:document.getElementById('c-notes').value.trim()};
+  const numStr=document.getElementById('c-num').value.trim();
+  const parsed=parseContractNumber(numStr);
+  const d={user_id:U.id,project_id:document.getElementById('c-proj').value,type:document.getElementById('c-type').value,role:document.getElementById('c-role').value.trim(),person:document.getElementById('c-person').value.trim(),number:numStr,date:document.getElementById('c-date').value||null,amount:Number(document.getElementById('c-amount').value)||0,status:document.getElementById('c-status').value,notes:document.getElementById('c-notes').value.trim()};
+  if(parsed.n!=null)d.number_int=parsed.n;
+  if(parsed.y!=null)d.number_year=parsed.y;
   if(migrationApplied)d.contact_id=document.getElementById('c-contact').value||null;
   let contractId=eC;
+
+  // Phase 5i: если редактируем ПОДПИСАННЫЙ договор — предлагаем создать новую версию
+  const existing=eC?S.contracts.find(x=>x.id===eC):null;
+  if(existing&&existing.sign_status==='signed'){
+    const bump=confirm('Этот договор уже подписан. Создать новую версию v'+((existing.version||1)+1)+'? (старая версия останется в истории, новая — в статусе Черновик)');
+    if(bump){
+      // Новая запись со ссылкой на родителя
+      d.parent_contract_id=existing.parent_contract_id||existing.id;
+      d.version=(existing.version||1)+1;
+      d.status='draft';
+      d.sign_status='draft';
+      d.sign_token=null;d.sent_at=null;d.signed_at=null;d.signer_name=null;
+      d.signed_file_url=null;d.signed_file_name=null;
+      const{data,error}=await sb.from('contracts').insert(d).select().single();
+      if(sbErr('создание новой версии',error))return;
+      contractId=data?.id;
+      eC=null;  // не апдейтим старый
+    }
+  }
+
   if(eC){
     const{error}=await sb.from('contracts').update(d).eq('id',eC);
     if(sbErr('обновление договора',error))return;
-  }else{
+  }else if(!contractId){
     const{data,error}=await sb.from('contracts').insert(d).select().single();
     if(sbErr('создание договора',error))return;
     contractId=data?.id;
   }
-  // Загружаем файл если выбран
+  // Загружаем файл (исходник) если выбран
   if(selectedFile&&contractId){
     const prog=document.getElementById('upload-progress');
     prog.style.display='block';
@@ -1427,6 +1705,21 @@ async function saveC(ev){
     else{
       const{error:uerr}=await sb.from('contracts').update({file_url:path,file_name:selectedFile.name}).eq('id',contractId);
       if(uerr)sbErr('привязка файла к договору',uerr);
+    }
+  }
+  // Phase 6: загружаем подписанный файл если выбран
+  if(signedSelectedFile&&contractId){
+    const ext=signedSelectedFile.name.split('.').pop();
+    const path=`${U.id}/${contractId}.signed.${ext}`;
+    const{error}=await sb.storage.from('contracts').upload(path,signedSelectedFile,{upsert:true});
+    if(sbErr('загрузка подписанного файла',error)){}
+    else{
+      const upd={signed_file_url:path,signed_file_name:signedSelectedFile.name};
+      // Если файл подписанный приложили — логично перевести статус.
+      const curC=S.contracts.find(x=>x.id===contractId);
+      if(curC&&curC.sign_status!=='signed'){upd.sign_status='signed';upd.signed_at=new Date().toISOString()}
+      const{error:uerr}=await sb.from('contracts').update(upd).eq('id',contractId);
+      if(uerr)sbErr('привязка подписанного файла',uerr);
     }
   }
   toast(eC?'Договор обновлён':'Договор создан','ok');
@@ -1617,7 +1910,9 @@ function rContracts(){
     const p=S.projects.find(pr=>pr.id===c.project_id);
     const paid=S.payments.filter(pay=>pay.contract_id===c.id).reduce((s,p)=>s+p.amount,0);
     const fileBtn=c.file_url?`<span style="display:inline-flex;gap:.3rem"><button class="btn btn-s" title="Превью" onclick="previewFile('${esc(c.file_url)}','${esc(c.file_name||'')}')">👁</button><button class="btn btn-s btn-file" onclick="downloadFile('${esc(c.file_url)}','${esc(c.file_name||'')}')">📄 ${esc(c.file_name&&c.file_name.length>12?c.file_name.slice(0,12)+'…':(c.file_name||''))}</button></span>`:`<button class="btn btn-s" onclick="openCM('${esc(c.id)}')">+ файл</button>`;
-    return`<tr><td class="tp">${esc(p?.name||'—')}</td><td class="tm">${esc(TL[c.type]||'—')}</td><td>${esc(c.person||'—')}</td><td class="tm">${esc(c.role||'—')}</td><td class="tm">${esc(c.number||'—')}<br><span style="color:var(--ink-d)">${esc(c.date||'')}</span></td><td class="money">${c.amount?fmt(c.amount)+' ₽':'—'}</td><td class="money" style="color:${paid>=(c.amount||0)&&c.amount>0?'var(--green)':'var(--amber)'}">${paid?fmt(paid)+' ₽':'—'}</td><td><span class="status s-${esc(c.status)}">${esc(SL[c.status]||c.status||'')}</span></td><td>${fileBtn}</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openPayM('${esc(c.id)}')">₽</button> <button class="btn btn-s" onclick="openCM('${esc(c.id)}')">✎</button> <button class="btn btn-s btn-d" onclick="delC('${esc(c.id)}')">×</button></td></tr>`;
+    const ver=(c.version||1)>1?` <span style="display:inline-block;background:var(--bg-soft);border:1px solid var(--brd-s);border-radius:6px;padding:0 .35rem;font-size:10px;color:var(--ink-m);vertical-align:middle" title="Версия ${c.version}">v${c.version}</span>`:'';
+    const signBadge=c.sign_status==='signed'?' <span title="Подписан" style="color:var(--ok);font-size:12px">✓</span>':(c.sign_status==='sent'?' <span title="Отправлен на подпись" style="color:#e8a500;font-size:11px">✉</span>':'');
+    return`<tr><td class="tp">${esc(p?.name||'—')}</td><td class="tm">${esc(TL[c.type]||'—')}</td><td>${esc(c.person||'—')}${signBadge}</td><td class="tm">${esc(c.role||'—')}</td><td class="tm">${esc(c.number||'—')}${ver}<br><span style="color:var(--ink-d)">${esc(c.date||'')}</span></td><td class="money">${c.amount?fmt(c.amount)+' ₽':'—'}</td><td class="money" style="color:${paid>=(c.amount||0)&&c.amount>0?'var(--green)':'var(--amber)'}">${paid?fmt(paid)+' ₽':'—'}</td><td><span class="status s-${esc(c.status)}">${esc(SL[c.status]||c.status||'')}</span></td><td>${fileBtn}</td><td style="text-align:right;white-space:nowrap"><button class="btn btn-s" onclick="openPayM('${esc(c.id)}')">₽</button> <button class="btn btn-s" onclick="openCM('${esc(c.id)}')">✎</button> <button class="btn btn-s btn-d" onclick="delC('${esc(c.id)}')">×</button></td></tr>`;
   }).join('')}</tbody></table></div>`;
 }
 
@@ -2670,6 +2965,250 @@ async function dgOpenSaved(id){
   const d=S.documents.find(x=>x.id===id);
   if(!d){toast('Документ не найден','err','Документы');return}
   await openDocGen({editingId:id,tplId:d.template_id,projectId:d.project_id||'',contactId:d.contact_id||''});
+}
+
+// ============ Phase 6: E-sign (отправка на подпись, гостевая страница) ============
+// Флоу: openSendSignModal → doSendSign генерирует/обновляет sign_token → показывает ссылку
+// https://host/sign.html?token=... → гость подписывает → sign_contract_by_token RPC →
+// sign_status='signed', signed_at, signer_name.
+
+function openSendSignModal(){
+  if(!eC){toast('Сначала сохрани договор','err','Подпись');return}
+  const c=S.contracts.find(x=>x.id===eC);
+  if(!c)return;
+  document.getElementById('send-sign-email').value=c.sign_email||'';
+  document.getElementById('send-sign-link-wrap').style.display=c.sign_token?'':'none';
+  if(c.sign_token){
+    const url=location.origin+'/sign.html?token='+encodeURIComponent(c.sign_token);
+    document.getElementById('send-sign-link').value=url;
+    updateSignShareLinks(url,c);
+  }
+  document.getElementById('send-sign-btn').textContent=c.sign_token?'Обновить ссылку':'Создать ссылку';
+  document.getElementById('sendSignM').classList.add('on');
+}
+
+function updateSignShareLinks(url,c){
+  const subject='Договор на подпись'+(c.number?' № '+c.number:'');
+  const body='Здравствуйте. Прошу ознакомиться и подписать договор по ссылке:\n\n'+url+'\n\nС уважением.';
+  document.getElementById('send-sign-tg').href='https://t.me/share/url?url='+encodeURIComponent(url)+'&text='+encodeURIComponent(subject);
+  document.getElementById('send-sign-wa').href='https://wa.me/?text='+encodeURIComponent(subject+'\n'+url);
+  document.getElementById('send-sign-mail').href='mailto:'+encodeURIComponent(c.sign_email||'')+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+}
+
+function genSignToken(){
+  // Криптостойкий 32-символьный token (base36 из 16 случайных байт).
+  const buf=new Uint8Array(16);(crypto||window.crypto).getRandomValues(buf);
+  return Array.from(buf).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function doSendSign(ev){
+  if(!eC){toast('Сначала сохрани договор','err','Подпись');return}
+  const c=S.contracts.find(x=>x.id===eC);
+  if(!c)return;
+  const email=document.getElementById('send-sign-email').value.trim();
+  const token=c.sign_token||genSignToken();
+  const upd={
+    sign_token:token,
+    sign_email:email||null,
+    sign_status:c.sign_status==='signed'?'signed':'sent',
+    sent_at:c.sent_at||new Date().toISOString(),
+  };
+  const restore=startBtn(ev?.target,'Сохраняю…');
+  try{
+    const{error}=await sb.from('contracts').update(upd).eq('id',eC);
+    if(sbErr('создание ссылки подписания',error))return;
+    c.sign_token=token;c.sign_email=upd.sign_email;c.sign_status=upd.sign_status;c.sent_at=upd.sent_at;
+    const url=location.origin+'/sign.html?token='+encodeURIComponent(token);
+    document.getElementById('send-sign-link').value=url;
+    document.getElementById('send-sign-link-wrap').style.display='';
+    updateSignShareLinks(url,c);
+    cRenderSignRow(c);
+    toast('Ссылка создана · скопируй и пришли контрагенту','ok','Подпись');
+  }finally{restore()}
+}
+
+function doCopySignLink(){
+  const link=document.getElementById('send-sign-link').value;
+  if(!link)return;
+  navigator.clipboard.writeText(link).then(()=>toast('Скопировано','ok','Подпись'),()=>{
+    // Fallback для небезопасных контекстов (http)
+    const el=document.getElementById('send-sign-link');el.select();document.execCommand('copy');
+    toast('Скопировано','ok','Подпись');
+  });
+}
+
+function copySignLink(){
+  if(!eC)return;
+  const c=S.contracts.find(x=>x.id===eC);
+  if(!c?.sign_token){toast('Сначала создай ссылку','err','Подпись');return}
+  const url=location.origin+'/sign.html?token='+encodeURIComponent(c.sign_token);
+  navigator.clipboard.writeText(url).then(()=>toast('Ссылка скопирована','ok','Подпись'));
+}
+
+// ============ Phase 5j: массовое AI-заполнение из Excel/CSV ============
+// Поток: openBulkModal → bulkOnFile парсит xlsx/csv через SheetJS → bulkRun для каждой строки
+// вызывает /api/docgen/extract, потом рендерит .docx через dgRenderDocxBlob и кладёт в JSZip.
+
+let bulkState={rows:[],headers:[],tplId:null,projectId:'',zip:null,cancel:false};
+
+function openBulkModal(){
+  bulkState={rows:[],headers:[],tplId:null,projectId:'',zip:null,cancel:false};
+  dgEnsureIndex().then(()=>{
+    const tpls=(DG_TPLS?.templates||[]).filter(t=>(t.file||'').toLowerCase().endsWith('.docx'));
+    document.getElementById('bulk-tpl').innerHTML=tpls.map(t=>`<option value="${esc(t.id)}">${esc(t.label)}</option>`).join('');
+    document.getElementById('bulk-proj').innerHTML='<option value="">— без проекта —</option>'+(S.projects||[]).map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+  });
+  document.getElementById('bulk-file-label').innerHTML='📎 Выбери файл';
+  document.getElementById('bulk-file-input').value='';
+  document.getElementById('bulk-preview-wrap').style.display='none';
+  document.getElementById('bulk-run-btn').disabled=true;
+  document.getElementById('bulk-stage-setup').style.display='';
+  document.getElementById('bulk-stage-run').style.display='none';
+  document.getElementById('bulkM').classList.add('on');
+}
+
+function bulkOnFile(e){
+  const file=e.target.files?.[0];if(!file)return;
+  if(typeof XLSX==='undefined'){toast('XLSX библиотека не загрузилась','err','Excel');return}
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=new Uint8Array(ev.target.result);
+      const wb=XLSX.read(data,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
+      if(!rows.length){toast('Файл пуст или без данных','err','Excel');return}
+      bulkState.rows=rows;
+      bulkState.headers=Object.keys(rows[0]);
+      bulkRenderPreview();
+      document.getElementById('bulk-file-label').innerHTML=`<span class="file-badge">📊 ${esc(file.name)} · ${rows.length} строк</span>`;
+      document.getElementById('bulk-run-btn').disabled=false;
+      document.getElementById('bulk-rows-count').textContent=String(rows.length);
+    }catch(err){
+      console.error(err);
+      toast('Не смог распарсить файл: '+(err?.message||err),'err','Excel');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function bulkRenderPreview(){
+  const wrap=document.getElementById('bulk-preview-wrap');
+  const box=document.getElementById('bulk-preview');
+  wrap.style.display='';
+  const headers=bulkState.headers;
+  const rows=bulkState.rows.slice(0,5);
+  const th='<tr>'+headers.map(h=>`<th>${esc(h)}</th>`).join('')+'</tr>';
+  const tr=rows.map(r=>'<tr>'+headers.map(h=>`<td title="${esc(String(r[h]||''))}">${esc(String(r[h]||''))}</td>`).join('')+'</tr>').join('');
+  box.innerHTML=`<table>${th}${tr}</table>`;
+}
+
+function bulkLog(txt,cls){
+  const el=document.getElementById('bulk-log');
+  const line=document.createElement('div');
+  line.className='bl-'+(cls||'info');
+  line.textContent=txt;
+  el.appendChild(line);el.scrollTop=el.scrollHeight;
+}
+
+function bulkCancel(){bulkState.cancel=true;bulkLog('Отмена…','info')}
+
+async function bulkRun(ev){
+  const tplId=document.getElementById('bulk-tpl').value;
+  const projectId=document.getElementById('bulk-proj').value;
+  const tpl=dgGetTpl(tplId);
+  if(!tpl){toast('Выбери шаблон','err','Массовая');return}
+  if(!bulkState.rows.length){toast('Загрузи файл','err','Массовая');return}
+  bulkState.tplId=tplId;bulkState.projectId=projectId;bulkState.cancel=false;
+  bulkState.zip=new JSZip();
+  document.getElementById('bulk-stage-setup').style.display='none';
+  document.getElementById('bulk-stage-run').style.display='';
+  document.getElementById('bulk-cancel-btn').style.display='';
+  document.getElementById('bulk-download-btn').style.display='none';
+  document.getElementById('bulk-log').innerHTML='';
+  document.getElementById('bulk-progress-total').textContent=String(bulkState.rows.length);
+  document.getElementById('bulk-progress-current').textContent='0';
+  document.getElementById('bulk-progress-ok').textContent='0';
+  document.getElementById('bulk-progress-err').textContent='0';
+  document.getElementById('bulk-progress-fill').style.width='0%';
+  bulkLog('Шаблон: '+tpl.label,'info');
+  bulkLog('Строк: '+bulkState.rows.length,'info');
+
+  const sess=await sb.auth.getSession();
+  const jwt=sess?.data?.session?.access_token;
+  if(!jwt){bulkLog('Нет JWT, прервано','err');return}
+
+  // Preload template bytes один раз
+  let tplBuf;
+  try{tplBuf=await dgLoadBody(tpl.file)}
+  catch(e){bulkLog('Не смог загрузить шаблон: '+(e?.message||e),'err');return}
+
+  let ok=0,err=0;
+  for(let i=0;i<bulkState.rows.length;i++){
+    if(bulkState.cancel){bulkLog('Остановлено пользователем','err');break}
+    const row=bulkState.rows[i];
+    const rowNum=i+1;
+    document.getElementById('bulk-progress-current').textContent=String(rowNum);
+    document.getElementById('bulk-progress-fill').style.width=((rowNum/bulkState.rows.length)*100).toFixed(1)+'%';
+
+    // Собираем текстовое описание из колонок Excel — AI вытащит значения
+    const desc=Object.entries(row).filter(([,v])=>v!=='').map(([k,v])=>`${k}: ${v}`).join('\n');
+    if(!desc){bulkLog(`#${rowNum}: строка пустая, пропуск`,'err');err++;continue}
+
+    try{
+      const fields=(tpl.fields||[]).map(f=>({key:f.key,label:f.label,type:f.type||'text',autofill:f.autofill||null}));
+      const res=await fetch('/api/docgen/extract',{
+        method:'POST',
+        headers:{'content-type':'application/json',authorization:'Bearer '+jwt},
+        body:JSON.stringify({text:desc,model:'anthropic/claude-sonnet-4.6',template_id:tpl.id,template_label:tpl.label,fields}),
+      });
+      const body=await res.json().catch(()=>({}));
+      if(!res.ok||!body.ok){
+        bulkLog(`#${rowNum}: AI ошибка — ${body.error||'http_'+res.status}`,'err');err++;continue;
+      }
+      const values={};
+      for(const[k,v]of Object.entries(body.values||{})){
+        if(v==null||v==='')continue;
+        const key=String(k).startsWith('{')?String(k):'{'+String(k).replace(/[{}]/g,'')+'}';
+        if(!fields.find(f=>f.key===key))continue;
+        let val=String(v);
+        const f=fields.find(x=>x.key===key);
+        if(f&&f.type==='date'){
+          const ru=val.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/);
+          if(ru)val=`${ru[3]}-${String(ru[2]).padStart(2,'0')}-${String(ru[1]).padStart(2,'0')}`;
+        }
+        values[key]=val;
+      }
+      const blob=dgRenderDocxBlob(tplBuf,tpl,values);
+      const rawName=String(row['ФИО']||row['FIO']||row['Фамилия']||row['Name']||('row-'+rowNum));
+      const safeName=rawName.replace(/[^\wа-яА-ЯёЁ\-. ]+/g,'_').slice(0,60).trim()||('row-'+rowNum);
+      const filename=`${String(rowNum).padStart(3,'0')}_${tpl.id}_${safeName}.docx`;
+      bulkState.zip.file(filename,await blob.arrayBuffer());
+      bulkLog(`#${rowNum}: ✓ ${filename}`,'ok');ok++;
+      document.getElementById('bulk-progress-ok').textContent=String(ok);
+    }catch(e){
+      console.error(e);
+      bulkLog(`#${rowNum}: ошибка — ${e?.message||e}`,'err');err++;
+      document.getElementById('bulk-progress-err').textContent=String(err);
+    }
+    // Небольшая пауза чтобы не забить OpenRouter rate-limit
+    await new Promise(r=>setTimeout(r,300));
+  }
+
+  document.getElementById('bulk-cancel-btn').style.display='none';
+  if(ok>0)document.getElementById('bulk-download-btn').style.display='';
+  bulkLog(`Готово: ${ok} успешно, ${err} ошибок`,ok>0?'ok':'err');
+}
+
+async function bulkDownloadZip(){
+  if(!bulkState.zip){return}
+  const blob=await bulkState.zip.generateAsync({type:'blob'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='contracts_'+new Date().toISOString().slice(0,10)+'.zip';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast('ZIP скачан','ok','Массовая');
 }
 
 // ============ CHAT WIDGET + PROFILE (Phase 4.2) ============

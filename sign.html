@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cuelex · Подписание договора</title>
+<style>
+:root{
+  --bg:#f7f9fb;--bg-soft:#eef2f6;--bg-card:#fff;
+  --ink:#0f172a;--ink-m:#475569;--ink-d:#94a3b8;
+  --brd:#e2e8f0;--brd-s:#edf1f5;
+  --acc:#059669;--acc-h:#047857;--acc-soft:#ecfdf5;
+  --ok:#10b981;--err:#dc2626;
+  --shadow-s:0 1px 2px rgba(15,23,42,.04),0 1px 3px rgba(15,23,42,.06);
+  --shadow-m:0 2px 6px rgba(15,23,42,.06),0 6px 18px rgba(15,23,42,.08);
+}
+*,*:before,*:after{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,system-ui,sans-serif;color:var(--ink);line-height:1.55;font-size:14.5px}
+main{max-width:780px;margin:0 auto;padding:2rem 1.2rem 4rem}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem}
+.brand{display:flex;align-items:center;gap:.5rem;font-weight:700;letter-spacing:-.015em;font-size:18px}
+.brand-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px}
+.card{background:var(--bg-card);border:1px solid var(--brd);border-radius:14px;padding:1.6rem 1.8rem;box-shadow:var(--shadow-s);margin-bottom:1.2rem}
+h1{font-size:24px;letter-spacing:-.02em;margin:0 0 .4rem}
+.lead{color:var(--ink-m);margin:0 0 1.4rem}
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem;margin-bottom:1.2rem}
+.meta-grid > div{background:var(--bg-soft);border:1px solid var(--brd-s);border-radius:10px;padding:.55rem .75rem}
+.meta-grid .mk{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-d);font-weight:600;margin-bottom:.15rem}
+.meta-grid .mv{font-weight:600}
+.doc-prev{background:var(--bg-soft);border:1px solid var(--brd-s);border-radius:10px;padding:1rem 1.2rem;font-family:'Times New Roman',serif;font-size:14px;line-height:1.55;min-height:120px;max-height:480px;overflow-y:auto}
+.doc-prev a{color:var(--acc);text-decoration:underline}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--ink-m);margin-bottom:.25rem;letter-spacing:.01em}
+.form-input{width:100%;padding:.6rem .8rem;border:1px solid var(--brd);border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:var(--ink)}
+.form-input:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px rgba(5,150,105,.1)}
+.checkbox-row{display:flex;gap:.6rem;align-items:flex-start;padding:.7rem .9rem;background:var(--bg-soft);border:1px solid var(--brd-s);border-radius:10px;margin-bottom:1rem;cursor:pointer}
+.checkbox-row input{margin-top:.2rem}
+.checkbox-row span{color:var(--ink-m);font-size:13px}
+.btn{padding:.75rem 1.4rem;border-radius:10px;border:1px solid var(--brd);background:#fff;color:var(--ink);font-weight:600;font-size:14px;cursor:pointer;font-family:inherit}
+.btn:hover{background:var(--bg-soft)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-p{background:linear-gradient(180deg,#10b981,#059669);border-color:transparent;color:#fff;box-shadow:var(--shadow-s)}
+.btn-p:hover{background:linear-gradient(180deg,#059669,#047857)}
+.state-ok{text-align:center;padding:3rem 1.5rem}
+.state-ok .emoji{font-size:64px;margin-bottom:1rem}
+.state-err{text-align:center;padding:3rem 1.5rem;color:var(--err)}
+.state-err .emoji{font-size:48px;margin-bottom:.8rem}
+.hint{color:var(--ink-d);font-size:12.5px;margin-top:.4rem}
+footer{text-align:center;color:var(--ink-d);font-size:12px;margin-top:3rem}
+footer a{color:var(--ink-m);text-decoration:none}
+footer a:hover{color:var(--acc)}
+@media(max-width:600px){main{padding:1.4rem 1rem 3rem}.card{padding:1.2rem 1.3rem}h1{font-size:20px}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<main>
+  <header>
+    <div class="brand"><div class="brand-mark">C</div>Cuelex</div>
+    <a href="/" style="color:var(--ink-m);text-decoration:none;font-size:13px">← На главную</a>
+  </header>
+
+  <div id="stage-loading" class="card">
+    <p class="lead" style="margin:0">Загружаем договор…</p>
+  </div>
+
+  <div id="stage-notfound" style="display:none" class="card state-err">
+    <div class="emoji">⚠️</div>
+    <h1 style="color:var(--err)">Документ не найден</h1>
+    <p class="lead">Ссылка неверна, истекла, или договор был удалён. Попроси отправителя прислать новую ссылку.</p>
+  </div>
+
+  <div id="stage-doc" style="display:none">
+    <div class="card">
+      <h1 id="doc-title">Договор</h1>
+      <p class="lead" id="doc-lead">Ознакомься с документом. Если согласен — поставь ФИО и подтверди.</p>
+      <div class="meta-grid">
+        <div><div class="mk">Номер</div><div class="mv" id="m-number">—</div></div>
+        <div><div class="mk">Дата</div><div class="mv" id="m-date">—</div></div>
+        <div><div class="mk">Контрагент</div><div class="mv" id="m-person">—</div></div>
+        <div><div class="mk">Сумма</div><div class="mv" id="m-amount">—</div></div>
+      </div>
+      <div class="form-label" style="margin-top:.6rem">Документ</div>
+      <div class="doc-prev" id="doc-prev">
+        <p>Договор приложен отдельным файлом. Скачай и ознакомься перед подписанием.</p>
+        <p><a id="doc-file-link" href="#" style="display:none">📄 Скачать документ</a></p>
+        <p id="doc-notes" style="color:#64748b;font-size:13px;white-space:pre-wrap"></p>
+      </div>
+    </div>
+
+    <div class="card" id="sign-form">
+      <h2 style="margin:0 0 1rem;font-size:18px;letter-spacing:-.015em">Подписание</h2>
+      <div class="form-group">
+        <label class="form-label">Твоё ФИО полностью</label>
+        <input class="form-input" type="text" id="signer-name" placeholder="Иванов Иван Иванович" autocomplete="name">
+        <div class="hint">Как в паспорте. ФИО будет зафиксировано в договоре вместе с датой подписания.</div>
+      </div>
+      <label class="checkbox-row">
+        <input type="checkbox" id="agree">
+        <span>Я ознакомился с содержанием договора, согласен со всеми условиями и подтверждаю подписание электронной простой подписью (п.2 ст.5 63-ФЗ «Об электронной подписи»).</span>
+      </label>
+      <div style="display:flex;gap:.6rem;justify-content:flex-end;flex-wrap:wrap">
+        <button class="btn btn-p" id="sign-btn" onclick="doSign()" disabled>Подписать</button>
+      </div>
+      <div id="sign-error" style="color:var(--err);font-size:12.5px;margin-top:.6rem;display:none"></div>
+    </div>
+  </div>
+
+  <div id="stage-signed" style="display:none" class="card state-ok">
+    <div class="emoji">✅</div>
+    <h1>Договор подписан</h1>
+    <p class="lead">Спасибо, <b id="signed-name">—</b>. Договор зафиксирован как подписанный <b id="signed-at">—</b>. Отправитель получит уведомление.</p>
+  </div>
+
+  <footer>
+    <p>© <a href="/">Cuelex</a> · Электронная простая подпись · <a href="mailto:support@cuelex.io">Вопросы</a></p>
+  </footer>
+</main>
+
+<script>
+const SB_URL='https://vcjwzkbsivgiivgvibjo.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjand6a2JzaXZnaWl2Z3ZpYmpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5OTY5NTEsImV4cCI6MjA5MjU3Mjk1MX0.LWGImSHtHz9CBuluC1hgTw8g8CayuoTRcQnV5qF6DSc';
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}});
+
+const PARAMS=new URLSearchParams(location.search);
+const TOKEN=PARAMS.get('token');
+let CONTRACT=null;
+
+const TYPE_LABELS={'actor':'Договор с актёром','actor-minor':'Договор с несовершеннолетним актёром','director':'Режиссёрский договор','operator':'Оператор-постановщик','author-order':'Авторский заказ','alienation':'Отчуждение прав','license':'Лицензионный договор','consent':'Согласие','nda':'Соглашение о конфиденциальности (NDA)','other':'Договор'};
+
+function show(stageId){
+  for(const s of ['stage-loading','stage-notfound','stage-doc','stage-signed']){
+    document.getElementById(s).style.display=(s===stageId?'':'none');
+  }
+}
+function fmtDate(iso){try{return new Date(iso).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}catch(_){return iso||''}}
+function fmtDateTime(iso){try{return new Date(iso).toLocaleString('ru-RU',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}catch(_){return iso||''}}
+
+async function load(){
+  if(!TOKEN){show('stage-notfound');return}
+  try{
+    const{data,error}=await sb.rpc('contract_by_sign_token',{p_token:TOKEN});
+    if(error||!data||!data.length){show('stage-notfound');return}
+    CONTRACT=Array.isArray(data)?data[0]:data;
+    renderContract();
+  }catch(e){console.error(e);show('stage-notfound')}
+}
+
+async function renderContract(){
+  const c=CONTRACT;
+  document.getElementById('doc-title').textContent=TYPE_LABELS[c.type]||'Договор'+(c.number?' № '+c.number:'');
+  document.getElementById('m-number').textContent=c.number||'—';
+  document.getElementById('m-date').textContent=c.date?fmtDate(c.date):'—';
+  document.getElementById('m-person').textContent=c.person||'—';
+  document.getElementById('m-amount').textContent=c.amount?(Number(c.amount).toLocaleString('ru-RU')+' ₽'):'—';
+  if(c.notes){document.getElementById('doc-notes').textContent=c.notes}
+
+  // Попытка получить подписанный URL для исходного файла
+  if(c.file_url){
+    const link=document.getElementById('doc-file-link');
+    try{
+      const{data:urlData}=await sb.storage.from('contracts').createSignedUrl(c.file_url,3600);
+      if(urlData?.signedUrl){
+        link.href=urlData.signedUrl;
+        link.style.display='inline-block';
+        link.textContent='📄 '+(c.file_name||'Скачать документ');
+      }
+    }catch(_){}
+  }
+
+  if(c.sign_status==='signed'){
+    document.getElementById('signed-name').textContent=c.signer_name||'—';
+    document.getElementById('signed-at').textContent=c.signed_at?fmtDateTime(c.signed_at):'—';
+    show('stage-signed');
+    return;
+  }
+  show('stage-doc');
+
+  // Wire up form
+  const name=document.getElementById('signer-name');
+  const agree=document.getElementById('agree');
+  const btn=document.getElementById('sign-btn');
+  const updateBtn=()=>{btn.disabled=!(name.value.trim().length>=3&&agree.checked)};
+  name.addEventListener('input',updateBtn);
+  agree.addEventListener('change',updateBtn);
+  name.focus();
+}
+
+async function doSign(){
+  const name=document.getElementById('signer-name').value.trim();
+  const agree=document.getElementById('agree').checked;
+  if(!name||!agree)return;
+  const btn=document.getElementById('sign-btn');
+  btn.disabled=true;btn.textContent='Подписываю…';
+  const err=document.getElementById('sign-error');
+  err.style.display='none';
+  try{
+    const{data,error}=await sb.rpc('sign_contract_by_token',{p_token:TOKEN,p_signer_name:name});
+    if(error)throw error;
+    if(data&&data.ok===false){
+      err.textContent='Не удалось подписать: '+(data.error==='already_signed'?'договор уже подписан':(data.error||'неизвестная ошибка'));
+      err.style.display='block';
+      btn.disabled=false;btn.textContent='Подписать';
+      return;
+    }
+    // Успех — обновляем UI
+    CONTRACT.sign_status='signed';
+    CONTRACT.signer_name=name;
+    CONTRACT.signed_at=new Date().toISOString();
+    document.getElementById('signed-name').textContent=name;
+    document.getElementById('signed-at').textContent=fmtDateTime(CONTRACT.signed_at);
+    show('stage-signed');
+  }catch(e){
+    console.error(e);
+    err.textContent='Ошибка: '+(e?.message||e);
+    err.style.display='block';
+    btn.disabled=false;btn.textContent='Подписать';
+  }
+}
+
+load();
+</script>
+</body>
+</html>
