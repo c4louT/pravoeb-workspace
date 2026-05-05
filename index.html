@@ -438,6 +438,37 @@ th.sortable.act .ar{opacity:1}
 @media(max-width:900px){.dg-layout{grid-template-columns:1fr}.dg-left{max-height:none}.dg-preview{min-height:40vh;max-height:40vh}.dg-list-row{grid-template-columns:1fr}.dg-list-row.dg-head{display:none}.dg-list-row .dg-actions{justify-content:flex-start}}
 @media print{body *{visibility:hidden}#dg-print-area,#dg-print-area *{visibility:visible}#dg-print-area{position:absolute;left:0;top:0;width:100%;padding:1.6cm 2cm;font-family:'Times New Roman',serif;font-size:12pt;line-height:1.4;color:#000;background:#fff}#dg-print-area h1,#dg-print-area h2,#dg-print-area h3{font-family:'Times New Roman',serif}}
 
+/* Phase 5k: AI Generator modal */
+.dgg-layout{display:grid;grid-template-columns:1.4fr .9fr;gap:1rem;margin-top:.8rem}
+.dgg-left{max-height:62vh;overflow-y:auto;background:#fff;color:#111;padding:1.4rem 1.6rem;border:1px solid var(--brd-s);border-radius:12px;font-family:'Times New Roman',serif;font-size:13.5px;line-height:1.6;box-shadow:var(--shadow-s)}
+.dgg-left h2{font-family:'Times New Roman',serif;font-size:17px;font-weight:700;margin:1.1em 0 .4em;color:#000;text-transform:uppercase;letter-spacing:.02em}
+.dgg-left h1{font-family:'Times New Roman',serif;font-size:19px;font-weight:700;color:#000;text-align:center;margin:0 0 1.2em}
+.dgg-left p{margin:.2em 0 .6em;color:#111}
+.dgg-left .dgg-preamble{font-style:italic;color:#333;margin-bottom:1rem}
+.dgg-left .dgg-block{position:relative;padding:.3rem .55rem;margin:.2rem -.55rem;border-radius:6px;cursor:text;transition:background .15s}
+.dgg-left .dgg-block:hover{background:rgba(var(--acc-rgb),.06)}
+.dgg-left .dgg-block.ai{background:rgba(255,170,0,.10);border-left:3px solid #f0a020;padding-left:.55rem;margin-left:-.55rem}
+.dgg-left .dgg-block.ai:hover{background:rgba(255,170,0,.16)}
+.dgg-left .dgg-block .dgg-num{font-weight:700;margin-right:.3em}
+.dgg-left .dgg-block[contenteditable=true]{outline:2px solid var(--acc);background:#fff}
+.dgg-right{display:flex;flex-direction:column;gap:.6rem;min-height:0}
+.dgg-side-head{font-size:11px;font-weight:600;color:var(--ink-m);text-transform:uppercase;letter-spacing:.07em;padding:.1rem 0}
+#dgg-tree{max-height:62vh;overflow-y:auto;padding-right:.4rem;display:flex;flex-direction:column;gap:.5rem}
+.dgg-sec{padding:.6rem .7rem;background:var(--bg-card);border:1px solid var(--brd-s);border-radius:10px;font-size:12px}
+.dgg-sec-t{font-size:10.5px;font-weight:700;color:var(--ink);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem;display:flex;justify-content:space-between;align-items:center;gap:.3rem}
+.dgg-sec-t .dgg-sec-regen{background:none;border:1px solid var(--brd);color:var(--ink-m);padding:.1rem .45rem;border-radius:5px;font-size:10px;cursor:pointer}
+.dgg-sec-t .dgg-sec-regen:hover{color:var(--acc);border-color:var(--acc)}
+.dgg-blk-line{display:flex;gap:.4rem;align-items:baseline;color:var(--ink-m);padding:.2rem 0;font-size:12px;border-top:1px solid var(--brd-s)}
+.dgg-blk-line:first-child{border-top:0}
+.dgg-blk-n{font-weight:600;color:var(--ink);min-width:32px}
+.dgg-blk-src{margin-left:auto;font-size:10.5px;color:var(--ink-d);font-family:ui-monospace,Menlo,monospace}
+.dgg-blk-src.ai{color:#b87000;font-weight:600}
+.dgg-scenario{padding:.7rem .9rem;background:var(--acc-soft);border:1px solid rgba(var(--acc-rgb),.25);border-radius:10px;font-size:12.5px;color:var(--ink);margin-bottom:.8rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.6rem}
+.dgg-scenario b{font-weight:600}
+.dgg-chips{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.2rem}
+.dgg-chips .chip{background:#fff;border:1px solid var(--brd-s);color:var(--ink-m)}
+@media(max-width:900px){.dgg-layout{grid-template-columns:1fr}.dgg-left{max-height:45vh}#dgg-tree{max-height:35vh}}
+
 /* CALENDAR */
 .cal-bar{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
 .cal-nav{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
@@ -596,6 +627,8 @@ th.sortable.act .ar{opacity:1}
 <!-- Phase 5d: docxtemplater + pizzip для подстановки в оригинальные .docx с сохранением формата -->
 <script src="https://unpkg.com/pizzip@3.1.6/dist/pizzip.js"></script>
 <script src="https://unpkg.com/docxtemplater@3.50.0/build/docxtemplater.js"></script>
+<!-- Phase 5k: docx (umd) для сборки новых .docx "с нуля" из блочной структуры генератора -->
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 </head>
 <body>
 
@@ -840,8 +873,11 @@ th.sortable.act .ar{opacity:1}
       <div id="cal-view"></div>
     </section>
     <section class="tv" id="documents">
-      <div class="page-head"><span class="eyebrow">Генератор</span><h1 class="page-h1">Документы</h1><p class="page-lead">Собираем договоры из 69 реальных шаблонов Киношколы · AI-заполнение по описанию.</p></div>
-      <div class="ab"><div></div><button class="btn btn-p" onclick="openDocGen()">+ Сгенерировать</button></div>
+      <div class="page-head"><span class="eyebrow">Генератор</span><h1 class="page-h1">Документы</h1><p class="page-lead">Собираем договоры из 69 реальных шаблонов Киношколы · AI-заполнение по описанию · AI-композиция под нестандартные условия.</p></div>
+      <div class="ab"><div></div>
+        <button class="btn" onclick="openDgG()" title="AI-генератор: собирает договор из клауз корпуса + дописывает нестандартные пункты">🧬 AI-Генератор</button>
+        <button class="btn btn-p" onclick="openDocGen()">+ Из шаблона</button>
+      </div>
       <div class="toolbar">
         <input class="search-input" id="dg-search" placeholder="Поиск: название, шаблон, контрагент" autocomplete="off">
         <select class="tb-select" id="dg-proj-filter" aria-label="Фильтр по проекту"><option value="all">Все проекты</option></select>
@@ -1021,6 +1057,48 @@ th.sortable.act .ar{opacity:1}
     <button class="btn btn-s" onclick="dgExportPdf()" id="dg-pdf-btn">📄 PDF (печать)</button>
     <button class="btn btn-s" onclick="dgExportDocx()" id="dg-docx-btn">⬇ DOCX</button>
     <button class="btn btn-p" onclick="dgSave(event)" id="dg-save-btn">Сохранить в БД</button>
+  </div>
+</div></div>
+
+<!-- Модалка: AI-Генератор (Phase 5k) — собирает договор из корпуса клауз + пишет нестандартные пункты -->
+<div class="mo" id="dggm"><div class="md md-wide" style="max-width:1200px;max-height:92vh">
+  <h3 class="mt">🧬 AI-Генератор договора</h3>
+  <p class="ms">Опиши сценарий свободным текстом — AI соберёт договор из 2672 проверенных клауз Киношколы и допишет пункты, которых нет в шаблонах. AI-сгенерированные блоки помечены янтарным — проверь их.</p>
+  <div class="dgg-stage" id="dgg-stage-input">
+    <div class="form-group">
+      <label class="form-label">Сценарий</label>
+      <textarea class="form-input" id="dgg-scenario" rows="5" placeholder="Например: «Главная роль, актёр-подросток 16 лет, мать даёт согласие, гонорар 500 000 ₽ + 2% от проката после выхода в широкий прокат, фильм „Дипломный“, полная передача смежных прав без права отзыва»"></textarea>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem">
+      <select class="form-select" id="dgg-model" style="max-width:280px">
+        <option value="anthropic/claude-sonnet-4.6" selected>Claude Sonnet 4.6 · рекомендуется (paid)</option>
+        <option value="openai/gpt-5">GPT-5 · paid</option>
+        <option value="openai/gpt-5-mini">GPT-5 mini · paid</option>
+        <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B · free</option>
+        <option value="openai/gpt-oss-120b:free">GPT-OSS 120B · free</option>
+      </select>
+      <button class="btn btn-p" onclick="dggRun()" id="dgg-run-btn">Собрать</button>
+      <span id="dgg-status" style="font-size:.75rem;color:var(--ink-m)"></span>
+    </div>
+  </div>
+  <div class="dgg-stage" id="dgg-stage-result" style="display:none">
+    <div id="dgg-scenario-card" class="dgg-scenario"></div>
+    <div class="dgg-layout">
+      <div class="dgg-left" id="dgg-text"></div>
+      <div class="dgg-right">
+        <div class="dgg-side-head"><span>Блоки и источники</span></div>
+        <div id="dgg-tree"></div>
+      </div>
+    </div>
+    <div class="ma" style="flex-wrap:wrap;gap:.5rem;margin-top:1rem">
+      <button class="btn" onclick="closeM('dggm')">Закрыть</button>
+      <button class="btn btn-s" onclick="dggReset()">← Изменить сценарий</button>
+      <button class="btn btn-s" onclick="dggExportMd()" id="dgg-md-btn">⬇ Markdown</button>
+      <button class="btn btn-p" onclick="dggExportDocx()" id="dgg-docx-btn">⬇ DOCX</button>
+    </div>
+  </div>
+  <div class="ma" id="dgg-input-actions" style="justify-content:flex-end">
+    <button class="btn" onclick="closeM('dggm')">Отмена</button>
   </div>
 </div></div>
 
@@ -2670,6 +2748,239 @@ async function dgOpenSaved(id){
   const d=S.documents.find(x=>x.id===id);
   if(!d){toast('Документ не найден','err','Документы');return}
   await openDocGen({editingId:id,tplId:d.template_id,projectId:d.project_id||'',contactId:d.contact_id||''});
+}
+
+// ============ Phase 5k: AI-Генератор (dgg*) ============
+// Пользователь описывает сценарий → /api/docgen/generate собирает структуру
+// {scenario, title, preamble, sections:[{num,title,slug,blocks:[{num,text,source,ai_generated,note}]}]}
+// Review UI: split-pane, подсветка AI-блоков, inline-редактор, экспорт .docx через docx.js.
+let dggState={scenario:null,title:'',preamble:'',sections:[],userText:'',model:''};
+
+function openDgG(){
+  dggState={scenario:null,title:'',preamble:'',sections:[],userText:'',model:''};
+  document.getElementById('dgg-scenario').value='';
+  document.getElementById('dgg-status').textContent='';
+  document.getElementById('dgg-stage-input').style.display='';
+  document.getElementById('dgg-stage-result').style.display='none';
+  document.getElementById('dgg-input-actions').style.display='';
+  document.getElementById('dggm').classList.add('on');
+  setTimeout(()=>document.getElementById('dgg-scenario')?.focus(),50);
+}
+
+function dggReset(){
+  document.getElementById('dgg-stage-input').style.display='';
+  document.getElementById('dgg-stage-result').style.display='none';
+  document.getElementById('dgg-input-actions').style.display='';
+  setTimeout(()=>document.getElementById('dgg-scenario')?.focus(),50);
+}
+
+async function dggRun(){
+  const text=document.getElementById('dgg-scenario').value.trim();
+  if(!text){toast('Опиши сценарий договора','err','AI-Генератор');return}
+  const model=document.getElementById('dgg-model').value;
+  const btn=document.getElementById('dgg-run-btn');
+  const st=document.getElementById('dgg-status');
+  st.textContent='Классификация сценария…';
+  const restore=startBtn(btn,'Собираю…');
+  try{
+    const sess=await sb.auth.getSession();
+    const jwt=sess?.data?.session?.access_token;
+    if(!jwt){toast('Нет активной сессии','err','Auth');return}
+    st.textContent='Генерация текста (может занять 15-40 с)…';
+    const res=await fetch('/api/docgen/generate',{
+      method:'POST',
+      headers:{'content-type':'application/json',authorization:'Bearer '+jwt},
+      body:JSON.stringify({text,model}),
+    });
+    const body=await res.json().catch(()=>({}));
+    if(!res.ok||!body.ok){
+      const err=body.error||('http_'+res.status);
+      const detail=body.detail?' — '+(typeof body.detail==='string'?body.detail:JSON.stringify(body.detail)).slice(0,200):'';
+      toast('Ошибка: '+err+detail,'err','AI-Генератор');
+      st.textContent='Ошибка: '+err;
+      return;
+    }
+    dggState={
+      scenario:body.scenario||null,
+      title:body.title||'Договор',
+      preamble:body.preamble||'',
+      sections:Array.isArray(body.sections)?body.sections:[],
+      userText:text,
+      model:body.model||model,
+    };
+    dggRender();
+    document.getElementById('dgg-stage-input').style.display='none';
+    document.getElementById('dgg-stage-result').style.display='';
+    document.getElementById('dgg-input-actions').style.display='none';
+    st.textContent='';
+    toast('Договор собран · '+(body.corpus_templates||[]).length+' шаблонов-референсов','ok','AI-Генератор');
+  }catch(e){
+    console.error(e);
+    toast('Не получилось: '+(e?.message||e),'err','AI-Генератор');
+    st.textContent='Ошибка: '+(e?.message||e);
+  }finally{restore()}
+}
+
+function dggRender(){
+  const sc=dggState.scenario||{};
+  const customs=Array.isArray(sc.custom_conditions)?sc.custom_conditions:[];
+  document.getElementById('dgg-scenario-card').innerHTML=`
+    <div><div class="dgg-side-head" style="margin-bottom:.2rem">Тип</div><b>${esc(sc.contract_type||'—')}</b></div>
+    <div><div class="dgg-side-head" style="margin-bottom:.2rem">Налог</div><b>${esc(sc.tax_form||'—')}</b></div>
+    <div><div class="dgg-side-head" style="margin-bottom:.2rem">Цех</div><b>${esc(sc.role_group||'—')}</b></div>
+    <div><div class="dgg-side-head" style="margin-bottom:.2rem">РИД</div><b>${sc.needs_rid_alienation?'передача':'нет'}</b></div>
+    ${customs.length?`<div style="grid-column:1/-1"><div class="dgg-side-head" style="margin-bottom:.3rem">Нестандартные условия</div><div class="dgg-chips">${customs.map(c=>`<span class="chip">${esc(String(c).slice(0,80))}</span>`).join('')}</div></div>`:''}
+  `;
+  const left=document.getElementById('dgg-text');
+  const parts=[`<h1>${esc(dggState.title)}</h1>`];
+  if(dggState.preamble)parts.push(`<p class="dgg-preamble">${esc(dggState.preamble)}</p>`);
+  for(const s of dggState.sections){
+    parts.push(`<h2>${s.num?esc(s.num)+'. ':''}${esc(s.title||'')}</h2>`);
+    for(const b of (s.blocks||[])){
+      const ai=b.ai_generated?'ai':'';
+      parts.push(`<div class="dgg-block ${ai}" data-sec="${esc(s.slug||'')}" data-n="${esc(b.num||'')}" onclick="dggEditBlock(this)"><span class="dgg-num">${esc(b.num||'')}</span>${esc(b.text||'')}</div>`);
+    }
+  }
+  left.innerHTML=parts.join('');
+  const tree=document.getElementById('dgg-tree');
+  tree.innerHTML=dggState.sections.map((s,si)=>{
+    const rows=(s.blocks||[]).map(b=>{
+      const srcClass=b.ai_generated?'ai':'';
+      const srcTxt=b.ai_generated?'⚠ AI':(b.source||'—').slice(0,24);
+      const noteHtml=b.note?`<div style="font-size:10.5px;color:var(--ink-d);margin-top:.15rem;line-height:1.35">${esc(b.note).slice(0,200)}</div>`:'';
+      return `<div class="dgg-blk-line"><span class="dgg-blk-n">${esc(b.num||'')}</span><span style="flex:1;font-size:11px;color:var(--ink-m);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px" title="${esc(b.text||'').slice(0,300)}">${esc((b.text||'').slice(0,80))}</span><span class="dgg-blk-src ${srcClass}">${esc(srcTxt)}</span>${noteHtml?'':''}</div>${noteHtml}`;
+    }).join('');
+    return `<div class="dgg-sec"><div class="dgg-sec-t"><span>${esc(s.num||(si+1))}. ${esc(s.title||'')}</span><button class="dgg-sec-regen" onclick="dggRegenSection(${si})" type="button">↻ перегенерировать</button></div>${rows}</div>`;
+  }).join('');
+}
+
+function dggEditBlock(el){
+  if(el.getAttribute('contenteditable')==='true')return;
+  const sec=el.getAttribute('data-sec');
+  const num=el.getAttribute('data-n');
+  el.setAttribute('contenteditable','true');
+  el.focus();
+  el.addEventListener('blur',()=>{
+    el.removeAttribute('contenteditable');
+    // Сохраняем изменения в dggState
+    const rawText=el.textContent||'';
+    const prefix=(num?num:'').trim();
+    const clean=prefix&&rawText.startsWith(prefix)?rawText.slice(prefix.length).trim():rawText.trim();
+    for(const s of dggState.sections){
+      if(String(s.slug||'')!==String(sec||''))continue;
+      for(const b of (s.blocks||[])){
+        if(String(b.num||'')===String(num||'')){
+          b.text=clean;
+          break;
+        }
+      }
+    }
+  },{once:true});
+}
+
+async function dggRegenSection(si){
+  const sec=dggState.sections[si];
+  if(!sec){return}
+  if(!confirm(`Перегенерировать раздел «${sec.title}»? Твои правки в нём потеряются.`))return;
+  const st=document.getElementById('dgg-status');
+  st.textContent='Регенерация раздела…';
+  try{
+    const sess=await sb.auth.getSession();
+    const jwt=sess?.data?.session?.access_token;
+    const res=await fetch('/api/docgen/generate',{
+      method:'POST',
+      headers:{'content-type':'application/json',authorization:'Bearer '+jwt},
+      body:JSON.stringify({
+        text:dggState.userText,
+        model:dggState.model,
+        scenario:dggState.scenario,
+        focus_section:sec.slug,
+      }),
+    });
+    const body=await res.json().catch(()=>({}));
+    if(!res.ok||!body.ok){toast('Не получилось: '+(body.error||('http_'+res.status)),'err','AI-Генератор');st.textContent='';return}
+    // Ищем соответствующий раздел в ответе и заменяем
+    const updated=(body.sections||[]).find(x=>String(x.slug||'')===String(sec.slug||''));
+    if(updated){
+      dggState.sections[si]=updated;
+      dggRender();
+      toast('Раздел перегенерирован','ok','AI-Генератор');
+    }else{
+      toast('AI не вернул этот раздел, попробуй ещё раз','err','AI-Генератор');
+    }
+    st.textContent='';
+  }catch(e){
+    toast('Ошибка: '+(e?.message||e),'err','AI-Генератор');
+    st.textContent='';
+  }
+}
+
+function dggBuildMarkdown(){
+  const lines=['# '+dggState.title,''];
+  if(dggState.preamble){lines.push(dggState.preamble,'')}
+  for(const s of dggState.sections){
+    lines.push(`## ${s.num?s.num+'. ':''}${s.title||''}`);
+    for(const b of (s.blocks||[])){
+      const marker=b.ai_generated?' _(AI)_':'';
+      lines.push(`${b.num?b.num+'. ':''}${b.text||''}${marker}`);
+    }
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+
+function dggExportMd(){
+  const md=dggBuildMarkdown();
+  const blob=new Blob([md],{type:'text/markdown;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(dggState.title||'contract').replace(/[^\wа-яА-ЯёЁ\-]+/g,'_').slice(0,80)+'.md';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+async function dggExportDocx(){
+  const lib=window.docx;
+  if(!lib){toast('docx.js не загрузился (CDN недоступен?)','err','AI-Генератор');return}
+  const {Document,Packer,Paragraph,TextRun,HeadingLevel,AlignmentType}=lib;
+  const children=[];
+  children.push(new Paragraph({
+    children:[new TextRun({text:dggState.title||'Договор',bold:true,size:32})],
+    alignment:AlignmentType.CENTER,
+    spacing:{after:360},
+  }));
+  if(dggState.preamble){
+    children.push(new Paragraph({
+      children:[new TextRun({text:dggState.preamble,italics:true,size:24})],
+      spacing:{after:240},
+    }));
+  }
+  for(const s of dggState.sections){
+    children.push(new Paragraph({
+      children:[new TextRun({text:((s.num?s.num+'. ':'')+(s.title||'').toUpperCase()),bold:true,size:26})],
+      heading:HeadingLevel.HEADING_2,
+      spacing:{before:320,after:160},
+    }));
+    for(const b of (s.blocks||[])){
+      const runs=[];
+      if(b.num){runs.push(new TextRun({text:b.num+'. ',bold:true,size:22}))}
+      runs.push(new TextRun({text:b.text||'',size:22}));
+      if(b.ai_generated){runs.push(new TextRun({text:'  [AI]',color:'B87000',size:18,italics:true}))}
+      children.push(new Paragraph({children:runs,spacing:{after:140},alignment:AlignmentType.JUSTIFIED}));
+    }
+  }
+  const doc=new Document({
+    creator:'Cuelex',
+    title:dggState.title||'Договор',
+    sections:[{properties:{},children}],
+  });
+  const blob=await Packer.toBlob(doc);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(dggState.title||'contract').replace(/[^\wа-яА-ЯёЁ\-]+/g,'_').slice(0,80)+'.docx';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  toast('DOCX сохранён','ok','AI-Генератор');
 }
 
 // ============ CHAT WIDGET + PROFILE (Phase 4.2) ============
